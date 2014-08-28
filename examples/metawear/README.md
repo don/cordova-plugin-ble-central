@@ -8,7 +8,7 @@ Operate the Motor and Buzzer on the MetaWare.
 
 Hardware
 
- * [MetaWare](http://mbientlab.com/product/
+ * [MetaWare](http://mbientlab.com/product/)
 
 Install
 
