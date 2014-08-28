@@ -35,7 +35,7 @@ var app = {
         document.addEventListener('deviceready', this.onDeviceReady, false);
         refreshButton.addEventListener('touchstart', this.refreshDeviceList, false);
         motorButton.addEventListener('click', this.onMotorButton, false);
-        buzzerButton.addEventListener('click', this.onBuzzerButton, false);        
+        buzzerButton.addEventListener('click', this.onBuzzerButton, false);
         disconnectButton.addEventListener('touchstart', this.disconnect, false);
         deviceList.addEventListener('touchstart', this.connect, false); // assume not scrolling
     },
@@ -62,58 +62,56 @@ var app = {
     },
     connect: function(e) {
         app.deviceId = e.target.dataset.deviceId;
-        
-        var onConnect = function() {                
-            setTimeout(function() { // KLUDGE a delay so characteristics can be discovered :/                                
-                app.enableButtonFeedback(app.subscribeForIncomingData, app.onError);                
-                app.showDetailPage();                
-            }, 500);
+
+        var onConnect = function() {
+            app.enableButtonFeedback(app.subscribeForIncomingData, app.onError);
+            app.showDetailPage();
         };
 
         ble.connect(app.deviceId, onConnect, app.onError);
     },
     onData: function(buffer) { // data received from MetaWear
-        
-        var data = new Uint8Array(buffer);        
+
+        var data = new Uint8Array(buffer);
         var message = "";
-    
+
         if (data[0] === 1 && data[1] === 1) { // module = 1, opscode = 1
             if (data[2] === 1) { // button state
                 message = "Button pressed";
             } else {
-                message = "Button released";                
+                message = "Button released";
             }
         }
-        
+
         resultDiv.innerHTML = resultDiv.innerHTML + message + "<br/>";
-        resultDiv.scrollTop = resultDiv.scrollHeight;                                
+        resultDiv.scrollTop = resultDiv.scrollHeight;
     },
     writeData: function(buffer, success, failure) { // to to be sent to MetaWear
-        
+
         if (!success) {
             success = function() {
                 console.log("success");
                 resultDiv.innerHTML = resultDiv.innerHTML + "Sent: " + JSON.stringify(new Uint8Array(buffer)) + "<br/>";
-                resultDiv.scrollTop = resultDiv.scrollHeight;                                    
+                resultDiv.scrollTop = resultDiv.scrollHeight;
             };
         }
 
         if (!failure) {
             failure = app.onError;
         }
-        
+
         ble.writeCommand(app.deviceId, metawear.serviceUUID, metawear.txCharacteristic, buffer, success, failure);
     },
     subscribeForIncomingData: function() {
-        ble.notify(app.deviceId, metawear.serviceUUID, metawear.rxCharacteristic, app.onData, app.onError);        
+        ble.notify(app.deviceId, metawear.serviceUUID, metawear.rxCharacteristic, app.onData, app.onError);
     },
     enableButtonFeedback: function(success, failure) {
         var data = new Uint8Array(6);
         data[0] = 0x01; // mechanical switch
         data[1] = 0x01; // switch state ops code
-        data[2] = 0x01; // enable 
-        
-        app.writeData(data.buffer, success, failure);        
+        data[2] = 0x01; // enable
+
+        app.writeData(data.buffer, success, failure);
     },
     onMotorButton: function(event) {
         var pulseWidth = pulseWidthInput.value;
@@ -124,7 +122,7 @@ var app = {
         data[3] = pulseWidth & 0xFF; // Pulse Width
         data[4] = pulseWidth >> 8; // Pulse Width
         data[5] = 0x00; // Some magic bullshit
-        
+
         app.writeData(data.buffer);
     },
     onBuzzerButton: function(event) {
@@ -136,11 +134,12 @@ var app = {
         data[3] = pulseWidth & 0xFF; // Pulse Width
         data[4] = pulseWidth >> 8; // Pulse Width
         data[5] = 0x01; // Some magic?
-        
-        app.writeData(data.buffer);        
-    },    
+
+        app.writeData(data.buffer);
+    },
     disconnect: function(event) {
         ble.disconnect(app.deviceId, app.showMainPage, app.onError);
+        app.deviceId = "";
     },
     showMainPage: function() {
         mainPage.hidden = false;
