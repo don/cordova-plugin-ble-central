@@ -67,7 +67,7 @@ var app = {
             setTimeout(function() { // KLUDGE a delay so characteristics can be discovered :/                                
                 app.enableButtonFeedback(app.subscribeForIncomingData, app.onError);                
                 app.showDetailPage();                
-            }, 200);
+            }, 500);
         };
 
         ble.connect(app.deviceId, onConnect, app.onError);
