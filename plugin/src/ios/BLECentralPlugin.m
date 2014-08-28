@@ -334,22 +334,29 @@
 
     NSLog(@"didDiscoverServices");
 
+    // save the services to tell when all characteristics have been discovered
+    connectCallbackServicesSet = [NSMutableSet new];
+    [connectCallbackServicesSet addObjectsFromArray:peripheral.services];
+
     for (CBService *service in peripheral.services) {
         [peripheral discoverCharacteristics:nil forService:service]; // discover all is slow
     }
-
-    // Call success callback for connect
-    if (connectCallbackId) {
-        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        [pluginResult setKeepCallbackAsBool:TRUE];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
-    }
-
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error {
 
     NSLog(@"didDiscoverCharacteristicsForService");
+
+    [connectCallbackServicesSet removeObject:service];
+
+    if ([connectCallbackServicesSet count] == 0) {
+        // Call success callback for connect
+        if (connectCallbackId) {
+            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            [pluginResult setKeepCallbackAsBool:TRUE];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
+        }
+    }
 
     // Does the peripherial cache these or do I need to?
     NSLog(@"Found characteristics for service %@", service);

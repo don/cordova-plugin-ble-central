@@ -64,10 +64,8 @@ var app = {
         app.deviceId = e.target.dataset.deviceId;
 
         var onConnect = function() {
-            setTimeout(function() { // KLUDGE a delay so characteristics can be discovered :/
-                app.enableButtonFeedback(app.subscribeForIncomingData, app.onError);
-                app.showDetailPage();
-            }, 500);
+            app.enableButtonFeedback(app.subscribeForIncomingData, app.onError);
+            app.showDetailPage();
         };
 
         ble.connect(app.deviceId, onConnect, app.onError);
@@ -141,6 +139,7 @@ var app = {
     },
     disconnect: function(event) {
         ble.disconnect(app.deviceId, app.showMainPage, app.onError);
+        app.deviceId = "";
     },
     showMainPage: function() {
         mainPage.hidden = false;
