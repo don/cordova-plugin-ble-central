@@ -44,14 +44,10 @@ public class Peripheral extends BluetoothGattCallback {
     BluetoothGatt gatt;
 
     private CallbackContext connectCallback;
-
-    // Note these callback maps are probably useless since we are queuing commands instead of Android
-    // ServiceUUID | CharacteristicUUID | InstanceId is the key
-    private Map<String, CallbackContext> readCallbacks = new HashMap<String, CallbackContext>();
-    private Map<String, CallbackContext> notificationCallbacks = new HashMap<String, CallbackContext>();
-
-    // don't need HashMaps since Android can only read or write one at a time :(
+    private CallbackContext readCallback;
     private CallbackContext writeCallback;
+
+    private Map<String, CallbackContext> notificationCallbacks = new HashMap<String, CallbackContext>();
 
     public Peripheral(BluetoothDevice device, int advertisingRSSI, byte[] scanRecord) {
 
@@ -166,15 +162,15 @@ public class Peripheral extends BluetoothGattCallback {
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         super.onCharacteristicRead(gatt, characteristic, status);
 
-        CallbackContext callback = readCallbacks.remove(generateHashKey(characteristic));
-
-        if (callback != null) {
+        if (readCallback != null) {
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                callback.success(characteristic.getValue());
+                readCallback.success(characteristic.getValue());
             } else {
-                callback.error("Error reading " + characteristic.getUuid() + " status=" + status);
+                readCallback.error("Error reading " + characteristic.getUuid() + " status=" + status);
             }
+
+            readCallback = null;
 
         }
 
@@ -184,24 +180,17 @@ public class Peripheral extends BluetoothGattCallback {
     @Override
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         super.onCharacteristicWrite(gatt, characteristic, status);
-        // we're supposed to compare the peripheral's value to our desired value and confirm it is correct
+        // we're supposed to compare the peripheral value to our desired value and confirm it is correct. RTFM.
     }
 
-    @Override
-    public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-        super.onDescriptorRead(gatt, descriptor, status);
-    }
+//    @Override
+//    public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+//        super.onDescriptorRead(gatt, descriptor, status);
+//    }
 
     @Override
     public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
         super.onDescriptorWrite(gatt, descriptor, status);
-
-//        if (status == BluetoothGatt.GATT_SUCCESS) {
-//            writeCallback.success();
-//        } else {
-//            writeCallback.error(status);
-//        }
-
         commandCompleted();
     }
 
@@ -209,13 +198,18 @@ public class Peripheral extends BluetoothGattCallback {
     public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
         super.onReliableWriteCompleted(gatt, status);
 
-        if (status == BluetoothGatt.GATT_SUCCESS) {
-            writeCallback.success();
-        } else {
-            writeCallback.error(status);
+        if (writeCallback != null) {
+
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                writeCallback.success();
+            } else {
+                writeCallback.error(status);
+            }
+
+            writeCallback = null;
+
         }
 
-        writeCallback = null;
         commandCompleted();
     }
 
@@ -244,17 +238,12 @@ public class Peripheral extends BluetoothGattCallback {
 
                 if (gatt.setCharacteristicNotification(characteristic, true)) {
 
-                    // TODO why doesn't setCharacteristicNotification write the descriptor?
+                    // Why doesn't setCharacteristicNotification write the descriptor?
                     BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIGURATION_UUID);
                     if (descriptor != null) {
                         descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
 
                         if (gatt.writeDescriptor(descriptor)) {
-                            // unnecessary
-                            PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
-                            result.setKeepCallback(true);
-                            callbackContext.sendPluginResult(result);
-
                             success = true;
                         } else {
                             callbackContext.error("Failed to set client characteristic notification for " + characteristicUUID);
@@ -290,13 +279,12 @@ public class Peripheral extends BluetoothGattCallback {
 
             BluetoothGattService service = gatt.getService(serviceUUID);
             BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUUID);
-            String key = generateHashKey(serviceUUID, characteristic);
 
             if (characteristic == null) {
                 callbackContext.error("Characteristic " + characteristicUUID + " not found.");
             } else {
 
-                readCallbacks.put(key, callbackContext);
+                readCallback = callbackContext;
 
                 if (gatt.readCharacteristic(characteristic)) {
 
@@ -304,7 +292,7 @@ public class Peripheral extends BluetoothGattCallback {
 
                 } else {
 
-                    readCallbacks.remove(key);
+                    readCallback = null;
                     callbackContext.error("Read failed");
 
                 }
@@ -385,27 +373,17 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     public void queueRead(CallbackContext callbackContext, UUID serviceUUID, UUID characteristicUUID) {
-        BLECommand command = new BLEReadCommand(callbackContext, serviceUUID, characteristicUUID);
-        commandQueue.add(command);
-
-        PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
-        result.setKeepCallback(true);
-        callbackContext.sendPluginResult(result);
-        processCommands();
+        BLECommand command = new BLECommand(callbackContext, serviceUUID, characteristicUUID, BLECommand.READ);
+        queueCommand(command);
     }
 
     public void queueWrite(CallbackContext callbackContext, UUID serviceUUID, UUID characteristicUUID, byte[] data, int writeType) {
-        BLECommand command = new BLEWriteCommand(callbackContext, serviceUUID, characteristicUUID, data, writeType);
-        commandQueue.add(command);
-
-        PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
-        result.setKeepCallback(true);
-        callbackContext.sendPluginResult(result);
-        processCommands();
+        BLECommand command = new BLECommand(callbackContext, serviceUUID, characteristicUUID, data, writeType);
+        queueCommand(command);
     }
 
     public void queueRegisterNotifyCallback(CallbackContext callbackContext, UUID serviceUUID, UUID characteristicUUID) {
-        BLECommand command = new BLERegisterNotifyCallbackCommand(callbackContext, serviceUUID, characteristicUUID);
+        BLECommand command = new BLECommand(callbackContext, serviceUUID, characteristicUUID, BLECommand.REGISTER_NOTIFY);
         queueCommand(command);
     }
 
@@ -460,15 +438,7 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     private String generateHashKey(UUID serviceUUID, BluetoothGattCharacteristic characteristic) {
-
-        StringBuffer b = new StringBuffer();
-        b.append(serviceUUID);
-        b.append("|");
-        b.append(characteristic.getUuid());
-        b.append("|");
-        b.append(characteristic.getInstanceId());
-        return b.toString();
-
+        return String.valueOf(serviceUUID) + "|" + characteristic.getUuid() + "|" + characteristic.getInstanceId();
     }
 
 }
