@@ -119,7 +119,7 @@ var app = {
         var brightness = new Uint8Array(1);
         brightness[0] = event.target.value;
 
-        ble.writeCommand(deviceId, robosmart.service, robosmart.brightness, brightness.buffer, success, failure);
+        ble.write(deviceId, robosmart.service, robosmart.brightness, brightness.buffer, success, failure);
     },
     syncUI: function(deviceId) {
 
