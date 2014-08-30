@@ -18,6 +18,7 @@ import android.app.Activity;
 
 import android.bluetooth.*;
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,6 +34,7 @@ public class Peripheral extends BluetoothGattCallback {
 
     // 0x2902 org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
     public final static UUID CLIENT_CHARACTERISTIC_CONFIGURATION_UUID = UUID.fromString("00002902-0000-1000-8000-00805F9B34FB");
+    private static final String TAG = "Peripheral";
 
     private BluetoothDevice device;
     private byte[] advertisingData;
@@ -146,8 +148,8 @@ public class Peripheral extends BluetoothGattCallback {
 
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-
         super.onCharacteristicChanged(gatt, characteristic);
+        LOG.d(TAG, "onCharacteristicChanged " + characteristic);
 
         CallbackContext callback = notificationCallbacks.get(generateHashKey(characteristic));
 
@@ -161,6 +163,7 @@ public class Peripheral extends BluetoothGattCallback {
     @Override
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         super.onCharacteristicRead(gatt, characteristic, status);
+        LOG.d(TAG, "onCharacteristicRead " + characteristic);
 
         if (readCallback != null) {
 
@@ -180,23 +183,8 @@ public class Peripheral extends BluetoothGattCallback {
     @Override
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         super.onCharacteristicWrite(gatt, characteristic, status);
-        // we're supposed to compare the peripheral value to our desired value and confirm it is correct. RTFM.
-    }
-
-//    @Override
-//    public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-//        super.onDescriptorRead(gatt, descriptor, status);
-//    }
-
-    @Override
-    public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-        super.onDescriptorWrite(gatt, descriptor, status);
-        commandCompleted();
-    }
-
-    @Override
-    public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
-        super.onReliableWriteCompleted(gatt, status);
+        LOG.d(TAG, "onCharacteristicWrite " + characteristic);
+        // for reliable writes we're supposed to compare the peripheral value to our desired value and confirm it is correct. RTFM.
 
         if (writeCallback != null) {
 
@@ -212,6 +200,40 @@ public class Peripheral extends BluetoothGattCallback {
 
         commandCompleted();
     }
+
+//    @Override
+//    public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+//        super.onDescriptorRead(gatt, descriptor, status);
+//    }
+
+    @Override
+    public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+        super.onDescriptorWrite(gatt, descriptor, status);
+        LOG.d(TAG, "onDescriptorWrite " + descriptor);
+        commandCompleted();
+    }
+
+
+//    It looks like this is for batch writes, started with beginReliableWrite(), setCharacteristic(), ... executeReliableWrite();
+//    @Override
+//    public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
+//        super.onReliableWriteCompleted(gatt, status);
+//        LOG.d(TAG, "onReliableWriteCompleted");
+//
+//        if (writeCallback != null) {
+//
+//            if (status == BluetoothGatt.GATT_SUCCESS) {
+//                writeCallback.success();
+//            } else {
+//                writeCallback.error(status);
+//            }
+//
+//            writeCallback = null;
+//
+//        }
+//
+//        commandCompleted();
+//    }
 
     public void updateRssi(int rssi) {
         advertisingRSSI = rssi;
@@ -306,8 +328,11 @@ public class Peripheral extends BluetoothGattCallback {
 
     }
 
+    // TODO probably combine with the other write
     // BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
     private void writeNoResponse(CallbackContext callbackContext, UUID serviceUUID, UUID characteristicUUID, byte[] data) {
+
+        boolean success = false;
 
         try {
 
@@ -326,14 +351,17 @@ public class Peripheral extends BluetoothGattCallback {
                 characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
 
                 if (gatt.writeCharacteristic(characteristic)) {
-                    callbackContext.success();
+                    writeCallback = callbackContext;
+                    success = true;
                 } else {
                     callbackContext.error("Write failed");
                 }
             }
 
         } finally {
-            commandCompleted();
+            if (!success) {
+                commandCompleted();
+            }
         }
 
     }
@@ -358,7 +386,6 @@ public class Peripheral extends BluetoothGattCallback {
             characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
 
             if (gatt.writeCharacteristic(characteristic)) {
-                // success is sent by onReliableWriteCompleted
                 writeCallback = callbackContext;
                 success = true;
             } else {
@@ -389,6 +416,7 @@ public class Peripheral extends BluetoothGattCallback {
 
     // add a new command to the queue
     private void queueCommand(BLECommand command) {
+        LOG.d(TAG,"Queuing Command " + command);
         commandQueue.add(command);
 
         PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
@@ -396,39 +424,50 @@ public class Peripheral extends BluetoothGattCallback {
         command.getCallbackContext().sendPluginResult(result);
 
         if (!bleProcessing) {
+            LOG.d(TAG,"BLE Available. Processing.");
             processCommands();
+        } else {
+            LOG.d(TAG,"BLE is busy. Not processing.");
         }
     }
 
     // command finished, queue the next command
     private void commandCompleted() {
+        LOG.d(TAG,"Processing Complete");
         bleProcessing = false;
         processCommands();
     }
 
     // process the queue
     private void processCommands() {
+        LOG.d(TAG,"Processing Commands");
 
         if (bleProcessing) { return; }
 
         BLECommand command = commandQueue.poll();
         if (command != null) {
             if (command.getType() == BLECommand.READ) {
+                LOG.d(TAG,"Read " + command.getCharacteristicUUID());
                 bleProcessing = true;
                 readCharacteristic(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID());
             } else if (command.getType() == BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) {
+                LOG.d(TAG,"Write " + command.getCharacteristicUUID());
                 bleProcessing = true;
                 writeCharacteristic(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID(), command.getData());
             } else if (command.getType() == BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE) {
+                LOG.d(TAG,"Write No Response " + command.getCharacteristicUUID());
                 bleProcessing = true;
                 writeNoResponse(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID(), command.getData());
             } else if (command.getType() == BLECommand.REGISTER_NOTIFY) {
+                LOG.d(TAG,"Register Notify " + command.getCharacteristicUUID());
                 bleProcessing = true;
                 registerNotifyCallback(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID());
             } else {
                 // this shouldn't happen
                 throw new RuntimeException("Unexpected BLE Command type " + command.getType());
             }
+        } else {
+            LOG.d(TAG, "Command Queue is empty.");
         }
 
     }
