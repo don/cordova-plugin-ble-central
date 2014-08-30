@@ -14,7 +14,7 @@
 
 /* global mainPage, deviceList, refreshButton */
 /* global detailPage, lightSwitch, dimmer, disconnectButton */
-/* global ble  */
+/* global cordova, ble  */
 /* jshint browser: true , devel: true*/
 'use strict';
 
@@ -119,16 +119,12 @@ var app = {
         var brightness = new Uint8Array(1);
         brightness[0] = event.target.value;
 
-        ble.write(deviceId, robosmart.service, robosmart.brightness, brightness.buffer, success, failure);
+        ble.writeCommand(deviceId, robosmart.service, robosmart.brightness, brightness.buffer, success, failure);
     },
     syncUI: function(deviceId) {
 
         var switchCallback = function(data) {
             lightSwitch.checked = arrayBufferToInt(data) === 0x1;
-            if (cordova.platformId == 'android') {
-              // temp hack - Android doesn't queue, so we need to do this manually
-              ble.read(deviceId, robosmart.service, robosmart.brightness, dimmerCallback, failure);
-            }
         };
 
         var dimmerCallback = function(data) {
@@ -140,10 +136,7 @@ var app = {
         };
 
         ble.read(deviceId, robosmart.service, robosmart.lightSwitch, switchCallback, failure);
-        if (cordova.platformId !== 'android') {
-          // iOS handles this correctly, Android needs to have the implementation or gatt server queue these up
-          ble.read(deviceId, robosmart.service, robosmart.brightness, dimmerCallback, failure);
-        }
+        ble.read(deviceId, robosmart.service, robosmart.brightness, dimmerCallback, failure);
 
     },
     disconnect: function(event) {
