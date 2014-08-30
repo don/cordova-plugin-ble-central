@@ -201,7 +201,8 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             return;
         }
 
-        peripheral.readCharacteristic(callbackContext, serviceUUID, characteristicUUID);
+        //peripheral.readCharacteristic(callbackContext, serviceUUID, characteristicUUID);
+        peripheral.queueRead(callbackContext, serviceUUID, characteristicUUID);
 
     }
 
@@ -220,7 +221,8 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             return;
         }
 
-        peripheral.writeCharacteristic(callbackContext, serviceUUID, characteristicUUID, data, writeType);
+        //peripheral.writeCharacteristic(callbackContext, serviceUUID, characteristicUUID, data, writeType);
+        peripheral.queueWrite(callbackContext, serviceUUID, characteristicUUID, data, writeType);
 
     }
 
@@ -229,7 +231,8 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         Peripheral peripheral = peripherals.get(macAddress);
         if (peripheral != null) {
 
-            peripheral.setOnDataCallback(serviceUUID, characteristicUUID, callbackContext);
+            //peripheral.setOnDataCallback(serviceUUID, characteristicUUID, callbackContext);
+            peripheral.queueRegisterNotifyCallback(callbackContext, serviceUUID, characteristicUUID);
 
         } else {
 
