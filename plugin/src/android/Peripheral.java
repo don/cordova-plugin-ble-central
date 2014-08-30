@@ -177,6 +177,7 @@ public class Peripheral extends BluetoothGattCallback {
         advertisingRSSI = rssi;
     }
 
+    // This seems way too complicated
     public void setOnDataCallback(UUID serviceUUID, UUID characteristicUUID, CallbackContext callbackContext) {
 
         if (gatt == null) {
