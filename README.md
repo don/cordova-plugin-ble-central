@@ -29,10 +29,8 @@ Android 4.3 or greater is required. Update the generated cordova project from ta
 
 This is an early version of plugin, the API is likely to change.
 
- * Android does not queue BLE commands yet
  * iOS does not return advertising data
- * All services are discovered, this can be slow, especially on iOS. Future versions may need to pass options object to connect with desired services.
- * Android might have a hard limit of 4 notifications per connection http://processors.wiki.ti.com/index.php/SensorTag_User_Guide#Notification_limit
+ * All services are discovered, this can be slow, especially on iOS
  * Implementation doesn't stop you from scanning during a scan
  * Indicate is not implemented
 
