@@ -6,7 +6,7 @@
     version="0.0.1">
 
     <name>BLE</name>
-    <description>Bluetooth Low Energy Central plugin for Apache Cordova</description>
+    <description>Bluetooth Low Energy (BLE) Central Plugin</description>
     <license>Apache 2.0</license>
     <keywords>bluetooth, BLE, bluetooth low energy</keywords>
     
