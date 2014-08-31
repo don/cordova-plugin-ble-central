@@ -73,19 +73,16 @@ var app = {
         var deviceId = e.target.dataset.deviceId,
             onConnect = function() {
 
-                setTimeout(function(){
-                    ble.notify(deviceId, button.service, button.data, app.onButtonData, app.onError);
-                    // subscribing for incoming data
-                    ble.notify(deviceId, accelerometer.service, accelerometer.data, app.onAccelerometerData, app.onError);
-                    // turn accelerometer on
-                    var configData = new Uint8Array(1);
-                    configData[0] = 0xFF;
-                    // NOTE: this fails since Android doesn't queue commands yet
-                    ble.write(deviceId, accelerometer.service, accelerometer.configuration, configData.buffer, 
-                        function() { console.log("Started accelerometer."); },app.onError);
-                    disconnectButton.dataset.deviceId = deviceId;
-                    app.showDetailPage();
-                }, 2000);
+                ble.notify(deviceId, button.service, button.data, app.onButtonData, app.onError);
+                // subscribing for incoming data
+                ble.notify(deviceId, accelerometer.service, accelerometer.data, app.onAccelerometerData, app.onError);
+                // turn accelerometer on
+                var configData = new Uint8Array(1);
+                configData[0] = 0xFF;
+                ble.write(deviceId, accelerometer.service, accelerometer.configuration, configData.buffer, 
+                    function() { console.log("Started accelerometer."); },app.onError);
+                disconnectButton.dataset.deviceId = deviceId;
+                app.showDetailPage();
             };
 
         ble.connect(deviceId, onConnect, app.onError);
