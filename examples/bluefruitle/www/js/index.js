@@ -20,7 +20,7 @@
 
 // ASCII only
 function bytesToString(buffer) {
-    return String.fromCharCode.apply(null, new Uint8Array(buffer));    
+    return String.fromCharCode.apply(null, new Uint8Array(buffer));
 }
 
 // ASCII only
@@ -75,15 +75,11 @@ var app = {
     connect: function(e) {
         var deviceId = e.target.dataset.deviceId,
             onConnect = function() {
-                
-                setTimeout(function() { // KLUDGE a delay so characteristics can be discovered :/
-                    // subscribe for incoming data
-                    ble.notify(deviceId, bluefruit.serviceUUID, bluefruit.rxCharacteristic, app.onData, app.onError);
-                    sendButton.dataset.deviceId = deviceId;                    
-                    disconnectButton.dataset.deviceId = deviceId;
-                    app.showDetailPage();
-                    
-                }, 200);
+                // subscribe for incoming data
+                ble.notify(deviceId, bluefruit.serviceUUID, bluefruit.rxCharacteristic, app.onData, app.onError);
+                sendButton.dataset.deviceId = deviceId;
+                disconnectButton.dataset.deviceId = deviceId;
+                app.showDetailPage();
             };
 
         ble.connect(deviceId, onConnect, app.onError);
@@ -91,25 +87,25 @@ var app = {
     onData: function(data) { // data received from Arduino
         console.log(data);
         resultDiv.innerHTML = resultDiv.innerHTML + "Received: " + bytesToString(data) + "<br/>";
-        resultDiv.scrollTop = resultDiv.scrollHeight;                                
+        resultDiv.scrollTop = resultDiv.scrollHeight;
     },
-    sendData: function(event) { // send data to Arduino 
+    sendData: function(event) { // send data to Arduino
 
         var success = function() {
             console.log("success");
             resultDiv.innerHTML = resultDiv.innerHTML + "Sent: " + messageInput.value + "<br/>";
-            resultDiv.scrollTop = resultDiv.scrollHeight;                                    
+            resultDiv.scrollTop = resultDiv.scrollHeight;
         };
 
         var failure = function() {
             alert("Failed writing data to the bluefruit le");
         };
-        
+
         var data = stringToBytes(messageInput.value);
-        var deviceId = event.target.dataset.deviceId;        
+        var deviceId = event.target.dataset.deviceId;
         ble.writeCommand(deviceId, bluefruit.serviceUUID, bluefruit.txCharacteristic, data, success, failure);
-        
-    },    
+
+    },
     disconnect: function(event) {
         var deviceId = event.target.dataset.deviceId;
         ble.disconnect(deviceId, app.showMainPage, app.onError);
