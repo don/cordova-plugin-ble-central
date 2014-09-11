@@ -14,16 +14,12 @@ The goal of this plugin is to provide a simple JavaScript API for Bluetooth Cent
 
 I assume you know details about the services and characteristics that you want to use. All access is via service and characteristic UUIDs. The plugin will manage handles internally. This plugin probably won't be suitable for writing generic BLE clients.
 
-See the examples for ideas on how this plugin can be used.
+See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master/examples) for ideas on how this plugin can be used.
 
 ## Supported Platforms
 
 * iOS
-* Android
-
-Android 4.3 or greater is required. Update the generated cordova project from target 17 to 18 or 19
-
-    $ android update project -p platforms/android -t android-19
+* Android (4.3 or greater)
 
 ## Limitations
 
@@ -201,7 +197,7 @@ Raw data is passed from native code to the success callback as an [ArrayBuffer](
 
 ## indicate
 
-Register for an indication when the value of a characteristic changes. 
+Register for an indication when the value of a characteristic changes.
 
     ble.indicate(device_id, service_uuid, characteristic_uuid, success, failure) {;
 
