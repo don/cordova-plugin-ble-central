@@ -3,16 +3,16 @@
     xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="com.megster.cordova.ble"
-    version="0.0.1">
+    version="0.0.2">
 
     <name>BLE</name>
     <description>Bluetooth Low Energy (BLE) Central Plugin</description>
     <license>Apache 2.0</license>
     <keywords>bluetooth, BLE, bluetooth low energy</keywords>
-    
+
     <repo>https://github.com/don/cordova-plugin-ble-central.git</repo>
     <issue>https://github.com/don/cordova-plugin-ble-central/issues</issue>
-    
+
     <engines>
         <engine name="cordova" version=">=3.1.0" />
     </engines>
@@ -53,13 +53,13 @@
         <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.BLUETOOTH"/>
             <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-            <uses-sdk android:minSdkVersion="18" android:targetSdkVersion="19" />            
+            <uses-sdk android:minSdkVersion="18" android:targetSdkVersion="19" />
         </config-file>
 
         <source-file src="src/android/BLECentralPlugin.java"
             target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/BLECommand.java"
-            target-dir="src/com/megster/cordova/ble/central"/>        
+            target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/Peripheral.java"
             target-dir="src/com/megster/cordova/ble/central"/>
 

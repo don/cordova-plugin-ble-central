@@ -1,0 +1,7 @@
+= 0.0.2 =
+iOS - fix bug read callback was being called 2x
+iOS - fix bug write callback wasn't being called
+
+
+= 0.0.1 =
+initial release
