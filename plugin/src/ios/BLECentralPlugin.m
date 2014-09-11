@@ -130,8 +130,10 @@
 
             // TODO need to check the max length
             [peripheral writeValue:message forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
+
+            // response is sent from didWriteValueForCharacteristic
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
             [pluginResult setKeepCallbackAsBool:TRUE];
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT]; // response is sent from didWriteValueForCharacteristic
 
         } else {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"message was null"];
