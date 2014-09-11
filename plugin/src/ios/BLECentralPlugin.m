@@ -102,8 +102,8 @@
         NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
         [readCallbacks setObject:[command.callbackId copy] forKey:key];
 
-        [peripheral readValueForCharacteristic:characteristic];  // callback sends notification
-        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [peripheral readValueForCharacteristic:characteristic];  // callback sends value
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
         [pluginResult setKeepCallbackAsBool:TRUE];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
