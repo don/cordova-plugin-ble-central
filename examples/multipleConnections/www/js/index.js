@@ -23,7 +23,6 @@ var battery = {
     level: "2A19"
 };
 
-
 var Peripheral = function (deviceId) {
   this.deviceId = deviceId;
 };
@@ -33,7 +32,8 @@ Peripheral.prototype.connect = function () {
 };
 
 Peripheral.prototype.onConnect = function (event) {
-  //this.readBatteryLevel();
+  this.readBatteryLevel();
+  // keep calling the battery level so we know multiple connections work
   setInterval(this.readBatteryLevel.bind(this), 10000);
 };
 
@@ -45,7 +45,6 @@ Peripheral.prototype.onReadBatteryLevel = function(data) {
     console.log(data);
     var message;
     var a = new Uint8Array(data);
-    //alert(this.deviceId + ' ' + a[0] + '%');
     if (cordova.platformId == 'android') {
         toast.showShort(this.deviceId + ' ' + a[0] + '%');
     } else {
