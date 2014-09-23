@@ -15,4 +15,3 @@ Install
     $ cordova plugin add https://github.com/don/cordova-plugin-ble-central#:/plugin
     $ cordova run
     
-This works well on iOS but the accelerometer fails on Android, since commands aren't queued yet
