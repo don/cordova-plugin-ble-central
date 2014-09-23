@@ -46,7 +46,11 @@ Peripheral.prototype.onReadBatteryLevel = function(data) {
     var message;
     var a = new Uint8Array(data);
     //alert(this.deviceId + ' ' + a[0] + '%');
-    toast.showShort(this.deviceId + ' ' + a[0] + '%');
+    if (cordova.platformId == 'android') {
+        toast.showShort(this.deviceId + ' ' + a[0] + '%');
+    } else {
+        alert(this.deviceId + ' ' + a[0] + '%');
+    }
 };
 
 Peripheral.prototype.disconnect = function () {
