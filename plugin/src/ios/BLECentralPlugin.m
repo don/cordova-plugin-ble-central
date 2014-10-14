@@ -259,10 +259,12 @@
 
     [manager stopScan];
 
-    CDVPluginResult *pluginResult = nil;
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:discoverPeripherialCallbackId];
-    discoverPeripherialCallbackId = nil;
+    if (discoverPeripherialCallbackId) {
+        CDVPluginResult *pluginResult = nil;
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:discoverPeripherialCallbackId];
+        discoverPeripherialCallbackId = nil;
+    }
 }
 
 #pragma mark - CBCentralManagerDelegate
