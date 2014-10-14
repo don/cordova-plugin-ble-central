@@ -70,6 +70,7 @@ Function `scan` scans for BLE devices.  The success callback is called each time
         "name": "TI SensorTag",
         "id": "BD922605-1B07-4D55-8D09-B66653E51BBA",
         "rssi": -79,
+        "advertising": /* byte array or map */
     }
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
