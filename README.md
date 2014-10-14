@@ -278,7 +278,7 @@ The advertising information for both Android and iOS appears to be a combination
 
 Future versions should return ArrayBuffers for all binary data. Currently, Android returns an int array for binary data.
 
-Ideally a common format (map or array) would be returned across platforms in future versions. If you have ideas, please contact me.
+Ideally a common format (map or array) would be returned for both platforms in future versions. If you have ideas, please contact me.
 
 ## Android
 
