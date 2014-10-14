@@ -25,7 +25,6 @@ See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master
 
 This is an early version of plugin, the API is likely to change.
 
- * iOS does not return advertising data
  * All services are discovered, this can be slow, especially on iOS
  * Implementation doesn't stop you from scanning during a scan
  * Indicate is not implemented
@@ -70,8 +69,10 @@ Function `scan` scans for BLE devices.  The success callback is called each time
     {
         "name": "TI SensorTag",
         "id": "BD922605-1B07-4D55-8D09-B66653E51BBA",
-        "rssi": -79
+        "rssi": -79,
     }
+
+Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
 
 ### Parameters
 
@@ -268,6 +269,54 @@ Function `isEnabled` calls the success callback when Bluetooth is enabled and th
             console.log("Bluetooth is *not* enabled");
         }
     );
+
+# Advertising Data
+
+Bluetooth advertising data is returned in when scanning for devices. The format format varies depending on your platform. On Android advertising data will be the raw advertising bytes. iOS does not allow access to raw advertising data, so a dictionary of data is returned.
+
+The advertising information for both Android and iOS appears to be a combination of advertising data and scan response data.
+
+Future versions should return ArrayBuffers for all binary data. Currently, Android returns an int array for binary data.
+
+Ideally a common format (map or array) would be returned across platforms in future versions. If you have ideas, please contact me.
+
+## Android
+
+    {
+        "name": "demo",
+        "id": "00:1A:7D:DA:71:13",
+        "advertising": [10, 22, -40, -2, 0, 32, 0, 101, 102, 102, 7, 5, 9, 100, 101, 109,
+                        111, 2, 10, 32, 3, 3, -40, -2, 8, -1, 0, 0, 104, 101, 108, 108, 111,
+                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "rssi": -37
+    }
+
+## iOS
+
+Note that iOS uses the string value of the constants for the [Advertisement Data Retrieval Keys](https://developer.apple.com/library/ios/documentation/CoreBluetooth/Reference/CBCentralManagerDelegate_Protocol/index.html#//apple_ref/doc/constant_group/Advertisement_Data_Retrieval_Keys). This will likely change in the future.
+
+    {
+        "name": "demo",
+        "id": "D8479A4F-7517-BCD3-91B5-3302B2F81802",
+        "advertising": {
+            "kCBAdvDataChannel": 38,
+            "kCBAdvDataServiceData": {
+                "FED8": {
+                    "CDVType": "ArrayBuffer",
+                    "data": "ACAAZWZmBw=="
+                }
+            },
+            "kCBAdvDataLocalName": "demo",
+            "kCBAdvDataServiceUUIDs": ["FED8"],
+            "kCBAdvDataManufacturerData": {
+                "CDVType": "ArrayBuffer",
+                "data": "AABoZWxsbw=="
+            },
+            "kCBAdvDataTxPowerLevel": 32,
+            "kCBAdvDataIsConnectable": true
+        },
+        "rssi": -52
+    }
 
 # License
 
