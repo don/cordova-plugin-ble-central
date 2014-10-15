@@ -134,7 +134,7 @@ static char ADVERTISEMENT_RSSI_IDENTIFER;
 // Put the service, characteristic, and desrciptor data in a format that will serialize through JSON
 // sending as 3 lists, alternately could nest service, characteristic, descriptor
 - (void) serviceAndCharacteristicInfo: (NSMutableDictionary *) info {
-    //NSMutableDictionary *info = [NSMutableDictionary new];
+
     NSMutableArray *serviceList = [NSMutableArray new];
     NSMutableArray *characteristicList = [NSMutableArray new];
     NSMutableArray *descriptorList = [NSMutableArray new];
@@ -152,7 +152,8 @@ static char ADVERTISEMENT_RSSI_IDENTIFER;
             }
             // need to expand this into a list of string constants - Read, Write, ...
             if ([characteristic properties]) {
-                [characteristicDictionary setObject:[NSNumber numberWithInt:[characteristic properties]] forKey:@"properties"];
+                [characteristicDictionary setObject:[NSNumber numberWithInt:[characteristic properties]] forKey:@"propertiesValue"];
+                [characteristicDictionary setObject:[self decodeCharacteristicProperties:characteristic] forKey:@"properties"];
             }
             [characteristicDictionary setObject:[NSNumber numberWithBool:[characteristic isNotifying]] forKey:@"isNotifying"];
             [characteristicList addObject:characteristicDictionary];
@@ -169,10 +170,60 @@ static char ADVERTISEMENT_RSSI_IDENTIFER;
             }
         }
     }
+
     [info setObject:serviceList forKey:@"services"];
     [info setObject:characteristicList forKey:@"characteristics"];
     [info setObject:descriptorList forKey:@"descriptors"];
 
+}
+
+-(NSArray *) decodeCharacteristicProperties: (CBCharacteristic *) characteristic {
+    NSMutableArray *props = [NSMutableArray new];
+
+    CBCharacteristicProperties p = [characteristic properties];
+
+    // NOTE: props strings need to be consistent across iOS and Android
+    if ((p & CBCharacteristicPropertyBroadcast) != 0x0) {
+        [props addObject:@"Broadcast"];
+    }
+
+    if ((p & CBCharacteristicPropertyRead) != 0x0) {
+        [props addObject:@"Read"];
+    }
+
+    if ((p & CBCharacteristicPropertyWriteWithoutResponse) != 0x0) {
+        [props addObject:@"WriteWithoutResponse"];
+    }
+
+    if ((p & CBCharacteristicPropertyWrite) != 0x0) {
+        [props addObject:@"Write"];
+    }
+
+    if ((p & CBCharacteristicPropertyNotify) != 0x0) {
+        [props addObject:@"Notify"];
+    }
+
+    if ((p & CBCharacteristicPropertyIndicate) != 0x0) {
+        [props addObject:@"Indicate"];
+    }
+
+    if ((p & CBCharacteristicPropertyAuthenticatedSignedWrites) != 0x0) {
+        [props addObject:@"AutheticateSignedWrites"];
+    }
+
+    if ((p & CBCharacteristicPropertyExtendedProperties) != 0x0) {
+        [props addObject:@"ExtendedProperties"];
+    }
+
+    if ((p & CBCharacteristicPropertyNotifyEncryptionRequired) != 0x0) {
+        [props addObject:@"NotifyEncryptionRequired"];
+    }
+
+    if ((p & CBCharacteristicPropertyIndicateEncryptionRequired) != 0x0) {
+        [props addObject:@"IndicateEncryptionRequired"];
+    }
+
+    return props;
 }
 
 // Borrowed from Cordova messageFromArrayBuffer since Cordova doesn't handle NSData in NSDictionary
