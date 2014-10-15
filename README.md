@@ -300,23 +300,21 @@ Note that iOS uses the string value of the constants for the [Advertisement Data
         "name": "demo",
         "id": "D8479A4F-7517-BCD3-91B5-3302B2F81802",
         "advertising": {
-            "kCBAdvDataChannel": 38,
+            "kCBAdvDataChannel": 37,
             "kCBAdvDataServiceData": {
                 "FED8": {
-                    "CDVType": "ArrayBuffer",
-                    "data": "ACAAZWZmBw=="
+                    "byteLength": 7 /* data not shown */
                 }
             },
             "kCBAdvDataLocalName": "demo",
             "kCBAdvDataServiceUUIDs": ["FED8"],
             "kCBAdvDataManufacturerData": {
-                "CDVType": "ArrayBuffer",
-                "data": "AABoZWxsbw=="
+                "byteLength": 7  /* data not shown */
             },
             "kCBAdvDataTxPowerLevel": 32,
             "kCBAdvDataIsConnectable": true
         },
-        "rssi": -52
+        "rssi": -53
     }
 
 # License
