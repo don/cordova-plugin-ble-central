@@ -259,10 +259,12 @@
 
     [manager stopScan];
 
-    CDVPluginResult *pluginResult = nil;
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:discoverPeripherialCallbackId];
-    discoverPeripherialCallbackId = nil;
+    if (discoverPeripherialCallbackId) {
+        CDVPluginResult *pluginResult = nil;
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:discoverPeripherialCallbackId];
+        discoverPeripherialCallbackId = nil;
+    }
 }
 
 #pragma mark - CBCentralManagerDelegate
@@ -354,7 +356,7 @@
     if ([connectCallbackServicesSet count] == 0) {
         // Call success callback for connect
         if (connectCallbackId) {
-            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[peripheral asDictionary]];
             [pluginResult setKeepCallbackAsBool:TRUE];
             [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
         }
