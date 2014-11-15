@@ -14,7 +14,7 @@
 
 /* global mainPage, deviceList, refreshButton */
 /* global detailPage, resultDiv, messageInput, sendButton, disconnectButton */
-/* global ble  */
+/* global ble, cordova  */
 /* jshint browser: true , devel: true*/
 'use strict';
 
