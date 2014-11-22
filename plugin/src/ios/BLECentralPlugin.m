@@ -79,6 +79,7 @@
 
     CBPeripheral *peripheral = [self findPeripheralByUUID:[command.arguments objectAtIndex:0]];
 
+    connectCallbackId = nil;
     if (peripheral && peripheral.isConnected) {
         [manager cancelPeripheralConnection:peripheral];
     }
@@ -86,7 +87,6 @@
     // always return OK
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    connectCallbackId = nil;
 }
 
 // read: function (device_uuid, service_uuid, characteristic_uuid, success, failure) {

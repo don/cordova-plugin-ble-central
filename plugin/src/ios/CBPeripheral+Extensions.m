@@ -131,13 +131,12 @@ static char ADVERTISEMENT_RSSI_IDENTIFER;
     return dict;
 }
 
-// Put the service, characteristic, and desrciptor data in a format that will serialize through JSON
-// sending as 3 lists, alternately could nest service, characteristic, descriptor
+// Put the service, characteristic, and descriptor data in a format that will serialize through JSON
+// sending a list of services and a list of characteristics
 - (void) serviceAndCharacteristicInfo: (NSMutableDictionary *) info {
 
     NSMutableArray *serviceList = [NSMutableArray new];
     NSMutableArray *characteristicList = [NSMutableArray new];
-    NSMutableArray *descriptorList = [NSMutableArray new];
 
     // This can move into the CBPeripherial Extension
     for (CBService *service in [self services]) {
@@ -150,30 +149,33 @@ static char ADVERTISEMENT_RSSI_IDENTIFER;
             if ([characteristic value]) {
                 [characteristicDictionary setObject:dataToArrayBuffer([characteristic value]) forKey:@"value"];
             }
-            // need to expand this into a list of string constants - Read, Write, ...
             if ([characteristic properties]) {
-                [characteristicDictionary setObject:[NSNumber numberWithInt:[characteristic properties]] forKey:@"propertiesValue"];
+                //[characteristicDictionary setObject:[NSNumber numberWithInt:[characteristic properties]] forKey:@"propertiesValue"];
                 [characteristicDictionary setObject:[self decodeCharacteristicProperties:characteristic] forKey:@"properties"];
             }
+            // permissions only exist on CBMutableCharacteristics
             [characteristicDictionary setObject:[NSNumber numberWithBool:[characteristic isNotifying]] forKey:@"isNotifying"];
             [characteristicList addObject:characteristicDictionary];
 
+            // descriptors always seem to be nil, probably a bug here
+            NSMutableArray *descriptorList = [NSMutableArray new];
             for (CBDescriptor *descriptor in characteristic.descriptors) {
                 NSMutableDictionary *descriptorDictionary = [NSMutableDictionary new];
-                [descriptorDictionary setObject:[[service UUID] UUIDString] forKey:@"service"];
-                [descriptorDictionary setObject:[[characteristic UUID] UUIDString] forKey:@"characteristic"];
                 [descriptorDictionary setObject:[[descriptor UUID] UUIDString] forKey:@"descriptor"];
-                if ([descriptor value]) { // should always have a value
+                if ([descriptor value]) { // should always have a value?
                     [descriptorDictionary setObject:[descriptor value] forKey:@"value"];
                 }
                 [descriptorList addObject:descriptorDictionary];
             }
+            if ([descriptorList count] > 0) {
+                [characteristicDictionary setObject:descriptorList forKey:@"descriptors"];
+            }
+
         }
     }
 
     [info setObject:serviceList forKey:@"services"];
     [info setObject:characteristicList forKey:@"characteristics"];
-    [info setObject:descriptorList forKey:@"descriptors"];
 
 }
 

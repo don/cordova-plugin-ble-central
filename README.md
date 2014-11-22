@@ -1,6 +1,6 @@
 # Bluetooth Low Energy Central Plugin for Apache Cordova
 
-This plugin enables communication between a phone and Bluetooth Low Energy (BLE) peripherials. Simultaneous connections to multiple peripherals are supported
+This plugin enables communication between a phone and Bluetooth Low Energy (BLE) peripherals. Simultaneous connections to multiple peripherals are supported
 
 ## Philosophy
 
@@ -12,7 +12,7 @@ The goal of this plugin is to provide a simple JavaScript API for Bluetooth Cent
  * Write new value to a characteristic
  * Get notified when characteristic's value changes
 
-I assume you know details about the services and characteristics that you want to use. All access is via service and characteristic UUIDs. The plugin will manage handles internally. This plugin probably won't be suitable for writing generic BLE clients.
+I assume you know details about the services and characteristics that you want to use. All access is via service and characteristic UUIDs. The plugin will manage handles internally.
 
 See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master/examples) for ideas on how this plugin can be used.
 
@@ -97,7 +97,7 @@ Connect to a peripheral.
 
 ### Description
 
-Function `connect` connects to a BLE peripheral. The callback is long running. Success will be called when the connection is successful. Failure is called if the connection fails, or later if the connection disconnects. An error message is passed to the failure callback.
+Function `connect` connects to a BLE peripheral. The callback is long running. Success will be called when the connection is successful. Service and characteristic info will be passed to the success callback in the [peripheral object](#peripheral-data). Failure is called if the connection fails, or later if the connection disconnects. An error message is passed to the failure callback.
 
 ### Parameters
 
@@ -271,6 +271,70 @@ Function `isEnabled` calls the success callback when Bluetooth is enabled and th
         }
     );
 
+# Peripheral Data
+
+Peripheral Data is passed to the success callback when scanning and connecting. Limited data is passed when scanning.
+
+    {
+        "name": "Battery Demo",
+        "id": "20:FF:D0:FF:D1:C0",
+        "advertising": [2,1,6,3,3,15,24,8,9,66,97,116,116,101,114,121],
+        "rssi": -55
+    }
+
+After connecting, the peripheral object also includes service, characteristic and descriptor information.
+
+    {
+        "name": "Battery Demo",
+        "id": "20:FF:D0:FF:D1:C0",
+        "advertising": [2,1,6,3,3,15,24,8,9,66,97,116,116,101,114,121],
+        "rssi": -55,
+        "services": [
+            "1800",
+            "1801",
+            "180f"
+        ],
+        "characteristics": [
+            {
+                "service": "1800",
+                "characteristic": "2a00",
+                "properties": [
+                    "Read"
+                ]
+            },
+            {
+                "service": "1800",
+                "characteristic": "2a01",
+                "properties": [
+                    "Read"
+                ]
+            },
+            {
+                "service": "1801",
+                "characteristic": "2a05",
+                "properties": [
+                    "Read"
+                ]
+            },
+            {
+                "service": "180f",
+                "characteristic": "2a19",
+                "properties": [
+                    "Read"
+                ],
+                "descriptors": [
+                    {
+                        "uuid": "2901"
+                    },
+                    {
+                        "uuid": "2904"
+                    }
+                ]
+            }
+        ]
+    }
+
+
 # Advertising Data
 
 Bluetooth advertising data is returned in when scanning for devices. The format format varies depending on your platform. On Android advertising data will be the raw advertising bytes. iOS does not allow access to raw advertising data, so a dictionary of data is returned.
@@ -328,6 +392,6 @@ Try the code. If you find an problem or missing feature, file an issue or create
 # Other Bluetooth Plugins
 
  * [BluetoothSerial](https://github.com/don/BluetoothSerial) - Connect to Arduino and other devices. Bluetooth Classic on Android, BLE on iOS.
- * [RFduino](https://github.com/don/cordova-plugin-rfduino) - RFduino specific pluginc for iOS and Android.
+ * [RFduino](https://github.com/don/cordova-plugin-rfduino) - RFduino specific plugin for iOS and Android.
  * [BluetoothLE](https://github.com/randdusing/BluetoothLE) - Rand Dusing's BLE plugin for Cordova
  * [PhoneGap Bluetooth Plugin](https://github.com/tanelih/phonegap-bluetooth-plugin) - Bluetooth classic pairing and connecting for Android
