@@ -344,8 +344,9 @@
     NSLog(@"didDiscoverServices");
 
     // save the services to tell when all characteristics have been discovered
-    connectCallbackServicesSet = [NSMutableSet new];
-    [connectCallbackServicesSet addObjectsFromArray:peripheral.services];
+    NSMutableSet *servicesForPeriperal = [NSMutableSet new];
+    [servicesForPeriperal addObjectsFromArray:peripheral.services];
+    [connectCallbackLatches setObject:servicesForPeriperal forKey:[peripheral uuidAsString]];
 
     for (CBService *service in peripheral.services) {
         [peripheral discoverCharacteristics:nil forService:service]; // discover all is slow
@@ -357,10 +358,11 @@
     NSLog(@"didDiscoverCharacteristicsForService");
     
     NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
+    NSMutableSet *latch = [connectCallbackLatches valueForKey:[peripheral uuidAsString]];
     
-    [connectCallbackServicesSet removeObject:service];
+    [latch removeObject:service];
 
-    if ([connectCallbackServicesSet count] == 0) {
+    if ([latch count] == 0) {
         // Call success callback for connect
         if (connectCallbackId) {
             CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[peripheral asDictionary]];
@@ -374,7 +376,7 @@
     for (CBCharacteristic *characteristic in service.characteristics) {
         NSLog(@"Characteristic %@", characteristic);
     }
-
+    
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {

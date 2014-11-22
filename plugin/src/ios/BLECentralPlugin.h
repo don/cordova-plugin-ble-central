@@ -30,7 +30,7 @@
     NSMutableDictionary *readCallbacks;
     NSMutableDictionary *writeCallbacks;
     NSMutableDictionary *notificationCallbacks;
-    NSMutableSet *connectCallbackServicesSet; // TODO need per peripheral
+    NSMutableDictionary *connectCallbackLatches;
 }
 
 @property (strong, nonatomic) NSMutableArray *peripherals;
