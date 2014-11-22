@@ -4,7 +4,7 @@ This plugin enables communication between a phone and Bluetooth Low Energy (BLE)
 
 ## Philosophy
 
-The goal of this plugin is to provide a simple JavaScript API for Bluetooth Central devices. The API should be common across all platforms.
+The goal of this plugin is to provide a simple [JavaScript API](#api) for Bluetooth Central devices. The API should be common across all platforms.
 
  * Scan for peripherals
  * Connect to a peripheral
@@ -12,7 +12,7 @@ The goal of this plugin is to provide a simple JavaScript API for Bluetooth Cent
  * Write new value to a characteristic
  * Get notified when characteristic's value changes
 
-I assume you know details about the services and characteristics that you want to use. All access is via service and characteristic UUIDs. The plugin will manage handles internally.
+All access is via service and characteristic UUIDs. The plugin manages handles internally.
 
 See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master/examples) for ideas on how this plugin can be used.
 
