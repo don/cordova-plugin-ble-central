@@ -39,6 +39,7 @@
     peripherals = [NSMutableArray array];
     manager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
 
+    connectCallbacks = [NSMutableDictionary new];
     readCallbacks = [NSMutableDictionary new];
     writeCallbacks = [NSMutableDictionary new];
     notificationCallbacks = [NSMutableDictionary new];
@@ -59,7 +60,7 @@
 
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
         [pluginResult setKeepCallbackAsBool:TRUE];
-        connectCallbackId = [command.callbackId copy];
+        [connectCallbacks setObject:[command.callbackId copy] forKey:[peripheral uuidAsString]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 
         [manager connectPeripheral:peripheral options:nil];
@@ -77,9 +78,11 @@
 - (void)disconnect:(CDVInvokedUrlCommand*)command {
     NSLog(@"disconnect");
 
-    CBPeripheral *peripheral = [self findPeripheralByUUID:[command.arguments objectAtIndex:0]];
+    NSString *uuid = [command.arguments objectAtIndex:0];
+    CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
 
-    connectCallbackId = nil;
+    [connectCallbacks removeObjectForKey:uuid];
+
     if (peripheral && peripheral.isConnected) {
         [manager cancelPeripheralConnection:peripheral];
     }
@@ -307,14 +310,15 @@
     NSLog(@"didDisconnectPeripheral");
 
     // TODO send PhoneGap more info from NSError
+    
+    NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
+    [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
 
     if (connectCallbackId) {
         CDVPluginResult *pluginResult = nil;
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Disconnected"];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
     }
-
-    connectCallbackId = nil;
 
 }
 
@@ -323,12 +327,13 @@
     NSLog(@"didFailToConnectPeripheral");
 
     // TODO send PhoneGap more info from NSError
+    
+    NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
+    [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
 
     CDVPluginResult *pluginResult = nil;
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Failed to Connect"];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
-
-    connectCallbackId = nil;
 
 }
 
@@ -350,7 +355,9 @@
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error {
 
     NSLog(@"didDiscoverCharacteristicsForService");
-
+    
+    NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
+    
     [connectCallbackServicesSet removeObject:service];
 
     if ([connectCallbackServicesSet count] == 0) {

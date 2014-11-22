@@ -23,6 +23,15 @@ static char ADVERTISEMENT_RSSI_IDENTIFER;
 
 @implementation CBPeripheral(com_megster_ble_extension)
 
+-(NSString *)uuidAsString {
+    if ([self UUID]) {
+        return (__bridge_transfer NSString *)CFUUIDCreateString(NULL, self.UUID);
+    } else {
+        return @"";
+    }
+}
+
+
 -(NSDictionary *)asDictionary {
 
     NSString *uuidString = NULL;

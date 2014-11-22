@@ -29,6 +29,7 @@
 
 -(void)setAdvertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber*)rssi;
 -(NSDictionary *)asDictionary;
+-(NSString *)uuidAsString;
 
 @end
 
