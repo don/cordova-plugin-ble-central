@@ -17,6 +17,7 @@ package com.megster.cordova.ble.central;
 import android.app.Activity;
 
 import android.bluetooth.*;
+import android.util.Base64;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
@@ -152,12 +153,11 @@ public class Peripheral extends BluetoothGattCallback {
         return json;
     }
 
-    static JSONArray byteArrayToJSON(byte[] bytes) {
-        JSONArray json = new JSONArray();
-        for (byte aByte : bytes) {
-            json.put(aByte);
-        }
-        return json;
+    static JSONObject byteArrayToJSON(byte[] bytes) throws JSONException {
+        JSONObject object = new JSONObject();
+        object.put("CDVType", "ArrayBuffer");
+        object.put("data", Base64.encodeToString(bytes, Base64.NO_WRAP));
+        return object;
     }
 
     public boolean isConnected() {
