@@ -70,7 +70,7 @@ Function `scan` scans for BLE devices.  The success callback is called each time
         "name": "TI SensorTag",
         "id": "BD922605-1B07-4D55-8D09-B66653E51BBA",
         "rssi": -79,
-        "advertising": /* byte array or map */
+        "advertising": /* ArrayBuffer or map */
     }
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
@@ -341,8 +341,6 @@ Bluetooth advertising data is returned in when scanning for devices. The format 
 
 The advertising information for both Android and iOS appears to be a combination of advertising data and scan response data.
 
-Future versions should return ArrayBuffers for all binary data. Currently, Android returns an int array for binary data.
-
 Ideally a common format (map or array) would be returned for both platforms in future versions. If you have ideas, please contact me.
 
 ## Android
@@ -350,11 +348,11 @@ Ideally a common format (map or array) would be returned for both platforms in f
     {
         "name": "demo",
         "id": "00:1A:7D:DA:71:13",
-        "advertising": [10, 22, -40, -2, 0, 32, 0, 101, 102, 102, 7, 5, 9, 100, 101, 109,
-                        111, 2, 10, 32, 3, 3, -40, -2, 8, -1, 0, 0, 104, 101, 108, 108, 111,
-                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "advertising": ArrayBuffer,
         "rssi": -37
     }
+
+Convert the advertising info to a Uint8Array for processing. `var adData = new Uint8Array(peripheral.advertising)`
 
 ## iOS
 
