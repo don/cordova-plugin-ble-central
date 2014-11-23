@@ -85,8 +85,14 @@ module.exports = {
     },
 
     // value must be an ArrayBuffer
+    writeWithoutResponse: function (device_id, service_uuid, characteristic_uuid, value, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'writeWithoutResponse', [device_id, service_uuid, characteristic_uuid, value]);
+    },
+
+    // value must be an ArrayBuffer
     writeCommand: function (device_id, service_uuid, characteristic_uuid, value, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'writeCommand', [device_id, service_uuid, characteristic_uuid, value]);
+        console.log("WARNING: writeCommand is deprecated, use writeWithoutResponse");
+        cordova.exec(success, failure, 'BLE', 'writeWithoutResponse', [device_id, service_uuid, characteristic_uuid, value]);
     },
 
     // success callback is called on notification

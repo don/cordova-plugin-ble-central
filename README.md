@@ -47,7 +47,7 @@ Install with Cordova CLI
 
 - [ble.read](#read)
 - [ble.write](#write)
-- [ble.writeCommand](#writecommand)
+- [ble.writeWithoutResponse](#writewithoutresponse)
 
 - [ble.notify](#notify)
 - [ble.indicate](#indicate)
@@ -159,15 +159,15 @@ Function `write` writes data to a characteristic.
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
-## writeCommand
+## writeWithoutResponse
 
-Writes data to a characteristic without confirmation.
+Writes data to a characteristic without confirmation from the peripheral.
 
     ble.writeCommand(device_id, service_uuid, characteristic_uuid, value, success, failure);
 
 ### Description
 
-Function `write` writes data to a characteristic without a response. You are not notified if the write fails in the BLE stack.
+Function `writeWithoutResponse` writes data to a characteristic without a response from the peripheral. You are not notified if the write fails in the BLE stack. The success callback is be called when the characteristic is written.
 
 ### Parameters
 - __device_id__: UUID or MAC address of the peripheral

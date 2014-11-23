@@ -103,7 +103,7 @@ var app = {
 
         var data = stringToBytes(messageInput.value);
         var deviceId = event.target.dataset.deviceId;
-        ble.writeCommand(deviceId, redbear.serviceUUID, redbear.txCharacteristic, data, success, failure);
+        ble.writeWithoutResponse(deviceId, redbear.serviceUUID, redbear.txCharacteristic, data, success, failure);
 
     },
     disconnect: function(event) {

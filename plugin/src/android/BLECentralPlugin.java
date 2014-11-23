@@ -43,7 +43,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     private static final String READ = "read";
     private static final String WRITE = "write";
-    private static final String WRITE_COMMAND = "writeCommand";
+    private static final String WRITE_WITHOUT_RESPONSE = "writeWithoutResponse";
 
     private static final String NOTIFY = "notify"; // register notify
     // TODO future private static final String INDICATE = "indicate"; // register indication
@@ -110,7 +110,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             int type = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT;
             write(callbackContext, macAddress, serviceUUID, characteristicUUID, data, type);
 
-        } else if (action.equals(WRITE_COMMAND)) {
+        } else if (action.equals(WRITE_WITHOUT_RESPONSE)) {
 
             String macAddress = args.getString(0);
             UUID serviceUUID = uuidFromString(args.getString(1));

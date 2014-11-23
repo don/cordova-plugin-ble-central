@@ -146,9 +146,9 @@
 
 }
 
-// 	writeCommand: function (device_uuid, service_uuid, characteristic_uuid, value, success, failure) {
-- (void)writeCommand:(CDVInvokedUrlCommand*)command {
-    NSLog(@"writeCommand");
+// 	writeWithoutResponse: function (device_uuid, service_uuid, characteristic_uuid, value, success, failure) {
+- (void)writeWithoutResponse:(CDVInvokedUrlCommand*)command {
+    NSLog(@"writeWithoutResponse");
 
     Foo *foo = [self getData:command];
     NSData *message = [command.arguments objectAtIndex:3]; // This is binary
@@ -310,7 +310,7 @@
     NSLog(@"didDisconnectPeripheral");
 
     // TODO send PhoneGap more info from NSError
-    
+
     NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
     [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
 
@@ -327,7 +327,7 @@
     NSLog(@"didFailToConnectPeripheral");
 
     // TODO send PhoneGap more info from NSError
-    
+
     NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
     [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
 
@@ -356,10 +356,10 @@
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error {
 
     NSLog(@"didDiscoverCharacteristicsForService");
-    
+
     NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
     NSMutableSet *latch = [connectCallbackLatches valueForKey:[peripheral uuidAsString]];
-    
+
     [latch removeObject:service];
 
     if ([latch count] == 0) {
@@ -376,7 +376,7 @@
     for (CBCharacteristic *characteristic in service.characteristics) {
         NSLog(@"Characteristic %@", characteristic);
     }
-    
+
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
