@@ -379,6 +379,28 @@ Note that iOS uses the string value of the constants for the [Advertisement Data
         "rssi": -53
     }
 
+# Typed Arrays
+
+This plugin uses typed Arrays or ArrayBuffers for sending and receiving data.
+
+This means that you need convert your data to ArrayBuffers before sending and from ArrayBuffers when receiving.
+
+    // ASCII only
+    function bytesToString(buffer) {
+        return String.fromCharCode.apply(null, new Uint8Array(buffer));
+    }
+
+    // ASCII only
+    function stringToBytes(string) {
+       var array = new Uint8Array(string.length);
+       for (var i = 0, l = string.length; i < l; i++) {
+           array[i] = string.charCodeAt(i);
+        }
+        return array.buffer;
+    }
+
+You can read more about typed arrays in these articles on [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays) and [HTML5 Rocks](http://www.html5rocks.com/en/tutorials/webgl/typed_arrays/).
+
 # License
 
 Apache 2.0
