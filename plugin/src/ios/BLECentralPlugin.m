@@ -39,6 +39,7 @@
     peripherals = [NSMutableArray array];
     manager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
 
+    connectCallbacks = [NSMutableDictionary new];
     readCallbacks = [NSMutableDictionary new];
     writeCallbacks = [NSMutableDictionary new];
     notificationCallbacks = [NSMutableDictionary new];
@@ -59,7 +60,7 @@
 
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
         [pluginResult setKeepCallbackAsBool:TRUE];
-        connectCallbackId = [command.callbackId copy];
+        [connectCallbacks setObject:[command.callbackId copy] forKey:[peripheral uuidAsString]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 
         [manager connectPeripheral:peripheral options:nil];
@@ -77,7 +78,10 @@
 - (void)disconnect:(CDVInvokedUrlCommand*)command {
     NSLog(@"disconnect");
 
-    CBPeripheral *peripheral = [self findPeripheralByUUID:[command.arguments objectAtIndex:0]];
+    NSString *uuid = [command.arguments objectAtIndex:0];
+    CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
+
+    [connectCallbacks removeObjectForKey:uuid];
 
     if (peripheral && peripheral.isConnected) {
         [manager cancelPeripheralConnection:peripheral];
@@ -86,7 +90,6 @@
     // always return OK
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    connectCallbackId = nil;
 }
 
 // read: function (device_uuid, service_uuid, characteristic_uuid, success, failure) {
@@ -143,9 +146,9 @@
 
 }
 
-// 	writeCommand: function (device_uuid, service_uuid, characteristic_uuid, value, success, failure) {
-- (void)writeCommand:(CDVInvokedUrlCommand*)command {
-    NSLog(@"writeCommand");
+// 	writeWithoutResponse: function (device_uuid, service_uuid, characteristic_uuid, value, success, failure) {
+- (void)writeWithoutResponse:(CDVInvokedUrlCommand*)command {
+    NSLog(@"writeWithoutResponse");
 
     Foo *foo = [self getData:command];
     NSData *message = [command.arguments objectAtIndex:3]; // This is binary
@@ -308,13 +311,14 @@
 
     // TODO send PhoneGap more info from NSError
 
+    NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
+    [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
+
     if (connectCallbackId) {
         CDVPluginResult *pluginResult = nil;
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Disconnected"];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
     }
-
-    connectCallbackId = nil;
 
 }
 
@@ -324,11 +328,12 @@
 
     // TODO send PhoneGap more info from NSError
 
+    NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
+    [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
+
     CDVPluginResult *pluginResult = nil;
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Failed to Connect"];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
-
-    connectCallbackId = nil;
 
 }
 
@@ -339,8 +344,9 @@
     NSLog(@"didDiscoverServices");
 
     // save the services to tell when all characteristics have been discovered
-    connectCallbackServicesSet = [NSMutableSet new];
-    [connectCallbackServicesSet addObjectsFromArray:peripheral.services];
+    NSMutableSet *servicesForPeriperal = [NSMutableSet new];
+    [servicesForPeriperal addObjectsFromArray:peripheral.services];
+    [connectCallbackLatches setObject:servicesForPeriperal forKey:[peripheral uuidAsString]];
 
     for (CBService *service in peripheral.services) {
         [peripheral discoverCharacteristics:nil forService:service]; // discover all is slow
@@ -351,9 +357,12 @@
 
     NSLog(@"didDiscoverCharacteristicsForService");
 
-    [connectCallbackServicesSet removeObject:service];
+    NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
+    NSMutableSet *latch = [connectCallbackLatches valueForKey:[peripheral uuidAsString]];
 
-    if ([connectCallbackServicesSet count] == 0) {
+    [latch removeObject:service];
+
+    if ([latch count] == 0) {
         // Call success callback for connect
         if (connectCallbackId) {
             CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[peripheral asDictionary]];

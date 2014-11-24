@@ -1,10 +1,10 @@
 # Bluetooth Low Energy Central Plugin for Apache Cordova
 
-This plugin enables communication between a phone and Bluetooth Low Energy (BLE) peripherials. Simultaneous connections to multiple peripherals are supported
+This plugin enables communication between a phone and Bluetooth Low Energy (BLE) peripherals. Simultaneous connections to multiple peripherals are supported
 
 ## Philosophy
 
-The goal of this plugin is to provide a simple JavaScript API for Bluetooth Central devices. The API should be common across all platforms.
+The goal of this plugin is to provide a simple [JavaScript API](#api) for Bluetooth Central devices. The API should be common across all platforms.
 
  * Scan for peripherals
  * Connect to a peripheral
@@ -12,7 +12,7 @@ The goal of this plugin is to provide a simple JavaScript API for Bluetooth Cent
  * Write new value to a characteristic
  * Get notified when characteristic's value changes
 
-I assume you know details about the services and characteristics that you want to use. All access is via service and characteristic UUIDs. The plugin will manage handles internally. This plugin probably won't be suitable for writing generic BLE clients.
+All access is via service and characteristic UUIDs. The plugin manages handles internally.
 
 See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master/examples) for ideas on how this plugin can be used.
 
@@ -47,7 +47,7 @@ Install with Cordova CLI
 
 - [ble.read](#read)
 - [ble.write](#write)
-- [ble.writeCommand](#writecommand)
+- [ble.writeWithoutResponse](#writewithoutresponse)
 
 - [ble.notify](#notify)
 - [ble.indicate](#indicate)
@@ -70,7 +70,7 @@ Function `scan` scans for BLE devices.  The success callback is called each time
         "name": "TI SensorTag",
         "id": "BD922605-1B07-4D55-8D09-B66653E51BBA",
         "rssi": -79,
-        "advertising": /* byte array or map */
+        "advertising": /* ArrayBuffer or map */
     }
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
@@ -97,7 +97,7 @@ Connect to a peripheral.
 
 ### Description
 
-Function `connect` connects to a BLE peripheral. The callback is long running. Success will be called when the connection is successful. Failure is called if the connection fails, or later if the connection disconnects. An error message is passed to the failure callback.
+Function `connect` connects to a BLE peripheral. The callback is long running. Success will be called when the connection is successful. Service and characteristic info will be passed to the success callback in the [peripheral object](#peripheral-data). Failure is called if the connection fails, or later if the connection disconnects. An error message is passed to the failure callback.
 
 ### Parameters
 
@@ -159,15 +159,15 @@ Function `write` writes data to a characteristic.
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
-## writeCommand
+## writeWithoutResponse
 
-Writes data to a characteristic without confirmation.
+Writes data to a characteristic without confirmation from the peripheral.
 
     ble.writeCommand(device_id, service_uuid, characteristic_uuid, value, success, failure);
 
 ### Description
 
-Function `write` writes data to a characteristic without a response. You are not notified if the write fails in the BLE stack.
+Function `writeWithoutResponse` writes data to a characteristic without a response from the peripheral. You are not notified if the write fails in the BLE stack. The success callback is be called when the characteristic is written.
 
 ### Parameters
 - __device_id__: UUID or MAC address of the peripheral
@@ -271,13 +271,75 @@ Function `isEnabled` calls the success callback when Bluetooth is enabled and th
         }
     );
 
+# Peripheral Data
+
+Peripheral Data is passed to the success callback when scanning and connecting. Limited data is passed when scanning.
+
+    {
+        "name": "Battery Demo",
+        "id": "20:FF:D0:FF:D1:C0",
+        "advertising": [2,1,6,3,3,15,24,8,9,66,97,116,116,101,114,121],
+        "rssi": -55
+    }
+
+After connecting, the peripheral object also includes service, characteristic and descriptor information.
+
+    {
+        "name": "Battery Demo",
+        "id": "20:FF:D0:FF:D1:C0",
+        "advertising": [2,1,6,3,3,15,24,8,9,66,97,116,116,101,114,121],
+        "rssi": -55,
+        "services": [
+            "1800",
+            "1801",
+            "180f"
+        ],
+        "characteristics": [
+            {
+                "service": "1800",
+                "characteristic": "2a00",
+                "properties": [
+                    "Read"
+                ]
+            },
+            {
+                "service": "1800",
+                "characteristic": "2a01",
+                "properties": [
+                    "Read"
+                ]
+            },
+            {
+                "service": "1801",
+                "characteristic": "2a05",
+                "properties": [
+                    "Read"
+                ]
+            },
+            {
+                "service": "180f",
+                "characteristic": "2a19",
+                "properties": [
+                    "Read"
+                ],
+                "descriptors": [
+                    {
+                        "uuid": "2901"
+                    },
+                    {
+                        "uuid": "2904"
+                    }
+                ]
+            }
+        ]
+    }
+
+
 # Advertising Data
 
 Bluetooth advertising data is returned in when scanning for devices. The format format varies depending on your platform. On Android advertising data will be the raw advertising bytes. iOS does not allow access to raw advertising data, so a dictionary of data is returned.
 
 The advertising information for both Android and iOS appears to be a combination of advertising data and scan response data.
-
-Future versions should return ArrayBuffers for all binary data. Currently, Android returns an int array for binary data.
 
 Ideally a common format (map or array) would be returned for both platforms in future versions. If you have ideas, please contact me.
 
@@ -286,11 +348,11 @@ Ideally a common format (map or array) would be returned for both platforms in f
     {
         "name": "demo",
         "id": "00:1A:7D:DA:71:13",
-        "advertising": [10, 22, -40, -2, 0, 32, 0, 101, 102, 102, 7, 5, 9, 100, 101, 109,
-                        111, 2, 10, 32, 3, 3, -40, -2, 8, -1, 0, 0, 104, 101, 108, 108, 111,
-                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "advertising": ArrayBuffer,
         "rssi": -37
     }
+
+Convert the advertising info to a Uint8Array for processing. `var adData = new Uint8Array(peripheral.advertising)`
 
 ## iOS
 
@@ -317,6 +379,28 @@ Note that iOS uses the string value of the constants for the [Advertisement Data
         "rssi": -53
     }
 
+# Typed Arrays
+
+This plugin uses typed Arrays or ArrayBuffers for sending and receiving data.
+
+This means that you need convert your data to ArrayBuffers before sending and from ArrayBuffers when receiving.
+
+    // ASCII only
+    function bytesToString(buffer) {
+        return String.fromCharCode.apply(null, new Uint8Array(buffer));
+    }
+
+    // ASCII only
+    function stringToBytes(string) {
+       var array = new Uint8Array(string.length);
+       for (var i = 0, l = string.length; i < l; i++) {
+           array[i] = string.charCodeAt(i);
+        }
+        return array.buffer;
+    }
+
+You can read more about typed arrays in these articles on [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays) and [HTML5 Rocks](http://www.html5rocks.com/en/tutorials/webgl/typed_arrays/).
+
 # License
 
 Apache 2.0
@@ -328,6 +412,6 @@ Try the code. If you find an problem or missing feature, file an issue or create
 # Other Bluetooth Plugins
 
  * [BluetoothSerial](https://github.com/don/BluetoothSerial) - Connect to Arduino and other devices. Bluetooth Classic on Android, BLE on iOS.
- * [RFduino](https://github.com/don/cordova-plugin-rfduino) - RFduino specific pluginc for iOS and Android.
+ * [RFduino](https://github.com/don/cordova-plugin-rfduino) - RFduino specific plugin for iOS and Android.
  * [BluetoothLE](https://github.com/randdusing/BluetoothLE) - Rand Dusing's BLE plugin for Cordova
  * [PhoneGap Bluetooth Plugin](https://github.com/tanelih/phonegap-bluetooth-plugin) - Bluetooth classic pairing and connecting for Android
