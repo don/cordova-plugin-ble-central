@@ -34,7 +34,7 @@ This is an early version of plugin, the API is likely to change.
 Install with Cordova CLI
 
     $ cd /path/to/your/project
-    $ cordova plugin add https://github.com/don/cordova-plugin-ble-central#:/plugin
+    $ cordova plugin add com.megster.cordova.ble
 
 # API
 

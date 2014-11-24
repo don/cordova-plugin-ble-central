@@ -12,7 +12,7 @@ Hardware
 Install
 
     $ cordova platform add android ios
-    $ cordova plugin add https://github.com/don/cordova-plugin-ble-central#:/plugin
+    $ cordova plugin add com.megster.cordova.ble
     $ cordova run
 
 Once the app is running. Open the serial console to your Arduino. Data sent from the phone will show up in the serial console. Data sent from the Arduino will show up in on the phone.
