@@ -131,7 +131,7 @@ Reads the value of a characteristic.
 
 Function `read` reads the value of the characteristic.
 
-Raw data is passed from native code to the callback as an [ArrayBuffer](http://www.html5rocks.com/en/tutorials/webgl/typed_arrays/).
+Raw data is passed from native code to the callback as an [ArrayBuffer](#typed-arrays).
 
 ### Parameters
 
@@ -155,7 +155,7 @@ Function `write` writes data to a characteristic.
 - __device_id__: UUID or MAC address of the peripheral
 - __service_uuid__: UUID of the BLE service
 - __characteristic_uuid__: UUID of the BLE characteristic
-- __data__: binary data, use an ArrayBuffer
+- __data__: binary data, use an [ArrayBuffer](#typed-arrays)
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
@@ -173,7 +173,7 @@ Function `writeWithoutResponse` writes data to a characteristic without a respon
 - __device_id__: UUID or MAC address of the peripheral
 - __service_uuid__: UUID of the BLE service
 - __characteristic_uuid__: UUID of the BLE characteristic
-- __data__: binary data, use an ArrayBuffer
+- __data__: binary data, use an [ArrayBuffer](#typed-arrays)
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
@@ -187,7 +187,7 @@ Register to be notified when the value of a characteristic changes.
 
 Function `notify` registers a callback that is called when the value of the characteristic changes.
 
-Raw data is passed from native code to the success callback as an [ArrayBuffer](http://www.html5rocks.com/en/tutorials/webgl/typed_arrays/).
+Raw data is passed from native code to the success callback as an [ArrayBuffer](#typed-arrays).
 
 ### Parameters
 
@@ -207,7 +207,7 @@ Register for an indication when the value of a characteristic changes.
 
 Function `indicate` registers a callback that is called when the value of the characteristic changes. Indicate is similar to notify, except indicate sends a confirmation back to the peripheral when the value is read.
 
-Raw data is passed from native code to the success callback as an [ArrayBuffer](http://www.html5rocks.com/en/tutorials/webgl/typed_arrays/).
+Raw data is passed from native code to the success callback as an [ArrayBuffer](#typed-arrays).
 
 ### Parameters
 
@@ -386,17 +386,17 @@ This plugin uses typed Arrays or ArrayBuffers for sending and receiving data.
 This means that you need convert your data to ArrayBuffers before sending and from ArrayBuffers when receiving.
 
     // ASCII only
-    function bytesToString(buffer) {
-        return String.fromCharCode.apply(null, new Uint8Array(buffer));
-    }
-
-    // ASCII only
     function stringToBytes(string) {
        var array = new Uint8Array(string.length);
        for (var i = 0, l = string.length; i < l; i++) {
            array[i] = string.charCodeAt(i);
         }
         return array.buffer;
+    }
+    
+    // ASCII only
+    function bytesToString(buffer) {
+        return String.fromCharCode.apply(null, new Uint8Array(buffer));
     }
 
 You can read more about typed arrays in these articles on [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays) and [HTML5 Rocks](http://www.html5rocks.com/en/tutorials/webgl/typed_arrays/).
