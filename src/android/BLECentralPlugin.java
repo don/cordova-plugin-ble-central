@@ -243,7 +243,14 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds) {
 
         // TODO skip if currently scanning
-        peripherals.clear();  // TODO: don't discard connected peripherals
+
+        // clear non-connected cached peripherals
+        for(Iterator<Map.Entry<String, Peripheral>> iterator = peripherals.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<String, Peripheral> entry = iterator.next();
+            if(!entry.getValue().isConnected()) {
+                iterator.remove();
+            }
+        }
 
         discoverCallback = callbackContext;
 
