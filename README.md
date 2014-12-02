@@ -1,4 +1,4 @@
-# Bluetooth Low Energy Central Plugin for Apache Cordova
+# Bluetooth Low Energy (BLE) Central Plugin for Apache Cordova
 
 This plugin enables communication between a phone and Bluetooth Low Energy (BLE) peripherals. Simultaneous connections to multiple peripherals are supported
 
@@ -20,14 +20,6 @@ See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master
 
 * iOS
 * Android (4.3 or greater)
-
-## Limitations
-
-This is an early version of plugin, the API is likely to change.
-
- * All services are discovered, this can be slow, especially on iOS
- * Implementation doesn't stop you from scanning during a scan
- * Indicate is not implemented
 
 # Installing
 
