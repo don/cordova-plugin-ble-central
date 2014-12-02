@@ -1,7 +1,19 @@
+= 0.1.0 =
+Return advertising data in scan results #6, #7, #18
+Connect success returns service, characteristic and descriptor info #6
+iOS connectCallbackId is stored in Peripheral #17
+Move plugin directory to top level for phonegap build compatibility #20
+Rename writeCommand to writeWithoutResponse #21
+Services callback latch is per peripheral  #19
+Connect callback is per peripheral #17
+Fix iOS crash when scanning 2x #5
+Add ble.isEnabled method #11
+Add RedBearLab example
+Add BatteryService example
+
 = 0.0.2 =
 iOS - fix bug read callback was being called 2x
 iOS - fix bug write callback wasn't being called
-
 
 = 0.0.1 =
 initial release
