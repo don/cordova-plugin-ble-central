@@ -13,6 +13,7 @@ The plugin provides a simple [JavaScript API](#api) for iOS and Android.
 Advertising information is returned when scanning for peripherals.
 Service, characteristic, and property info is returned when connecting to a peripheral.
 All access is via service and characteristic UUIDs. The plugin manages handles internally.
+
 Simultaneous connections to multiple peripherals are supported.
 
 See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master/examples) for ideas on how this plugin can be used.
