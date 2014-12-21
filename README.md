@@ -1,10 +1,8 @@
-# Bluetooth Low Energy Central Plugin for Apache Cordova
+# Bluetooth Low Energy (BLE) Central Plugin for Apache Cordova
 
-This plugin enables communication between a phone and Bluetooth Low Energy (BLE) peripherals. Simultaneous connections to multiple peripherals are supported
+This plugin enables communication between a phone and Bluetooth Low Energy (BLE) peripherals.
 
-## Philosophy
-
-The goal of this plugin is to provide a simple [JavaScript API](#api) for Bluetooth Central devices. The API should be common across all platforms.
+The plugin provides a simple [JavaScript API](#api) for iOS and Android.
 
  * Scan for peripherals
  * Connect to a peripheral
@@ -12,7 +10,11 @@ The goal of this plugin is to provide a simple [JavaScript API](#api) for Blueto
  * Write new value to a characteristic
  * Get notified when characteristic's value changes
 
+Advertising information is returned when scanning for peripherals.
+Service, characteristic, and property info is returned when connecting to a peripheral.
 All access is via service and characteristic UUIDs. The plugin manages handles internally.
+
+Simultaneous connections to multiple peripherals are supported.
 
 See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master/examples) for ideas on how this plugin can be used.
 
@@ -20,14 +22,6 @@ See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master
 
 * iOS
 * Android (4.3 or greater)
-
-## Limitations
-
-This is an early version of plugin, the API is likely to change.
-
- * All services are discovered, this can be slow, especially on iOS
- * Implementation doesn't stop you from scanning during a scan
- * Indicate is not implemented
 
 # Installing
 
