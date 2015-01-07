@@ -417,8 +417,11 @@
     if (writeCallbackId) {
         CDVPluginResult *pluginResult = nil;
         if (error) {
-            // TODO send more info from NSError
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+            NSLog(@"%@", error);
+            pluginResult = [CDVPluginResult 
+                resultWithStatus:CDVCommandStatus_ERROR
+                messageAsString:[error localizedDescription]
+            ];
         } else {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         }
