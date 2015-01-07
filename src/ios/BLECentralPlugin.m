@@ -2,7 +2,7 @@
 //  BLECentralPlugin.m
 //  BLE Central Cordova Plugin
 //
-//  (c) 2104 Don Coleman
+//  (c) 2104-2015 Don Coleman
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@
 - (void)pluginInitialize {
 
     NSLog(@"Cordova BLE Central Plugin");
-    NSLog(@"(c)2014 Don Coleman");
+    NSLog(@"(c)2014-2015 Don Coleman");
 
     [super pluginInitialize];
 
@@ -113,7 +113,7 @@
 
 }
 
-// BLE specific plugin (future) should have write(uuid, characteristic, value)
+// write: function (device_uuid, service_uuid, characteristic_uuid, value, success, failure) {
 - (void)write:(CDVInvokedUrlCommand*)command {
     NSLog(@"write");
 
@@ -168,6 +168,40 @@
         }
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
+}
+
+// writeDescriptor: function (device_uuid, service_uuid, characteristic_uuid, descriptor_uuid, value, success, failure) {
+- (void)writeDescriptor:(CDVInvokedUrlCommand*)command {
+    NSLog(@"writeDescriptor");
+
+    Foo *foo = [self getData:command];
+    CBUUID *descriptorUUID = [CBUUID UUIDWithString:[command.arguments objectAtIndex:3]];
+    NSData *data = [command.arguments objectAtIndex:4]; // This is binary
+
+    if (foo) {
+        CDVPluginResult *pluginResult = nil;
+
+        if (data != nil) {
+
+            CBPeripheral *peripheral = [foo peripheral];
+            CBCharacteristic *characteristic = [foo characteristic];
+
+            CBDescriptor *descriptor = [self findDescriptorFromUUID: descriptorUUID characteristic:characteristic];
+            [peripheral writeValue:data forDescriptor:descriptor];
+
+            NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic andDescriptor:descriptor];
+            [writeCallbacks setObject:[command.callbackId copy] forKey:key];
+
+            // response is sent from didWriteValueForCharacteristic
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
+            [pluginResult setKeepCallbackAsBool:TRUE];
+
+        } else {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"message was null"];
+        }
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+
 }
 
 // success callback is called on notification
@@ -360,6 +394,11 @@
     NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
     NSMutableSet *latch = [connectCallbackLatches valueForKey:[peripheral uuidAsString]];
 
+    for (CBCharacteristic *characteristic in service.characteristics) {
+        NSLog(@"Looking for descriptors for %@", characteristic);
+        [peripheral discoverDescriptorsForCharacteristic:characteristic];
+    }
+
     [latch removeObject:service];
 
     if ([latch count] == 0) {
@@ -371,10 +410,19 @@
         }
     }
 
-    // Does the peripherial cache these or do I need to?
     NSLog(@"Found characteristics for service %@", service);
     for (CBCharacteristic *characteristic in service.characteristics) {
         NSLog(@"Characteristic %@", characteristic);
+    }
+
+}
+
+- (void)peripheral:(CBPeripheral *)peripheral didDiscoverDescriptorsForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
+    if (!error) {
+        NSLog(@"Found Descriptors for %@", characteristic);
+        for (CBDescriptor *descriptor in characteristic.descriptors) {
+            NSLog(@"Descriptor %@", descriptor);
+        }
     }
 
 }
@@ -418,7 +466,7 @@
         CDVPluginResult *pluginResult = nil;
         if (error) {
             NSLog(@"%@", error);
-            pluginResult = [CDVPluginResult 
+            pluginResult = [CDVPluginResult
                 resultWithStatus:CDVCommandStatus_ERROR
                 messageAsString:[error localizedDescription]
             ];
@@ -430,6 +478,32 @@
     }
 
 }
+
+- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForDescriptor:(CBDescriptor *)descriptor error:(NSError *)error {
+
+    // This is the callback for writeDescriptor
+
+    CBCharacteristic *characteristic = [descriptor characteristic];
+    NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic andDescriptor:descriptor];
+    NSString *writeCallbackId = [writeCallbacks objectForKey:key];
+
+    if (writeCallbackId) {
+        CDVPluginResult *pluginResult = nil;
+        if (error) {
+            NSLog(@"%@", error);
+            pluginResult = [CDVPluginResult
+                            resultWithStatus:CDVCommandStatus_ERROR
+                            messageAsString:[error localizedDescription]
+                            ];
+        } else {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        }
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:writeCallbackId];
+        [writeCallbacks removeObjectForKey:key];
+    }
+
+}
+
 
 #pragma mark - internal implemetation
 
@@ -461,6 +535,18 @@
 
     return nil; //Service not found on this peripheral
 }
+
+-(CBDescriptor *) findDescriptorFromUUID:(CBUUID *)UUID characteristic:(CBCharacteristic*)characteristic
+{
+    for (CBDescriptor *descriptor in characteristic.descriptors) {
+        // TODO is there a better comparison built into iOS?
+        if ([self compareCBUUID:descriptor.UUID UUID2:UUID]) {
+            return descriptor;
+        }
+    }
+    return nil;
+}
+
 
 // RedBearLab
 -(CBCharacteristic *) findCharacteristicFromUUID:(CBUUID *)UUID service:(CBService*)service
@@ -564,6 +650,10 @@
 
 -(NSString *) keyForPeripheral: (CBPeripheral *)peripheral andCharacteristic:(CBCharacteristic *)characteristic {
     return [NSString stringWithFormat:@"%@|%@", [peripheral UUID], [characteristic UUID]];
+}
+
+-(NSString *) keyForPeripheral: (CBPeripheral *)peripheral andCharacteristic:(CBCharacteristic *)characteristic andDescriptor: (CBDescriptor*)descriptor{
+    return [NSString stringWithFormat:@"%@|%@|%@", [peripheral UUID], [characteristic UUID], [descriptor UUID]];
 }
 
 #pragma mark - util

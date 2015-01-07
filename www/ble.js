@@ -79,6 +79,11 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'read', [device_id, service_uuid, characteristic_uuid]);
     },
 
+    // descriptor value comes back as ArrayBuffer in the success callback
+    readDescriptor: function (device_id, service_uuid, characteristic_uuid, descriptor_uuid, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'readDescriptor', [device_id, service_uuid, characteristic_uuid, descriptor_uuid]);
+    },
+
     // value must be an ArrayBuffer
     write: function (device_id, service_uuid, characteristic_uuid, value, success, failure) {
         cordova.exec(success, failure, 'BLE', 'write', [device_id, service_uuid, characteristic_uuid, value]);
@@ -93,6 +98,11 @@ module.exports = {
     writeCommand: function (device_id, service_uuid, characteristic_uuid, value, success, failure) {
         console.log("WARNING: writeCommand is deprecated, use writeWithoutResponse");
         cordova.exec(success, failure, 'BLE', 'writeWithoutResponse', [device_id, service_uuid, characteristic_uuid, value]);
+    },
+
+    // value must be an ArrayBuffer
+    writeDescriptor: function (device_id, service_uuid, characteristic_uuid, descriptor_uuid, value, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'writeDescriptor', [device_id, service_uuid, characteristic_uuid, descriptor_uuid, value]);
     },
 
     // success callback is called on notification

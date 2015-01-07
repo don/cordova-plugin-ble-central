@@ -1,5 +1,7 @@
 # Bluetooth Low Energy (BLE) Central Plugin for Apache Cordova
 
+Experimental branch for writing descriptor values on iOS
+
 This plugin enables communication between a phone and Bluetooth Low Energy (BLE) peripherals.
 
 The plugin provides a simple [JavaScript API](#api) for iOS and Android.
@@ -387,7 +389,7 @@ This means that you need convert your data to ArrayBuffers before sending and fr
         }
         return array.buffer;
     }
-    
+
     // ASCII only
     function bytesToString(buffer) {
         return String.fromCharCode.apply(null, new Uint8Array(buffer));
