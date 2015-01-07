@@ -43,6 +43,7 @@
     readCallbacks = [NSMutableDictionary new];
     writeCallbacks = [NSMutableDictionary new];
     notificationCallbacks = [NSMutableDictionary new];
+    stopNotificationCallbacks = [NSMutableDictionary new];
 }
 
 #pragma mark - Cordova Plugin Methods
@@ -206,10 +207,10 @@
 
         NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
         NSString *callback = [command.callbackId copy];
-        [notificationCallbacks setObject: callback forKey: key];
+        [stopNotificationCallbacks setObject: callback forKey: key];
 
         [peripheral setNotifyValue:NO forCharacteristic:characteristic];
-        // TODO callback comes in peripheral:didUpdateNotificationStateForCharacteristic:error:
+        // callback sent from peripheral:didUpdateNotificationStateForCharacteristic:error:
 
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
         [pluginResult setKeepCallbackAsBool:TRUE];
@@ -430,6 +431,38 @@
         [readCallbacks removeObjectForKey:key];
     }
 }
+
+- (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
+    
+    NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
+    NSString *notificationCallbackId = [notificationCallbacks objectForKey:key];
+    NSString *stopNotificationCallbackId = [stopNotificationCallbacks objectForKey:key];
+    
+    CDVPluginResult *pluginResult = nil;
+
+    // we always call the stopNotificationCallbackId if we have a callback
+    // we only call the notificationCallbackId on errors and if there is no stopNotificationCallbackId
+    
+    if (stopNotificationCallbackId) {
+        
+        if (error) {
+            NSLog(@"%@", error);
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
+        } else {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        }
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:stopNotificationCallbackId];
+        [stopNotificationCallbacks removeObjectForKey:key];
+        
+    } else if (notificationCallbackId && error) {
+        
+        NSLog(@"%@", error);
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:notificationCallbackId];
+    }
+    
+}
+
 
 - (void)peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
 
