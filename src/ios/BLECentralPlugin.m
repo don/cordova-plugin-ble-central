@@ -2,7 +2,7 @@
 //  BLECentralPlugin.m
 //  BLE Central Cordova Plugin
 //
-//  (c) 2104 Don Coleman
+//  (c) 2104-2015 Don Coleman
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@
 - (void)pluginInitialize {
 
     NSLog(@"Cordova BLE Central Plugin");
-    NSLog(@"(c)2014 Don Coleman");
+    NSLog(@"(c)2014-2015 Don Coleman");
 
     [super pluginInitialize];
 
@@ -74,7 +74,7 @@
 
 }
 
-// disconnect: function (device_uuid, success, failure) {
+// disconnect: function (device_id, success, failure) {
 - (void)disconnect:(CDVInvokedUrlCommand*)command {
     NSLog(@"disconnect");
 
@@ -92,7 +92,7 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-// read: function (device_uuid, service_uuid, characteristic_uuid, success, failure) {
+// read: function (device_id, service_uuid, characteristic_uuid, success, failure) {
 - (void)read:(CDVInvokedUrlCommand*)command {
     NSLog(@"read");
 
@@ -113,7 +113,7 @@
 
 }
 
-// BLE specific plugin (future) should have write(uuid, characteristic, value)
+// write: function (device_id, service_uuid, characteristic_uuid, value, success, failure) {
 - (void)write:(CDVInvokedUrlCommand*)command {
     NSLog(@"write");
 
@@ -146,7 +146,7 @@
 
 }
 
-// 	writeWithoutResponse: function (device_uuid, service_uuid, characteristic_uuid, value, success, failure) {
+// writeWithoutResponse: function (device_id, service_uuid, characteristic_uuid, value, success, failure) {
 - (void)writeWithoutResponse:(CDVInvokedUrlCommand*)command {
     NSLog(@"writeWithoutResponse");
 
@@ -171,7 +171,7 @@
 }
 
 // success callback is called on notification
-// notify: function (device_uuid, service_uuid, characteristic_uuid, success, failure) {
+// notify: function (device_id, service_uuid, characteristic_uuid, success, failure) {
 - (void)notify:(CDVInvokedUrlCommand*)command {
     NSLog(@"registering for notification");
 
@@ -193,6 +193,8 @@
     }
 
 }
+
+
 
 - (void)indicate:(CDVInvokedUrlCommand*)command {
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Not Implemented"];
@@ -418,7 +420,7 @@
         CDVPluginResult *pluginResult = nil;
         if (error) {
             NSLog(@"%@", error);
-            pluginResult = [CDVPluginResult 
+            pluginResult = [CDVPluginResult
                 resultWithStatus:CDVCommandStatus_ERROR
                 messageAsString:[error localizedDescription]
             ];
