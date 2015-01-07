@@ -172,7 +172,7 @@
 
 // success callback is called on notification
 // notify: function (device_id, service_uuid, characteristic_uuid, success, failure) {
-- (void)notify:(CDVInvokedUrlCommand*)command {
+- (void)startNotification:(CDVInvokedUrlCommand*)command {
     NSLog(@"registering for notification");
 
     Foo *foo = [self getData:command]; // TODO name this better
@@ -194,7 +194,29 @@
 
 }
 
+// stopNotification: function (device_id, service_uuid, characteristic_uuid, success, failure) {
+- (void)stopNotification:(CDVInvokedUrlCommand*)command {
+    NSLog(@"registering for notification");
 
+    Foo *foo = [self getData:command]; // TODO name this better
+
+    if (foo) {
+        CBPeripheral *peripheral = [foo peripheral];
+        CBCharacteristic *characteristic = [foo characteristic];
+
+        NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
+        NSString *callback = [command.callbackId copy];
+        [notificationCallbacks setObject: callback forKey: key];
+
+        [peripheral setNotifyValue:NO forCharacteristic:characteristic];
+        // TODO callback comes in peripheral:didUpdateNotificationStateForCharacteristic:error:
+
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
+        [pluginResult setKeepCallbackAsBool:TRUE];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+
+}
 
 - (void)indicate:(CDVInvokedUrlCommand*)command {
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Not Implemented"];

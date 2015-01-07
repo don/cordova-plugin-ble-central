@@ -97,7 +97,18 @@ module.exports = {
 
     // success callback is called on notification
     notify: function (device_id, service_uuid, characteristic_uuid, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'notify', [device_id, service_uuid, characteristic_uuid]);
+        console.log("WARNING: notify is deprecated, use startNotification");
+        cordova.exec(success, failure, 'BLE', 'startNotification', [device_id, service_uuid, characteristic_uuid]);
+    },
+
+    // success callback is called on notification
+    startNotification: function (device_id, service_uuid, characteristic_uuid, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'startNotification', [device_id, service_uuid, characteristic_uuid]);
+    },
+
+    // success callback is called when characteristic 0x2902 is written
+    stopNotification: function (device_id, service_uuid, characteristic_uuid, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'stopNotification', [device_id, service_uuid, characteristic_uuid]);
     },
 
     // success callback is called on indication.

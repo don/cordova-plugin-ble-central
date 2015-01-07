@@ -45,7 +45,9 @@
 - (void)write:(CDVInvokedUrlCommand *)command;
 - (void)writeWithoutResponse:(CDVInvokedUrlCommand *)command;
 
-- (void)notify:(CDVInvokedUrlCommand *)command;
+- (void)startNotification:(CDVInvokedUrlCommand *)command;
+- (void)stopNotification:(CDVInvokedUrlCommand *)command;
+
 - (void)indicate:(CDVInvokedUrlCommand *)command;
 
 - (void)isEnabled:(CDVInvokedUrlCommand *)command;
