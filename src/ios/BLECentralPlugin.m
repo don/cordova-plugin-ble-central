@@ -382,8 +382,9 @@
 
     NSLog(@"didDiscoverCharacteristicsForService");
 
-    NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
-    NSMutableSet *latch = [connectCallbackLatches valueForKey:[peripheral uuidAsString]];
+    NSString *peripheralUUIDString = [peripheral uuidAsString];
+    NSString *connectCallbackId = [connectCallbacks valueForKey:peripheralUUIDString];
+    NSMutableSet *latch = [connectCallbackLatches valueForKey:peripheralUUIDString];
 
     [latch removeObject:service];
 
@@ -394,6 +395,7 @@
             [pluginResult setKeepCallbackAsBool:TRUE];
             [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
         }
+        [connectCallbackLatches removeObjectForKey:peripheralUUIDString];
     }
 
     NSLog(@"Found characteristics for service %@", service);
@@ -452,6 +454,7 @@
         }
         [self.commandDelegate sendPluginResult:pluginResult callbackId:stopNotificationCallbackId];
         [stopNotificationCallbacks removeObjectForKey:key];
+        [notificationCallbacks removeObjectForKey:key];
         
     } else if (notificationCallbackId && error) {
         
@@ -619,7 +622,7 @@
 }
 
 -(NSString *) keyForPeripheral: (CBPeripheral *)peripheral andCharacteristic:(CBCharacteristic *)characteristic {
-    return [NSString stringWithFormat:@"%@|%@", [peripheral UUID], [characteristic UUID]];
+    return [NSString stringWithFormat:@"%@|%@", [peripheral uuidAsString], [characteristic UUID]];
 }
 
 #pragma mark - util
