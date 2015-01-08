@@ -106,7 +106,7 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'startNotification', [device_id, service_uuid, characteristic_uuid]);
     },
 
-    // success callback is called when characteristic 0x2902 is written
+    // success callback is called when the descriptor 0x2902 is written
     stopNotification: function (device_id, service_uuid, characteristic_uuid, success, failure) {
         cordova.exec(success, failure, 'BLE', 'stopNotification', [device_id, service_uuid, characteristic_uuid]);
     },
