@@ -1,3 +1,8 @@
+= 0.1.2 =
+Ensure connect success callback is only called 1x on iOS #30
+Rename notify to startNotification
+Add stopNotification (iOS only)
+
 = 0.1.1 =
 Return reason code when write fails on iOS #29
 
