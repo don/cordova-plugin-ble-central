@@ -36,10 +36,11 @@
 
     [super pluginInitialize];
 
-    peripherals = [NSMutableArray array];
+    peripherals = [NSMutableSet set];
     manager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
 
     connectCallbacks = [NSMutableDictionary new];
+    connectCallbackLatches = [NSMutableDictionary new];
     readCallbacks = [NSMutableDictionary new];
     writeCallbacks = [NSMutableDictionary new];
     notificationCallbacks = [NSMutableDictionary new];
@@ -299,7 +300,6 @@
 
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
 
-    // TODO need to check UUIDs for duplicates
     [peripherals addObject:peripheral];
     [peripheral setAdvertisementData:advertisementData RSSI:RSSI];
 
@@ -396,7 +396,6 @@
         }
     }
 
-    // Does the peripherial cache these or do I need to?
     NSLog(@"Found characteristics for service %@", service);
     for (CBCharacteristic *characteristic in service.characteristics) {
         NSLog(@"Characteristic %@", characteristic);

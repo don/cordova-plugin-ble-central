@@ -34,7 +34,7 @@
     NSMutableDictionary *connectCallbackLatches;
 }
 
-@property (strong, nonatomic) NSMutableArray *peripherals;
+@property (strong, nonatomic) NSMutableSet *peripherals;
 @property (strong, nonatomic) CBCentralManager *manager;
 
 - (void)scan:(CDVInvokedUrlCommand *)command;
