@@ -76,7 +76,7 @@ var app = {
         var deviceId = e.target.dataset.deviceId,
             onConnect = function() {
                 // subscribe for incoming data
-                ble.notify(deviceId, bluefruit.serviceUUID, bluefruit.rxCharacteristic, app.onData, app.onError);
+                ble.startNotification(deviceId, bluefruit.serviceUUID, bluefruit.rxCharacteristic, app.onData, app.onError);
                 sendButton.dataset.deviceId = deviceId;
                 disconnectButton.dataset.deviceId = deviceId;
                 app.showDetailPage();
@@ -103,7 +103,7 @@ var app = {
 
         var data = stringToBytes(messageInput.value);
         var deviceId = event.target.dataset.deviceId;
-        ble.writeCommand(deviceId, bluefruit.serviceUUID, bluefruit.txCharacteristic, data, success, failure);
+        ble.write(deviceId, bluefruit.serviceUUID, bluefruit.txCharacteristic, data, success, failure);
 
     },
     disconnect: function(event) {
