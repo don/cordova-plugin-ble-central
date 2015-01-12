@@ -45,7 +45,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String WRITE = "write";
     private static final String WRITE_WITHOUT_RESPONSE = "writeWithoutResponse";
 
-    private static final String NOTIFY = "notify"; // register notify
+    private static final String NOTIFY = "startNotification"; // register for characteristic notification
     // TODO future private static final String INDICATE = "indicate"; // register indication
 
     private static final String IS_ENABLED = "isEnabled";

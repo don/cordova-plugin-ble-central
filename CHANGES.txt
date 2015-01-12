@@ -1,3 +1,11 @@
+= 0.1.2 =
+Ensure connect success callback is only called 1x on iOS #30
+Rename notify to startNotification
+Add stopNotification (iOS only)
+
+= 0.1.1 =
+Return reason code when write fails on iOS #29
+
 = 0.1.0 =
 Return advertising data in scan results #6, #7, #18
 Connect success returns service, characteristic and descriptor info #6

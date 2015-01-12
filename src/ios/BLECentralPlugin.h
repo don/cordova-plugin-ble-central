@@ -30,10 +30,11 @@
     NSMutableDictionary *readCallbacks;
     NSMutableDictionary *writeCallbacks;
     NSMutableDictionary *notificationCallbacks;
+    NSMutableDictionary *stopNotificationCallbacks;
     NSMutableDictionary *connectCallbackLatches;
 }
 
-@property (strong, nonatomic) NSMutableArray *peripherals;
+@property (strong, nonatomic) NSMutableSet *peripherals;
 @property (strong, nonatomic) CBCentralManager *manager;
 
 - (void)scan:(CDVInvokedUrlCommand *)command;
@@ -45,7 +46,9 @@
 - (void)write:(CDVInvokedUrlCommand *)command;
 - (void)writeWithoutResponse:(CDVInvokedUrlCommand *)command;
 
-- (void)notify:(CDVInvokedUrlCommand *)command;
+- (void)startNotification:(CDVInvokedUrlCommand *)command;
+- (void)stopNotification:(CDVInvokedUrlCommand *)command;
+
 - (void)indicate:(CDVInvokedUrlCommand *)command;
 
 - (void)isEnabled:(CDVInvokedUrlCommand *)command;
