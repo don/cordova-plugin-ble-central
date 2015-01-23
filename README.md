@@ -35,17 +35,14 @@ Install with Cordova CLI
 ## Methods
 
 - [ble.scan](#scan)
-
 - [ble.connect](#connect)
 - [ble.disconnect](#disconnect)
-
 - [ble.read](#read)
 - [ble.write](#write)
 - [ble.writeWithoutResponse](#writewithoutresponse)
-
-- [ble.notify](#notify)
+- [ble.startNotification](#startnotification)
+- [ble.stopNotification](#stopnotification)
 - [ble.indicate](#indicate)
-
 - [ble.isEnabled](#isenabled)
 - [ble.isConnected](#isconnected)
 
@@ -171,15 +168,15 @@ Function `writeWithoutResponse` writes data to a characteristic without a respon
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
-## notify
+## startNotification
 
 Register to be notified when the value of a characteristic changes.
 
-    ble.notify(device_id, service_uuid, characteristic_uuid, success, failure) {;
+    ble.startNotification(device_id, service_uuid, characteristic_uuid, success, failure) {;
 
 ### Description
 
-Function `notify` registers a callback that is called when the value of the characteristic changes.
+Function `startNotification` registers a callback that is called when the value of the characteristic changes.
 
 Raw data is passed from native code to the success callback as an [ArrayBuffer](#typed-arrays).
 
@@ -189,6 +186,24 @@ Raw data is passed from native code to the success callback as an [ArrayBuffer](
 - __service_uuid__: UUID of the BLE service
 - __characteristic_uuid__: UUID of the BLE characteristic
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
+## stopNotification
+
+Stop being notified when the value of a characteristic changes.
+
+ble.stopNotification(device_id, service_uuid, characteristic_uuid, success, failure) {;
+
+### Description
+
+Function `stopNotification` stops a previously registered notification callback.
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __service_uuid__: UUID of the BLE service
+- __characteristic_uuid__: UUID of the BLE characteristic
+- __success__: Success callback function that is invoked when the notification is removed. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
 ## indicate
@@ -387,7 +402,7 @@ This means that you need convert your data to ArrayBuffers before sending and fr
         }
         return array.buffer;
     }
-    
+
     // ASCII only
     function bytesToString(buffer) {
         return String.fromCharCode.apply(null, new Uint8Array(buffer));
