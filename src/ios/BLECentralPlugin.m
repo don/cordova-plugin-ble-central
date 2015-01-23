@@ -52,7 +52,6 @@
 - (void)connect:(CDVInvokedUrlCommand *)command {
 
     NSLog(@"connect");
-    CDVPluginResult *pluginResult = nil;
     NSString *uuid = [command.arguments objectAtIndex:0];
 
     CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
@@ -60,16 +59,13 @@
     if (peripheral) {
         NSLog(@"Connecting to peripheral with UUID : %@", uuid);
 
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
-        [pluginResult setKeepCallbackAsBool:TRUE];
         [connectCallbacks setObject:[command.callbackId copy] forKey:[peripheral uuidAsString]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-
         [manager connectPeripheral:peripheral options:nil];
 
     } else {
         NSString *error = [NSString stringWithFormat:@"Could not find peripheral %@.", uuid];
         NSLog(@"%@", error);
+        CDVPluginResult *pluginResult = nil;
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
@@ -108,9 +104,6 @@
         [readCallbacks setObject:[command.callbackId copy] forKey:key];
 
         [peripheral readValueForCharacteristic:characteristic];  // callback sends value
-        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
-        [pluginResult setKeepCallbackAsBool:TRUE];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
 
 }
@@ -123,7 +116,6 @@
     NSData *message = [command.arguments objectAtIndex:3]; // This is binary
 
     if (foo) {
-        CDVPluginResult *pluginResult = nil;
 
         if (message != nil) {
 
@@ -137,13 +129,12 @@
             [peripheral writeValue:message forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
 
             // response is sent from didWriteValueForCharacteristic
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
-            [pluginResult setKeepCallbackAsBool:TRUE];
 
         } else {
+            CDVPluginResult *pluginResult = nil;
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"message was null"];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
         }
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
 
 }
@@ -189,9 +180,6 @@
 
         [peripheral setNotifyValue:YES forCharacteristic:characteristic];
 
-        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
-        [pluginResult setKeepCallbackAsBool:TRUE];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
 
 }
@@ -213,9 +201,6 @@
         [peripheral setNotifyValue:NO forCharacteristic:characteristic];
         // callback sent from peripheral:didUpdateNotificationStateForCharacteristic:error:
 
-        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
-        [pluginResult setKeepCallbackAsBool:TRUE];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
 
 }
@@ -262,10 +247,6 @@
                                    userInfo:[command.callbackId copy]
                                     repeats:NO];
 
-    CDVPluginResult *pluginResult = nil;
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
-    [pluginResult setKeepCallbackAsBool:TRUE];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void)isConnected:(CDVInvokedUrlCommand*)command {
@@ -289,9 +270,6 @@
     [manager stopScan];
 
     if (discoverPeripherialCallbackId) {
-        CDVPluginResult *pluginResult = nil;
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:discoverPeripherialCallbackId];
         discoverPeripherialCallbackId = nil;
     }
 }
@@ -434,18 +412,18 @@
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
-    
+
     NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
     NSString *notificationCallbackId = [notificationCallbacks objectForKey:key];
     NSString *stopNotificationCallbackId = [stopNotificationCallbacks objectForKey:key];
-    
+
     CDVPluginResult *pluginResult = nil;
 
     // we always call the stopNotificationCallbackId if we have a callback
     // we only call the notificationCallbackId on errors and if there is no stopNotificationCallbackId
-    
+
     if (stopNotificationCallbackId) {
-        
+
         if (error) {
             NSLog(@"%@", error);
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
@@ -455,14 +433,14 @@
         [self.commandDelegate sendPluginResult:pluginResult callbackId:stopNotificationCallbackId];
         [stopNotificationCallbacks removeObjectForKey:key];
         [notificationCallbacks removeObjectForKey:key];
-        
+
     } else if (notificationCallbackId && error) {
-        
+
         NSLog(@"%@", error);
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:notificationCallbackId];
     }
-    
+
 }
 
 
