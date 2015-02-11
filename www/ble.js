@@ -117,7 +117,7 @@ module.exports = {
     },
 
     isConnected: function (device_id, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'isConnected', []);
+        cordova.exec(success, failure, 'BLE', 'isConnected', [device_id]);
     },
 
     isEnabled: function (success, failure) {
