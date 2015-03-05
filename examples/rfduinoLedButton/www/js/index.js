@@ -165,7 +165,7 @@ var app = {
         data[0] = event.type === 'touchstart' ? 0x1 : 0x0;
         var deviceId = event.target.dataset.deviceId;
 
-        ble.writeCommand(deviceId, rfduino.serviceUUID, rfduino.sendCharacteristic, data.buffer, success, failure);
+        ble.writeWithoutResponse(deviceId, rfduino.serviceUUID, rfduino.sendCharacteristic, data.buffer, success, failure);
 
     },
     disconnect: function(event) {
