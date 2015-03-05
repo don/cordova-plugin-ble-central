@@ -254,7 +254,11 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
         discoverCallback = callbackContext;
 
-        bluetoothAdapter.startLeScan(serviceUUIDs, this);
+        if (serviceUUIDs.length > 0) {
+            bluetoothAdapter.startLeScan(serviceUUIDs, this);
+        } else {
+            bluetoothAdapter.startLeScan(this);
+        }
 
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
