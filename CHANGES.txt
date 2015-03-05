@@ -1,6 +1,8 @@
+= 0.1.4 =
+Change Android behavior for leScan without service list
+
 = 0.1.3 =
 Remove NO_RESULT on iOS fixes #32
-
 
 = 0.1.2 =
 Ensure connect success callback is only called 1x on iOS #30
