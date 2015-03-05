@@ -1,4 +1,4 @@
-// (c) 2014 Don Coleman
+// (c) 2014-2015 Don Coleman
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ var rfduino = {
 // TODO get the terminology correct
 // TODO make this a generic function
 // TODO convert known types - Name, Advertised Services, iBeacon, etc
-// 
+//
 // returns advertising data as hashmap of byte arrays keyed by type
 // advertising data is length, type, data
 // https://www.bluetooth.org/en-us/specification/assigned-numbers/generic-access-profile
@@ -42,34 +42,48 @@ function parseAdvertisingData(bytes) {
     var length, type, data, i = 0, advertisementData = {};
 
     while (length !== 0) {
-    
-       length = bytes[i] & 0xFF;         
+
+       length = bytes[i] & 0xFF;
         i++;
-        
+
         type = bytes[i] & 0xFF;
-        i++;    
-        
+        i++;
+
         data = bytes.slice(i, i + length - 2); // length includes type and length
         i += length - 2;  // move to end of data
         i++;
 
         advertisementData[type] = data;
     }
-    
+
     return advertisementData;
 }
 
 // RFduino advertises the sketch its running in the Manufacturer field 0xFF
 // RFduino provides a UART-like service so all sketchs look the same
 var getRFduinoService = function(scanRecord) {
-    var ad = parseAdvertisingData(scanRecord),
-        mfgData = ad[0xFF],
-        service;
-    
+    var mfgData, service;
+
+    if (cordova.platformId === 'ios') {
+        // scanRecord is a map on iOS
+        var mfgDataBuffer = scanRecord.kCBAdvDataManufacturerData;
+        if (mfgDataBuffer) {
+            var typedArray = new Uint8Array(mfgDataBuffer);
+            // safari can't slice typed arrays, convert to array of ints
+            mfgData = [];
+            for (var i = 0; i < typedArray.length; i++) {
+                mfgData[i] = typedArray[i]
+            }
+        }
+    } else { // android
+        var ad = parseAdvertisingData(scanRecord);
+        mfgData = ad[0xFF];
+    }
+
     if (mfgData) {
       // ignore 1st 2 bytes of mfg data
       service = bytesToString(mfgData.slice(2));
-      return service;      
+      return service;
     } else {
       return "";
     }
@@ -92,7 +106,7 @@ var app = {
         document.addEventListener('deviceready', this.onDeviceReady, false);
         refreshButton.addEventListener('touchstart', this.refreshDeviceList, false);
         ledButton.addEventListener('touchstart', this.sendData, false);
-        ledButton.addEventListener('touchend', this.sendData, false);                
+        ledButton.addEventListener('touchend', this.sendData, false);
         disconnectButton.addEventListener('touchstart', this.disconnect, false);
         deviceList.addEventListener('touchstart', this.connect, false); // assume not scrolling
     },
@@ -120,22 +134,22 @@ var app = {
                 // subscribe for incoming data
                 ble.notify(deviceId, rfduino.serviceUUID, rfduino.receiveCharacteristic, app.onData, app.onError);
                 disconnectButton.dataset.deviceId = deviceId;
-                ledButton.dataset.deviceId = deviceId;             
+                ledButton.dataset.deviceId = deviceId;
                 app.showDetailPage();
             };
 
         ble.connect(deviceId, onConnect, app.onError);
     },
     onData: function(data) { // data received from rfduino
-        console.log(data);        
+        console.log(data);
         var buttonValue = arrayBufferToInt(data);
         if (buttonValue === 1) {
             buttonState.innerHTML = "Button Pressed";
         } else {
-            buttonState.innerHTML = "Button Released";            
+            buttonState.innerHTML = "Button Released";
         }
     },
-    sendData: function(event) { // send data to rfduino 
+    sendData: function(event) { // send data to rfduino
 
         var success = function() {
             console.log("success");
@@ -144,14 +158,14 @@ var app = {
         var failure = function() {
             alert("Failed writing data to the rfduino");
         };
-        
-        var data = new Uint8Array(1);        
+
+        var data = new Uint8Array(1);
         data[0] = event.type === 'touchstart' ? 0x1 : 0x0;
         var deviceId = event.target.dataset.deviceId;
 
         ble.writeCommand(deviceId, rfduino.serviceUUID, rfduino.sendCharacteristic, data.buffer, success, failure);
-        
-    },    
+
+    },
     disconnect: function(event) {
         var deviceId = event.target.dataset.deviceId;
         ble.disconnect(deviceId, app.showMainPage, app.onError);
