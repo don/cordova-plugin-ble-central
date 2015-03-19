@@ -57,6 +57,19 @@ module.exports = {
         cordova.exec(successWrapper, failure, 'BLE', 'scan', [services, seconds]);
     },
 
+    startScan: function (services, success, failure) {
+        var successWrapper = function(peripheral) {
+            convertToNativeJS(peripheral);
+            success(peripheral);
+        };
+        cordova.exec(successWrapper, failure, 'BLE', 'startScan', [services]);
+    },
+
+    stopScan: function (success, failure) {
+        cordova.exec(success, failure, 'BLE', 'stopScan', []);
+    },
+
+
     // this will probably be removed
     list: function (success, failure) {
         cordova.exec(success, failure, 'BLE', 'list', []);

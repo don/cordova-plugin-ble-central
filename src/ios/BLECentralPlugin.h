@@ -38,6 +38,8 @@
 @property (strong, nonatomic) CBCentralManager *manager;
 
 - (void)scan:(CDVInvokedUrlCommand *)command;
+- (void)startScan:(CDVInvokedUrlCommand *)command;
+- (void)stopScan:(CDVInvokedUrlCommand *)command;
 
 - (void)connect:(CDVInvokedUrlCommand *)command;
 - (void)disconnect:(CDVInvokedUrlCommand *)command;

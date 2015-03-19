@@ -249,6 +249,39 @@
 
 }
 
+- (void)startScan:(CDVInvokedUrlCommand*)command {
+
+    NSLog(@"startScan");
+    discoverPeripherialCallbackId = [command.callbackId copy];
+
+    NSArray *serviceUUIDStrings = [command.arguments objectAtIndex:0];
+    NSMutableArray *serviceUUIDs = [NSMutableArray new];
+
+    for (int i = 0; i < [serviceUUIDStrings count]; i++) {
+        CBUUID *serviceUUID =[CBUUID UUIDWithString:[serviceUUIDStrings objectAtIndex: i]];
+        [serviceUUIDs addObject:serviceUUID];
+    }
+
+    [manager scanForPeripheralsWithServices:serviceUUIDs options:nil];
+
+}
+
+- (void)stopScan:(CDVInvokedUrlCommand*)command {
+
+    NSLog(@"stopScan");
+
+    [manager stopScan];
+
+    if (discoverPeripherialCallbackId) {
+        discoverPeripherialCallbackId = nil;
+    }
+
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+
+}
+
+
 - (void)isConnected:(CDVInvokedUrlCommand*)command {
 
     CDVPluginResult *pluginResult = nil;
