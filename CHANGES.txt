@@ -1,3 +1,7 @@
+= 0.1.5 =
+add startScan and stopScan #40
+update to RFduino example
+
 = 0.1.4 =
 Change Android behavior for leScan without service list
 
