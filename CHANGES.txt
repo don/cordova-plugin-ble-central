@@ -1,3 +1,6 @@
+= 0.1.6 =
+startNotification handles both notifications and indications
+
 = 0.1.5 =
 add startScan and stopScan #40
 update to RFduino example

@@ -250,7 +250,7 @@ Register to be notified when the value of a characteristic changes.
 
 ### Description
 
-Function `startNotification` registers a callback that is called when the value of the characteristic changes.
+Function `startNotification` registers a callback that is called when the value of a characteristic changes. This method handles both `notifications` and `indications`.
 
 Raw data is passed from native code to the success callback as an [ArrayBuffer](#typed-arrays).
 
@@ -278,26 +278,6 @@ Function `stopNotification` stops a previously registered notification callback.
 - __service_uuid__: UUID of the BLE service
 - __characteristic_uuid__: UUID of the BLE characteristic
 - __success__: Success callback function that is invoked when the notification is removed. [optional]
-- __failure__: Error callback function, invoked when error occurs. [optional]
-
-## indicate
-
-Register for an indication when the value of a characteristic changes.
-
-    ble.indicate(device_id, service_uuid, characteristic_uuid, success, failure) {;
-
-### Description
-
-Function `indicate` registers a callback that is called when the value of the characteristic changes. Indicate is similar to notify, except indicate sends a confirmation back to the peripheral when the value is read.
-
-Raw data is passed from native code to the success callback as an [ArrayBuffer](#typed-arrays).
-
-### Parameters
-
-- __device_id__: UUID or MAC address of the peripheral
-- __service_uuid__: UUID of the BLE service
-- __characteristic_uuid__: UUID of the BLE characteristic
-- __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
 ## isConnected
