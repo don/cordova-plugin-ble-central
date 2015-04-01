@@ -44,10 +44,8 @@ Install with Cordova CLI
 - [ble.writeWithoutResponse](#writewithoutresponse)
 - [ble.startNotification](#startnotification)
 - [ble.stopNotification](#stopnotification)
-- [ble.indicate](#indicate)
 - [ble.isEnabled](#isenabled)
 - [ble.isConnected](#isconnected)
-
 
 ## scan
 
@@ -190,7 +188,7 @@ Function `disconnect` disconnects the selected device.
 
 Reads the value of a characteristic.
 
-    ble.read(device_id, service_uuid, characteristic_uuid, success, failure) {;
+    ble.read(device_id, service_uuid, characteristic_uuid, success, failure);
 
 ### Description
 
@@ -246,7 +244,7 @@ Function `writeWithoutResponse` writes data to a characteristic without a respon
 
 Register to be notified when the value of a characteristic changes.
 
-    ble.startNotification(device_id, service_uuid, characteristic_uuid, success, failure) {;
+    ble.startNotification(device_id, service_uuid, characteristic_uuid, success, failure);
 
 ### Description
 
@@ -266,7 +264,7 @@ Raw data is passed from native code to the success callback as an [ArrayBuffer](
 
 Stop being notified when the value of a characteristic changes.
 
-ble.stopNotification(device_id, service_uuid, characteristic_uuid, success, failure) {;
+ble.stopNotification(device_id, service_uuid, characteristic_uuid, success, failure);
 
 ### Description
 
