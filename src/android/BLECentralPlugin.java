@@ -20,8 +20,10 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 
+import android.provider.Settings;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaPlugin;
@@ -49,15 +51,18 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String WRITE_WITHOUT_RESPONSE = "writeWithoutResponse";
 
     private static final String NOTIFY = "startNotification"; // register for characteristic notification
-    // TODO future private static final String INDICATE = "indicate"; // register indication
 
     private static final String IS_ENABLED = "isEnabled";
     private static final String IS_CONNECTED  = "isConnected";
 
+    private static final String SETTINGS = "showBluetoothSettings";
+    private static final String ENABLE = "enable";
     // callbacks
     CallbackContext discoverCallback;
+    private CallbackContext enableBluetoothCallback;
 
     private static final String TAG = "BLEPlugin";
+    private static final int REQUEST_ENABLE_BLUETOOTH = 1;
 
     BluetoothAdapter bluetoothAdapter;
 
@@ -156,6 +161,18 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             } else {
                 callbackContext.error("Not connected.");
             }
+
+        } else if (action.equals(SETTINGS)) {
+
+            Intent intent = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
+            cordova.getActivity().startActivity(intent);
+            callbackContext.success();
+
+        } else if (action.equals(ENABLE)) {
+
+            enableBluetoothCallback = callbackContext;
+            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            cordova.startActivityForResult(this, intent, REQUEST_ENABLE_BLUETOOTH);
 
         } else {
 
@@ -327,6 +344,27 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
         // TODO offer option to return duplicates
 
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == REQUEST_ENABLE_BLUETOOTH) {
+
+            if (resultCode == Activity.RESULT_OK) {
+                LOG.d(TAG, "User enabled Bluetooth");
+                if (enableBluetoothCallback != null) {
+                    enableBluetoothCallback.success();
+                }
+            } else {
+                LOG.d(TAG, "User did *NOT* enable Bluetooth");
+                if (enableBluetoothCallback != null) {
+                    enableBluetoothCallback.error("User did not enable Bluetooth");
+                }
+            }
+
+            enableBluetoothCallback = null;
+        }
     }
 
     private UUID uuidFromString(String uuid) {

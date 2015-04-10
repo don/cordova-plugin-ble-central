@@ -46,6 +46,8 @@ Install with Cordova CLI
 - [ble.stopNotification](#stopnotification)
 - [ble.isEnabled](#isenabled)
 - [ble.isConnected](#isconnected)
+- [ble.showBluetoothSettings](#showbluetoothsettings)
+- [ble.enable](#enable)
 
 ## scan
 
@@ -329,6 +331,61 @@ Function `isEnabled` calls the success callback when Bluetooth is enabled and th
         },
         function() {
             console.log("Bluetooth is *not* enabled");
+        }
+    );
+
+## showBluetoothSettings
+
+Show the Bluetooth settings on the device.
+
+    ble.showBluetoothSettings(success, failure);
+
+### Description
+
+Function `showBluetoothSettings` opens the Bluetooth settings for the operating systems.
+
+#### iOS
+
+`showBluetoothSettings` is not supported on iOS.
+
+### Parameters
+
+- __success__: Success callback function [optional]
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
+### Quick Example
+
+    ble.showBluetoothSettings();
+
+## enable
+
+Enable Bluetooth on the device.
+
+    ble.enable(success, failure);
+
+### Description
+
+Function `enable` prompts the user to enable Bluetooth.
+
+#### Android
+
+`enable` is only supported on Android and does not work on iOS.
+
+If `enable` is called when Bluetooth is already enabled, the user will not prompted and the success callback will be invoked.
+
+### Parameters
+
+- __success__: Success callback function, invoked if the user enabled Bluetooth.
+- __failure__: Error callback function, invoked if the user does not enabled Bluetooth.
+
+### Quick Example
+
+    ble.enable(
+        function() {
+            console.log("Bluetooth is enabled");
+        },
+        function() {
+            console.log("The user did *not* enable Bluetooth");
         }
     );
 
