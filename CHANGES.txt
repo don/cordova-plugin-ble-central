@@ -1,3 +1,7 @@
+= 0.1.7 =
+Add showBluetoothSettings and enable for Android #43
+Update documentation about UUIDs #38
+
 = 0.1.6 =
 startNotification handles both notifications and indications
 
