@@ -103,7 +103,12 @@ var app = {
 
         var data = stringToBytes(messageInput.value);
         var deviceId = event.target.dataset.deviceId;
-        ble.write(deviceId, bluefruit.serviceUUID, bluefruit.txCharacteristic, data, success, failure);
+        ble.writeWithoutResponse(
+            deviceId,
+            bluefruit.serviceUUID,
+            bluefruit.txCharacteristic,
+            data, success, failure
+        );
 
     },
     disconnect: function(event) {
