@@ -523,6 +523,28 @@ You can read more about typed arrays in these articles on [MDN](https://develope
 
 UUIDs are always strings and not numbers. Some 16-bit UUIDs, such as '2220' look like integers, but they're not. (The integer 2220 is 0x8AC in hex.) This isn't a problem with 128 bit UUIDs since they look like strings 82b9e6e1-593a-456f-be9b-9215160ebcac. All 16-bit UUIDs should also be passed to methods as strings.
 
+# Testing the Plugin
+
+Tests require the [Cordova Plugin Test Framework](https://github.com/apache/cordova-plugin-test-framework)
+
+Create a new project
+
+    git clone https://github.com/don/cordova-plugin-ble-central
+    cordova create ble-test com.example.ble.test BLETest
+    cd ble-test
+    cordova platform add android
+    cordova plugin add ../ble
+    cordova plugin add ../ble/tests
+    cordova plugin add cordova-plugin-test-framework
+
+Change the start page in `config.xml`
+
+    <content src="cdvtests/index.html" />
+
+Run the app on your phone
+
+    cordova run android --device
+
 # License
 
 Apache 2.0
