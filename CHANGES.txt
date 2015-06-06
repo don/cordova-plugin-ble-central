@@ -1,3 +1,6 @@
+= 0.1.9 =
+Add start of WP8 for PGDA
+
 = 0.1.8 =
 Remove SDK version from config.xml (user is responsible for adding)
 Add tests for plugin
