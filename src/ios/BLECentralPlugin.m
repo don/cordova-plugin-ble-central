@@ -81,7 +81,7 @@
 
     [connectCallbacks removeObjectForKey:uuid];
 
-    if (peripheral && peripheral.state != CBPeripheralStateConnected) {
+    if (peripheral && peripheral.state == CBPeripheralStateConnected) {
         [manager cancelPeripheralConnection:peripheral];
     }
 
@@ -286,7 +286,7 @@
     CDVPluginResult *pluginResult = nil;
     CBPeripheral *peripheral = [self findPeripheralByUUID:[command.arguments objectAtIndex:0]];
 
-    if (peripheral && peripheral.state != CBPeripheralStateConnected) {
+    if (peripheral && peripheral.state == CBPeripheralStateConnected) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Not connected"];
