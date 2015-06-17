@@ -508,7 +508,7 @@
 
     for (CBPeripheral *p in peripherals) {
 
-        NSString* other = CFBridgingRelease((__bridge CFTypeRef __nullable)(p.identifier.UUIDString));
+        NSString* other = p.identifier.UUIDString;
 
         if ([uuid isEqualToString:other]) {
             peripheral = p;
