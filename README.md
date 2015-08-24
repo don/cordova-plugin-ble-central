@@ -228,7 +228,7 @@ Function `write` writes data to a characteristic.
 
 Writes data to a characteristic without confirmation from the peripheral.
 
-    ble.writeCommand(device_id, service_uuid, characteristic_uuid, value, success, failure);
+    ble.writeWithoutResponse(device_id, service_uuid, characteristic_uuid, value, success, failure);
 
 ### Description
 
