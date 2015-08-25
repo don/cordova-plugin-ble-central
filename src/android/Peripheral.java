@@ -190,7 +190,16 @@ public class Peripheral extends BluetoothGattCallback {
         if (newState == BluetoothGatt.STATE_CONNECTED) {
 
             connected = true;
-            gatt.discoverServices();
+            boolean success = gatt.discoverServices();
+            if (!success) {
+                LOG.d(TAG, "discoverServices() failed");
+                connected = false;
+                if (connectCallback != null) {
+                    connectCallback.error("Service discovery failed");
+                    connectCallback = null;
+                }
+                disconnect();
+            }
 
         } else {
 
