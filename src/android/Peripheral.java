@@ -368,15 +368,19 @@ public class Peripheral extends BluetoothGattCallback {
         if (characteristic == null) {
             callbackContext.error("Characteristic " + characteristicUUID + " not found.");
         } else {
-            characteristic.setValue(data);
-            characteristic.setWriteType(writeType);
-            writeCallback = callbackContext;
-
-            if (gatt.writeCharacteristic(characteristic)) {
-                success = true;
-            } else {
-                writeCallback = null;
-                callbackContext.error("Write failed");
+            if (characteristic.setValue(data)) {
+                characteristic.setWriteType(writeType);
+                writeCallback = callbackContext;
+    
+                if (gatt.writeCharacteristic(characteristic)) {
+                    success = true;
+                } else {
+                    writeCallback = null;
+                    callbackContext.error("Write failed");
+                }
+            }
+            else {
+                callbackContext.error("Write failed (couldn't set characteristic)");
             }
         }
 
