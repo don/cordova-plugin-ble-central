@@ -18,6 +18,7 @@ import android.app.Activity;
 
 import android.bluetooth.*;
 import android.util.Base64;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
@@ -354,36 +355,38 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     private void writeCharacteristic(CallbackContext callbackContext, UUID serviceUUID, UUID characteristicUUID, byte[] data, int writeType) {
-
-        boolean success = false;
-
         if (gatt == null) {
             callbackContext.error("BluetoothGatt is null");
             return;
         }
 
         BluetoothGattService service = gatt.getService(serviceUUID);
-        BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUUID);
+        BluetoothGattCharacteristic characteristic = null;
 
-        if (characteristic == null) {
-            callbackContext.error("Characteristic " + characteristicUUID + " not found.");
-        } else {
-            characteristic.setValue(data);
-            characteristic.setWriteType(writeType);
-            writeCallback = callbackContext;
-
-            if (gatt.writeCharacteristic(characteristic)) {
-                success = true;
-            } else {
-                writeCallback = null;
-                callbackContext.error("Write failed");
+        for (BluetoothGattCharacteristic c : service.getCharacteristics()) {
+            if (c.getProperties() == (BluetoothGattCharacteristic.PROPERTY_READ | BluetoothGattCharacteristic.PROPERTY_WRITE)) {
+                characteristic = c;
+                break;
             }
         }
 
-        if (!success) {
-            commandCompleted();
+        // if no writeable characteristic is found, return err
+        if (characteristic == null) {
+            callbackContext.error("Characteristic " + characteristicUUID + " not found.");
+            return;
         }
 
+        characteristic.setValue(data);
+        characteristic.setWriteType(writeType);
+        writeCallback = callbackContext;
+
+        if (!gatt.writeCharacteristic(characteristic)) {
+            writeCallback = null;
+            callbackContext.error("Write failed");
+            return;
+        }
+
+        commandCompleted();
     }
 
     public void queueRead(CallbackContext callbackContext, UUID serviceUUID, UUID characteristicUUID) {
