@@ -28,7 +28,9 @@ See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master
 Install with Cordova CLI
 
     $ cd /path/to/your/project
-    $ cordova plugin add com.megster.cordova.ble
+    $ cordova plugin add cordova-plugin-ble-central
+
+Note that this plugin's id changed from `com.megster.cordova.ble` to `cordova-plugin-ble-central` as part of the migration from the [Cordova plugin repo](http://plugins.cordova.io/) to [npm](https://www.npmjs.com/).
 
 # API
 
@@ -533,8 +535,8 @@ Create a new project
     cordova create ble-test com.example.ble.test BLETest
     cd ble-test
     cordova platform add android
-    cordova plugin add ../ble
-    cordova plugin add ../ble/tests
+    cordova plugin add ../cordova-plugin-ble-central
+    cordova plugin add ../cordova-plugin-ble-central/tests
     cordova plugin add cordova-plugin-test-framework
 
 Change the start page in `config.xml`

@@ -2,20 +2,16 @@
 <plugin
     xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    id="com.megster.cordova.ble"
-    version="0.1.9">
+    id="cordova-plugin-ble-central"
+    version="1.0.0">
 
     <name>BLE</name>
     <description>Bluetooth Low Energy (BLE) Central Plugin</description>
     <license>Apache 2.0</license>
-    <keywords>bluetooth, BLE, bluetooth low energy</keywords>
+    <keywords>bluetooth, BLE, bluetooth low energy, bluetooth smart</keywords>
 
     <repo>https://github.com/don/cordova-plugin-ble-central.git</repo>
     <issue>https://github.com/don/cordova-plugin-ble-central/issues</issue>
-
-    <engines>
-        <engine name="cordova" version=">=3.1.0" />
-    </engines>
 
     <js-module src="www/ble.js" name="ble">
         <clobbers target="ble" />
