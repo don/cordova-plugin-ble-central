@@ -24,8 +24,8 @@ static char ADVERTISEMENT_RSSI_IDENTIFER;
 @implementation CBPeripheral(com_megster_ble_extension)
 
 -(NSString *)uuidAsString {
-    if ([self UUID]) {
-        return (__bridge_transfer NSString *)CFUUIDCreateString(NULL, self.UUID);
+    if (self.identifier.UUIDString) {
+        return self.identifier.UUIDString;
     } else {
         return @"";
     }
@@ -33,10 +33,9 @@ static char ADVERTISEMENT_RSSI_IDENTIFER;
 
 
 -(NSDictionary *)asDictionary {
-
     NSString *uuidString = NULL;
-    if ([self UUID]) {
-        uuidString = (__bridge_transfer NSString *)CFUUIDCreateString(NULL, self.UUID);
+    if (self.identifier.UUIDString) {
+        uuidString = self.identifier.UUIDString;
     } else {
         uuidString = @"";
     }

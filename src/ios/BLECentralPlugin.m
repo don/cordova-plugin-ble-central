@@ -81,7 +81,7 @@
 
     [connectCallbacks removeObjectForKey:uuid];
 
-    if (peripheral && peripheral.isConnected) {
+    if (peripheral && peripheral.state == CBPeripheralStateConnected) {
         [manager cancelPeripheralConnection:peripheral];
     }
 
@@ -253,7 +253,6 @@
 
     NSLog(@"startScan");
     discoverPeripherialCallbackId = [command.callbackId copy];
-
     NSArray *serviceUUIDStrings = [command.arguments objectAtIndex:0];
     NSMutableArray *serviceUUIDs = [NSMutableArray new];
 
@@ -287,7 +286,7 @@
     CDVPluginResult *pluginResult = nil;
     CBPeripheral *peripheral = [self findPeripheralByUUID:[command.arguments objectAtIndex:0]];
 
-    if (peripheral && [peripheral isConnected]) {
+    if (peripheral && peripheral.state == CBPeripheralStateConnected) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Not connected"];
@@ -509,7 +508,7 @@
 
     for (CBPeripheral *p in peripherals) {
 
-        NSString* other = CFBridgingRelease(CFUUIDCreateString(nil, p.UUID));
+        NSString* other = p.identifier.UUIDString;
 
         if ([uuid isEqualToString:other]) {
             peripheral = p;
