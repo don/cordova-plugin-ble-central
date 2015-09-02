@@ -1,3 +1,8 @@
+= 1.0.0 =
+Change plugin id cordova-plugin-ble-central
+Move to NPM #86
+iOS 9 #62 Thanks Khashayar Pourdeilami
+
 = 0.1.9 =
 Add start of WP8 for PGDA
 
