@@ -94,7 +94,7 @@
 - (void)read:(CDVInvokedUrlCommand*)command {
     NSLog(@"read");
 
-    Foo *foo = [self getData:command];
+    Foo *foo = [self getData:command prop:CBCharacteristicPropertyRead];
     if (foo) {
 
         CBPeripheral *peripheral = [foo peripheral];
@@ -110,11 +110,9 @@
 
 // write: function (device_id, service_uuid, characteristic_uuid, value, success, failure) {
 - (void)write:(CDVInvokedUrlCommand*)command {
-    NSLog(@"write");
 
-    Foo *foo = [self getData:command];
+    Foo *foo = [self getData:command prop:(CBCharacteristicPropertyRead | CBCharacteristicPropertyWrite)];
     NSData *message = [command.arguments objectAtIndex:3]; // This is binary
-
     if (foo) {
 
         if (message != nil) {
@@ -143,7 +141,7 @@
 - (void)writeWithoutResponse:(CDVInvokedUrlCommand*)command {
     NSLog(@"writeWithoutResponse");
 
-    Foo *foo = [self getData:command];
+    Foo *foo = [self getData:command prop:CBCharacteristicPropertyWriteWithoutResponse];
     NSData *message = [command.arguments objectAtIndex:3]; // This is binary
 
     if (foo) {
@@ -168,7 +166,7 @@
 - (void)startNotification:(CDVInvokedUrlCommand*)command {
     NSLog(@"registering for notification");
 
-    Foo *foo = [self getData:command]; // TODO name this better
+    Foo *foo = [self getData:command prop:CBCharacteristicPropertyNotify]; // TODO name this better
 
     if (foo) {
         CBPeripheral *peripheral = [foo peripheral];
@@ -188,7 +186,7 @@
 - (void)stopNotification:(CDVInvokedUrlCommand*)command {
     NSLog(@"registering for notification");
 
-    Foo *foo = [self getData:command]; // TODO name this better
+    Foo *foo = [self getData:command prop:CBCharacteristicPropertyNotify]; // TODO name this better
 
     if (foo) {
         CBPeripheral *peripheral = [foo peripheral];
@@ -325,7 +323,7 @@
 
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central
 {
-    NSLog(@"Status of CoreBluetooth central manager changed %ld %@", central.state, [self centralManagerStateToString: central.state]);
+    NSLog(@"Status of CoreBluetooth central manager changed %ld %@", (long)central.state, [self centralManagerStateToString: central.state]);
 }
 
 - (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
@@ -351,7 +349,7 @@
 
     if (connectCallbackId) {
         CDVPluginResult *pluginResult = nil;
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Disconnected"];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[peripheral asDictionary]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
     }
 
@@ -416,7 +414,7 @@
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
-    //NSLog(@"didUpdateValueForCharacteristic");
+    NSLog(@"didUpdateValueForCharacteristic");
 
     NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
     NSString *notifyCallbackId = [notificationCallbacks objectForKey:key];
@@ -477,7 +475,6 @@
 
 
 - (void)peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
-
     // This is the callback for write
 
     NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
@@ -532,17 +529,17 @@
 }
 
 // RedBearLab
--(CBCharacteristic *) findCharacteristicFromUUID:(CBUUID *)UUID service:(CBService*)service
+-(CBCharacteristic *) findCharacteristicFromUUID:(CBUUID *)UUID service:(CBService*)service prop:(CBCharacteristicProperties)prop
 {
     NSLog(@"Looking for %@", UUID);
     for(int i=0; i < service.characteristics.count; i++)
     {
         CBCharacteristic *c = [service.characteristics objectAtIndex:i];
-        NSLog(@"Characteristic %@", c);
-        if ([self compareCBUUID:c.UUID UUID2:UUID]) return c;
+        if  (c.properties == prop && [self compareCBUUID:c.UUID UUID2:UUID]) {
+            return c;
+        }
     }
-
-    return nil; //Characteristic not found on this service
+   return nil; //Characteristic not found on this service
 }
 
 // RedBearLab
@@ -560,7 +557,7 @@
 }
 
 // expecting deviceUUID, serviceUUID, characteristicUUID in command.arguments
--(Foo*) getData:(CDVInvokedUrlCommand*)command {
+-(Foo*) getData:(CDVInvokedUrlCommand*)command prop:(CBCharacteristicProperties)prop {
     NSLog(@"getData");
 
     CDVPluginResult *pluginResult = nil;
@@ -603,7 +600,7 @@
         return nil;
     }
 
-    CBCharacteristic *characteristic = [self findCharacteristicFromUUID:characteristicUUID service:service];
+    CBCharacteristic *characteristic = [self findCharacteristicFromUUID:characteristicUUID service:service prop:prop];
 
     if (!characteristic)
     {
