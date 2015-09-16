@@ -111,7 +111,7 @@
 // write: function (device_id, service_uuid, characteristic_uuid, value, success, failure) {
 - (void)write:(CDVInvokedUrlCommand*)command {
 
-    Foo *foo = [self getData:command prop:(CBCharacteristicPropertyRead | CBCharacteristicPropertyWrite)];
+    Foo *foo = [self getData:command prop:CBCharacteristicPropertyWrite];
     NSData *message = [command.arguments objectAtIndex:3]; // This is binary
     if (foo) {
 
@@ -535,7 +535,7 @@
     for(int i=0; i < service.characteristics.count; i++)
     {
         CBCharacteristic *c = [service.characteristics objectAtIndex:i];
-        if  (c.properties == prop && [self compareCBUUID:c.UUID UUID2:UUID]) {
+        if ((c.properties & prop) != 0x0 && [self compareCBUUID:c.UUID UUID2:UUID]) {
             return c;
         }
     }
