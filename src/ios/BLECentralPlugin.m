@@ -81,7 +81,7 @@
 
     [connectCallbacks removeObjectForKey:uuid];
 
-    if (peripheral && peripheral.state == CBPeripheralStateConnected) {
+    if (peripheral && peripheral.state != CBPeripheralStateDisconnected) {
         [manager cancelPeripheralConnection:peripheral];
     }
 
