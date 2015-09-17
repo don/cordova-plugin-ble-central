@@ -64,6 +64,12 @@
 
     </platform>
 
+    <platform name="browser">
+        <js-module src="src/browser/BLECentralPlugin.js" name="BLECentralPlugin">
+            <merges target="ble" />
+        </js-module>
+    </platform>
+
     <platform name="wp8">
         <config-file target="config.xml" parent="/*">
             <feature name="BLE">
