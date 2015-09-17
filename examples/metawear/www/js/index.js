@@ -103,7 +103,7 @@ var app = {
         ble.writeCommand(app.deviceId, metawear.serviceUUID, metawear.txCharacteristic, buffer, success, failure);
     },
     subscribeForIncomingData: function() {
-        ble.notify(app.deviceId, metawear.serviceUUID, metawear.rxCharacteristic, app.onData, app.onError);
+        ble.startNotification(app.deviceId, metawear.serviceUUID, metawear.rxCharacteristic, app.onData, app.onError);
     },
     enableButtonFeedback: function(success, failure) {
         var data = new Uint8Array(6);

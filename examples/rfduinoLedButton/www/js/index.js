@@ -134,7 +134,7 @@ var app = {
         var deviceId = e.target.dataset.deviceId,
             onConnect = function() {
                 // subscribe for incoming data
-                ble.notify(deviceId, rfduino.serviceUUID, rfduino.receiveCharacteristic, app.onData, app.onError);
+                ble.startNotification(deviceId, rfduino.serviceUUID, rfduino.receiveCharacteristic, app.onData, app.onError);
                 disconnectButton.dataset.deviceId = deviceId;
                 ledButton.dataset.deviceId = deviceId;
                 app.showDetailPage();

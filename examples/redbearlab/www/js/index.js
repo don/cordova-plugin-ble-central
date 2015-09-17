@@ -76,7 +76,7 @@ var app = {
         var deviceId = e.target.dataset.deviceId,
             onConnect = function() {
                 // subscribe for incoming data
-                ble.notify(deviceId, redbear.serviceUUID, redbear.rxCharacteristic, app.onData, app.onError);
+                ble.startNotification(deviceId, redbear.serviceUUID, redbear.rxCharacteristic, app.onData, app.onError);
                 sendButton.dataset.deviceId = deviceId;
                 disconnectButton.dataset.deviceId = deviceId;
                 app.showDetailPage();

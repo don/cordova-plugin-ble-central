@@ -58,7 +58,7 @@ var app = {
     },
     onConnect: function(peripheral) {
         app.status("Connected to " + peripheral.id);
-        ble.notify(peripheral.id, heartRate.service, heartRate.measurement, app.onData, app.onError);
+        ble.startNotification(peripheral.id, heartRate.service, heartRate.measurement, app.onData, app.onError);
     },
     onDisconnect: function(reason) {
         alert("Disconnected " + reason);

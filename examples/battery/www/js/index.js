@@ -62,7 +62,7 @@ var app = {
 
                 // TODO check if we have the battery service
                 // TODO check if the battery service can notify us
-                //ble.notify(deviceId, battery.service, battery.level, app.onBatteryLevelChange, app.onError);
+                //ble.startNotification(deviceId, battery.service, battery.level, app.onBatteryLevelChange, app.onError);
                 batteryStateButton.dataset.deviceId = deviceId;
                 disconnectButton.dataset.deviceId = deviceId;
                 app.showDetailPage();

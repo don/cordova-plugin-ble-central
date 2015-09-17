@@ -73,9 +73,9 @@ var app = {
         var deviceId = e.target.dataset.deviceId,
             onConnect = function() {
 
-                ble.notify(deviceId, button.service, button.data, app.onButtonData, app.onError);
+                ble.startNotification(deviceId, button.service, button.data, app.onButtonData, app.onError);
                 // subscribing for incoming data
-                ble.notify(deviceId, accelerometer.service, accelerometer.data, app.onAccelerometerData, app.onError);
+                ble.startNotification(deviceId, accelerometer.service, accelerometer.data, app.onAccelerometerData, app.onError);
                 // turn accelerometer on
                 var configData = new Uint8Array(1);
                 configData[0] = 0xFF;
