@@ -4,6 +4,8 @@ Disconnect cancels pending connections on iOS #93 Thanks rrharvey
 Add dummy browser platform implementation for better PhoneGap developer app support #87 #90 Thanks surajpindoria 
 Replace notify in examples with startNotification #63
 Stop notification from stacking on Android #71 Thanks charlesalton
+Connect failure callback returns the peripheral #16
+Better log message for unsupported iOS hardware #60
 
 = 1.0.0 =
 Change plugin id cordova-plugin-ble-central
