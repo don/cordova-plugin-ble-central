@@ -15,14 +15,13 @@
     "url": "git+https://github.com/don/cordova-plugin-ble-central.git"
   },
   "keywords": [
+    "cordova",
     "bluetooth",
+    "bluetoothLE",
     "BLE",
-    "bluetooth low energy",
-    "bluetooth smart",
-    "ecosystem:cordova",
-    "cordova-ios",
-    "cordova-android",
-    "cordova-wp8"
+    "low energy",
+    "smart",
+    "ecosystem:cordova"
   ],
   "author": "Don Coleman <don.coleman@gmail.com>",
   "license": "Apache-2.0",
