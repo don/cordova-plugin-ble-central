@@ -34,9 +34,9 @@ function stringToBytes(string) {
 
 // this is Nordic's UART service
 var bluefruit = {
-    serviceUUID: "6E400001-B5A3-F393-E0A9-E50E24DCCA9E",
-    txCharacteristic: "6E400002-B5A3-F393-E0A9-E50E24DCCA9E", // transmit is from the phone's perspective
-    rxCharacteristic: "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"  // receive is from the phone's perspective
+    serviceUUID: '6e400001-b5a3-f393-e0a9-e50e24dcca9e',
+    txCharacteristic: '6e400002-b5a3-f393-e0a9-e50e24dcca9e', // transmit is from the phone's perspective
+    rxCharacteristic: '6e400003-b5a3-f393-e0a9-e50e24dcca9e'  // receive is from the phone's perspective
 };
 
 var app = {
@@ -74,15 +74,35 @@ var app = {
     },
     connect: function(e) {
         var deviceId = e.target.dataset.deviceId,
-            onConnect = function() {
+            onConnect = function(peripheral) {
+                app.determineWriteType(peripheral);
+
                 // subscribe for incoming data
                 ble.startNotification(deviceId, bluefruit.serviceUUID, bluefruit.rxCharacteristic, app.onData, app.onError);
                 sendButton.dataset.deviceId = deviceId;
                 disconnectButton.dataset.deviceId = deviceId;
+                resultDiv.innerHTML = "";
                 app.showDetailPage();
             };
 
         ble.connect(deviceId, onConnect, app.onError);
+    },
+    determineWriteType: function(peripheral) {
+        // Adafruit nRF8001 breakout uses WriteWithoutResponse for the TX characteristic
+        // Newer Bluefruit devices use Write Request for the TX characteristic
+
+        var characteristic = peripheral.characteristics.filter(function(element) {
+            if (element.characteristic.toLowerCase() === bluefruit.txCharacteristic) {
+                return element;
+            }
+        })[0];
+
+        if (characteristic.properties.indexOf('WriteWithoutResponse') > -1) {
+            app.writeWithoutResponse = true;
+        } else {
+            app.writeWithoutResponse = false;
+        }
+
     },
     onData: function(data) { // data received from Arduino
         console.log(data);
@@ -103,12 +123,22 @@ var app = {
 
         var data = stringToBytes(messageInput.value);
         var deviceId = event.target.dataset.deviceId;
-        ble.writeWithoutResponse(
-            deviceId,
-            bluefruit.serviceUUID,
-            bluefruit.txCharacteristic,
-            data, success, failure
-        );
+
+        if (app.writeWithoutResponse) {
+            ble.writeWithoutResponse(
+                deviceId,
+                bluefruit.serviceUUID,
+                bluefruit.txCharacteristic,
+                data, success, failure
+            );
+        } else {
+            ble.write(
+                deviceId,
+                bluefruit.serviceUUID,
+                bluefruit.txCharacteristic,
+                data, success, failure
+            );
+        }
 
     },
     disconnect: function(event) {
