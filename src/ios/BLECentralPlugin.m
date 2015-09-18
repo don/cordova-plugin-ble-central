@@ -319,6 +319,13 @@
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central
 {
     NSLog(@"Status of CoreBluetooth central manager changed %ld %@", (long)central.state, [self centralManagerStateToString: central.state]);
+
+    if (central.state == CBCentralManagerStateUnsupported)
+    {
+        NSLog(@"=============================================================");
+        NSLog(@"WARNING: This hardware does not support Bluetooth Low Energy.");
+        NSLog(@"=============================================================");
+    }
 }
 
 - (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
