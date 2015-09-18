@@ -203,11 +203,6 @@
 
 }
 
-- (void)indicate:(CDVInvokedUrlCommand*)command {
-    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Not Implemented"];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
-
 - (void)isEnabled:(CDVInvokedUrlCommand*)command {
 
     CDVPluginResult *pluginResult = nil;

@@ -124,11 +124,6 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'stopNotification', [device_id, service_uuid, characteristic_uuid]);
     },
 
-    // success callback is called on indication.
-    indicate: function (device_id, service_uuid, characteristic_uuid, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'indicate', [device_id, service_uuid, characteristic_uuid]);
-    },
-
     isConnected: function (device_id, success, failure) {
         cordova.exec(success, failure, 'BLE', 'isConnected', [device_id]);
     },
