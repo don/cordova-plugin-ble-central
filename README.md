@@ -273,7 +273,7 @@ Register to be notified when the value of a characteristic changes.
 
 ### Description
 
-Function `startNotification` registers a callback that is called when the value of a characteristic changes. This method handles both `notifications` and `indications`.
+Function `startNotification` registers a callback that is called *every time* the value of a characteristic changes. This method handles both `notifications` and `indications`. The success callback is called multiple times.
 
 Raw data is passed from native code to the success callback as an [ArrayBuffer](#typed-arrays).
 
@@ -282,8 +282,18 @@ Raw data is passed from native code to the success callback as an [ArrayBuffer](
 - __device_id__: UUID or MAC address of the peripheral
 - __service_uuid__: UUID of the BLE service
 - __characteristic_uuid__: UUID of the BLE characteristic
-- __success__: Success callback function that is invoked when the connection is successful. [optional]
+- __success__: Success callback function invoked every time a notification occurs
 - __failure__: Error callback function, invoked when error occurs. [optional]
+ 
+### Quick Example
+
+    var onData = function(buffer) {
+        // Decode the ArrayBuffer into a typed Array based on the data you expect
+        var data = new Uint8Array(buffer);
+        alert("Button state changed to " + data[0]);
+    }
+    
+    ble.startNotification(device_id, "FFE0", "FFE1", onData, failure);
 
 ## stopNotification
 
