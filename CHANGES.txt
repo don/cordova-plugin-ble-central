@@ -1,3 +1,10 @@
+= 1.0.1 =
+Handle services that reuse UUIDs across characteristics #82 #94 Thanks ggordan 
+Disconnect cancels pending connections on iOS #93 Thanks rrharvey
+Add dummy browser platform implementation for better PhoneGap developer app support #87 #90 Thanks surajpindoria 
+Replace notify in examples with startNotification #63
+Stop notification from stacking on Android #71 Thanks charlesalton
+
 = 1.0.0 =
 Change plugin id cordova-plugin-ble-central
 Move to NPM #86
