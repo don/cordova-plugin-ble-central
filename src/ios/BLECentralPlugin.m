@@ -602,8 +602,14 @@
 
     CBCharacteristic *characteristic = [self findCharacteristicFromUUID:characteristicUUID service:service prop:prop];
 
+    // Special handling for INDICATE. If charateristic with notify is not found, check for indicate.
+    if (prop == CBCharacteristicPropertyNotify && !characteristic) {
+        characteristic = [self findCharacteristicFromUUID:characteristicUUID service:service prop:CBCharacteristicPropertyIndicate];
+    }
+
     if (!characteristic)
     {
+        // NOTE: the characteristic might exist, but not have the right property
         NSLog(@"Could not find characteristic with UUID %@ on service with UUID %@ on peripheral with UUID %@",
               characteristicUUIDString,
               serviceUUIDString,
