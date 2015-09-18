@@ -31,8 +31,8 @@
         <header-file src="src/ios/CBPeripheral+Extensions.h" target-dir="BLECentralPlugin" />
         <source-file src="src/ios/CBPeripheral+Extensions.m" target-dir="BLECentralPlugin" />
 
-        <header-file src="src/ios/Foo.h" target-dir="BLECentralPlugin" />
-        <source-file src="src/ios/Foo.m" target-dir="BLECentralPlugin" />
+        <header-file src="src/ios/BLECommandContext.h" target-dir="BLECentralPlugin" />
+        <source-file src="src/ios/BLECommandContext.m" target-dir="BLECentralPlugin" />
 
         <!-- frameworks -->
         <framework src="CoreBluetooth.framework" />

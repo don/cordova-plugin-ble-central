@@ -1,13 +1,12 @@
 //
-//  Foo.h
+//  BLECommandContext
 //  Holds peripherial, service and characteristic
-//  TODO rename
 //
 
 #import <Foundation/Foundation.h>
 #import <CoreBluetooth/CoreBluetooth.h>
 
-@interface Foo : NSObject
+@interface BLECommandContext : NSObject
 
 @property CBPeripheral *peripheral;
 @property CBService *service;
