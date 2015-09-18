@@ -177,7 +177,8 @@ public class Peripheral extends BluetoothGattCallback {
             result.setKeepCallback(true);
             connectCallback.sendPluginResult(result);
         } else {
-            connectCallback.error("Service discovery failed. status = " + status);
+            LOG.e(TAG, "Service discovery failed. status = " + status);
+            connectCallback.error(this.asJSONObject());
             disconnect();
         }
     }
@@ -195,7 +196,7 @@ public class Peripheral extends BluetoothGattCallback {
         } else {
 
             if (connectCallback != null) {
-                connectCallback.error("Disconnected");
+                connectCallback.error(this.asJSONObject());
             }
             disconnect();
         }

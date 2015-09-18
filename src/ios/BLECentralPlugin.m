@@ -337,8 +337,6 @@
 
     NSLog(@"didDisconnectPeripheral");
 
-    // TODO send PhoneGap more info from NSError
-
     NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
     [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
 
@@ -354,13 +352,11 @@
 
     NSLog(@"didFailToConnectPeripheral");
 
-    // TODO send PhoneGap more info from NSError
-
     NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
     [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
 
     CDVPluginResult *pluginResult = nil;
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Failed to Connect"];
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[peripheral asDictionary]];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
 
 }
