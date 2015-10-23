@@ -1,3 +1,7 @@
+= 1.0.2 =
+Update plugin id for examples
+Fix npm keywords
+
 = 1.0.1 =
 Handle services that reuse UUIDs across characteristics #82 #94 Thanks ggordan
 Disconnect cancels pending connections on iOS #93 Thanks rrharvey

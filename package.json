@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-ble-central",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Bluetooth Low Energy (BLE) Central Plugin",
   "cordova": {
     "id": "cordova-plugin-ble-central",
@@ -17,11 +17,14 @@
   "keywords": [
     "cordova",
     "bluetooth",
-    "bluetoothLE",
-    "BLE",
+    "ble",
+    "bluetoothle",
+    "bluetooth le"
     "low energy",
     "smart",
-    "ecosystem:cordova"
+    "ecosystem:cordova",
+    "cordova-ios",
+    "cordova-android"
   ],
   "author": "Don Coleman <don.coleman@gmail.com>",
   "license": "Apache-2.0",
