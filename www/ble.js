@@ -47,6 +47,17 @@ function convertToNativeJS(object) {
     });
 }
 
+var hasPromises = typeof(Promise) !== 'undefined';
+
+function promiseOrCallbackExec(methodName, args, successCb, failureCb) {
+    if (successCb == null && hasPromises) {
+        return new Promise(function(resolve, reject) {
+            cordova.exec(resolve, reject, "BLE", methodName, args);
+        });
+    }
+    cordova.exec(successCb, failureCb, "BLE", methodName, args);
+}
+
 module.exports = {
 
     scan: function (services, seconds, success, failure) {
@@ -66,7 +77,7 @@ module.exports = {
     },
 
     stopScan: function (success, failure) {
-        cordova.exec(success, failure, 'BLE', 'stopScan', []);
+        return promiseOrCallbackExec('stopScan', [], success, failure);
     },
 
 
@@ -84,7 +95,7 @@ module.exports = {
     },
 
     disconnect: function (device_id, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'disconnect', [device_id]);
+        return promiseOrCallbackExec('disconnect', [device_id], success, failure);
     },
 
     // characteristic value comes back as ArrayBuffer in the success callback
@@ -125,19 +136,19 @@ module.exports = {
     },
 
     isConnected: function (device_id, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'isConnected', [device_id]);
+        return promiseOrCallbackExec('isConnected', [device_id], success, failure);
     },
 
     isEnabled: function (success, failure) {
-        cordova.exec(success, failure, 'BLE', 'isEnabled', []);
+        return promiseOrCallbackExec("isEnabled", [], success, failure);
     },
 
     enable: function (success, failure) {
-        cordova.exec(success, failure, "BLE", "enable", []);
+        return promiseOrCallbackExec("enabled", [], success, failure);
     },
 
     showBluetoothSettings: function (success, failure) {
-        cordova.exec(success, failure, "BLE", "showBluetoothSettings", []);
+        return promiseOrCallbackExec("showBluetoothSettings", [], success, failure);
     }
 
 };
