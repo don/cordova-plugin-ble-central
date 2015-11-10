@@ -47,9 +47,8 @@ function convertToNativeJS(object) {
     });
 }
 
-var hasPromises = typeof(Promise) !== 'undefined';
-
 function promiseOrCallbackExec(methodName, args, successCb, failureCb) {
+    var hasPromises = module.exports.hasPromiseSupport();
     if (successCb == null && hasPromises) {
         return new Promise(function(resolve, reject) {
             cordova.exec(resolve, reject, "BLE", methodName, args);
@@ -59,6 +58,11 @@ function promiseOrCallbackExec(methodName, args, successCb, failureCb) {
 }
 
 module.exports = {
+
+    hasPromiseSupport: function() {
+        var hasPromises = typeof(Promise) !== 'undefined';
+        return hasPromises;
+    },
 
     scan: function (services, seconds, success, failure) {
         var successWrapper = function(peripheral) {
