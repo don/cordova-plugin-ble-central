@@ -280,10 +280,9 @@ public class Peripheral extends BluetoothGattCallback {
         BluetoothGattService service = gatt.getService(serviceUUID);
         //BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUUID);
         BluetoothGattCharacteristic characteristic = findNotifyCharacteristic(service, characteristicUUID);
-        String key = generateHashKey(serviceUUID, characteristic);
-
+  
         if (characteristic != null) {
-
+            String key = generateHashKey(serviceUUID, characteristic);
             notificationCallbacks.put(key, callbackContext);
 
             if (gatt.setCharacteristicNotification(characteristic, true)) {
@@ -433,6 +432,12 @@ public class Peripheral extends BluetoothGattCallback {
                 break;
             }
         }
+        
+        // Some devices don't advertise their own characteristics correctly
+        if( characteristic == null ){
+          characteristic = service.getCharacteristic(characteristicUUID);
+        }
+        
         return characteristic;
     }
 
