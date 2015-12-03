@@ -323,6 +323,36 @@ public class Peripheral extends BluetoothGattCallback {
         }
     }
 
+    private void removeNotifyCallback(CallbackContext callbackContext, UUID serviceUUID, UUID characteristicUUID) {
+
+        if (gatt == null) {
+            callbackContext.error("BluetoothGatt is null");
+            return;
+        }
+
+        BluetoothGattService service = gatt.getService(serviceUUID);
+        BluetoothGattCharacteristic characteristic = findNotifyCharacteristic(service, characteristicUUID);
+        String key = generateHashKey(serviceUUID, characteristic);
+
+        if (characteristic != null) {
+
+            notificationCallbacks.remove(key);
+
+            if (gatt.setCharacteristicNotification(characteristic, false)) {
+                callbackContext.success();
+            } else {
+                // TODO we can probably ignore and return success anyway since we removed the notification callback
+                callbackContext.error("Failed to stop notification for " + characteristicUUID);
+            }
+
+        } else {
+            callbackContext.error("Characteristic " + characteristicUUID + " not found");
+        }
+
+        commandCompleted();
+
+    }
+
     // Some devices reuse UUIDs across characteristics, so we can't use service.getCharacteristic(characteristicUUID)
     // instead check the UUID and properties for each characteristic in the service until we find the best match
     // This function prefers Notify over Indicate
@@ -484,6 +514,11 @@ public class Peripheral extends BluetoothGattCallback {
         queueCommand(command);
     }
 
+    public void queueRemoveNotifyCallback(CallbackContext callbackContext, UUID serviceUUID, UUID characteristicUUID) {
+        BLECommand command = new BLECommand(callbackContext, serviceUUID, characteristicUUID, BLECommand.REMOVE_NOTIFY);
+        queueCommand(command);
+    }
+
     // add a new command to the queue
     private void queueCommand(BLECommand command) {
         LOG.d(TAG,"Queuing Command " + command);
@@ -529,6 +564,10 @@ public class Peripheral extends BluetoothGattCallback {
                 LOG.d(TAG,"Register Notify " + command.getCharacteristicUUID());
                 bleProcessing = true;
                 registerNotifyCallback(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID());
+            } else if (command.getType() == BLECommand.REMOVE_NOTIFY) {
+                LOG.d(TAG,"Remove Notify " + command.getCharacteristicUUID());
+                bleProcessing = true;
+                removeNotifyCallback(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID());
             } else {
                 // this shouldn't happen
                 throw new RuntimeException("Unexpected BLE Command type " + command.getType());

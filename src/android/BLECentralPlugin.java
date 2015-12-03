@@ -50,7 +50,8 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String WRITE = "write";
     private static final String WRITE_WITHOUT_RESPONSE = "writeWithoutResponse";
 
-    private static final String NOTIFY = "startNotification"; // register for characteristic notification
+    private static final String START_NOTIFICATION = "startNotification"; // register for characteristic notification
+    private static final String STOP_NOTIFICATION = "stopNotification"; // remove characteristic notification
 
     private static final String IS_ENABLED = "isEnabled";
     private static final String IS_CONNECTED  = "isConnected";
@@ -86,15 +87,12 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
             UUID[] serviceUUIDs = parseServiceUUIDList(args.getJSONArray(0));
             int scanSeconds = args.getInt(1);
-            cordova.getThreadPool().execute(
-                new FindLowEnergyDevicesRunnable(callbackContext, serviceUUIDs, scanSeconds)
-            );
+            findLowEnergyDevices(callbackContext, serviceUUIDs, scanSeconds);
+
         } else if (action.equals(START_SCAN)) {
 
             UUID[] serviceUUIDs = parseServiceUUIDList(args.getJSONArray(0));
-            cordova.getThreadPool().execute(
-                new FindLowEnergyDevicesRunnable(callbackContext, serviceUUIDs, -1)
-            );
+            findLowEnergyDevices(callbackContext, serviceUUIDs, -1);
 
         } else if (action.equals(STOP_SCAN)) {
 
@@ -140,12 +138,19 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             int type = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE;
             write(callbackContext, macAddress, serviceUUID, characteristicUUID, data, type);
 
-        } else if (action.equals(NOTIFY)) {
+        } else if (action.equals(START_NOTIFICATION)) {
 
             String macAddress = args.getString(0);
             UUID serviceUUID = uuidFromString(args.getString(1));
             UUID characteristicUUID = uuidFromString(args.getString(2));
             registerNotifyCallback(callbackContext, macAddress, serviceUUID, characteristicUUID);
+
+        } else if (action.equals(STOP_NOTIFICATION)) {
+
+            String macAddress = args.getString(0);
+            UUID serviceUUID = uuidFromString(args.getString(1));
+            UUID characteristicUUID = uuidFromString(args.getString(2));
+            removeNotifyCallback(callbackContext, macAddress, serviceUUID, characteristicUUID);
 
         } else if (action.equals(IS_ENABLED)) {
 
@@ -273,57 +278,56 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     }
 
-    // Starting a scan sometimes takes > 30ms and android complains if the UI thread is
-    // blocked for that amount of time, so we start the scan on a background thread. 
-    private class FindLowEnergyDevicesRunnable implements Runnable {
-        private CallbackContext callbackContext;
-        private UUID[] serviceUUIDs;
-        private int scanSeconds;
+    private void removeNotifyCallback(CallbackContext callbackContext, String macAddress, UUID serviceUUID, UUID characteristicUUID) {
 
-        public FindLowEnergyDevicesRunnable(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds) {
-            this.callbackContext = callbackContext;
-            this.serviceUUIDs = serviceUUIDs;
-            this.scanSeconds = scanSeconds;
+        Peripheral peripheral = peripherals.get(macAddress);
+        if (peripheral != null) {
+
+            peripheral.queueRemoveNotifyCallback(callbackContext, serviceUUID, characteristicUUID);
+
+        } else {
+
+            callbackContext.error("Peripheral " + macAddress + " not found");
+
         }
 
-        public void run() {
-            // TODO skip if currently scanning
+    }
 
-            // clear non-connected cached peripherals
-            for(Iterator<Map.Entry<String, Peripheral>> iterator = peripherals.entrySet().iterator(); iterator.hasNext(); ) {
-                Map.Entry<String, Peripheral> entry = iterator.next();
-                if(!entry.getValue().isConnected()) {
-                    iterator.remove();
+
+    private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds) {
+
+        // TODO skip if currently scanning
+
+        // clear non-connected cached peripherals
+        for(Iterator<Map.Entry<String, Peripheral>> iterator = peripherals.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<String, Peripheral> entry = iterator.next();
+            if(!entry.getValue().isConnected()) {
+                iterator.remove();
+            }
+        }
+
+        discoverCallback = callbackContext;
+
+        if (serviceUUIDs.length > 0) {
+            bluetoothAdapter.startLeScan(serviceUUIDs, this);
+        } else {
+            bluetoothAdapter.startLeScan(this);
+        }
+
+        if (scanSeconds > 0) {
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    LOG.d(TAG, "Stopping Scan");
+                    BLECentralPlugin.this.bluetoothAdapter.stopLeScan(BLECentralPlugin.this);
                 }
-            }
-
-            discoverCallback = callbackContext;
-
-            if (serviceUUIDs.length > 0) {
-                BLECentralPlugin.this.bluetoothAdapter.startLeScan(serviceUUIDs, BLECentralPlugin.this);
-            } else {
-                BLECentralPlugin.this.bluetoothAdapter.startLeScan(BLECentralPlugin.this);
-            }
-
-            if (scanSeconds > 0) {
-                cordova.getActivity().runOnUiThread(new Runnable() {
-                    public void run() {
-                        Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                LOG.d(TAG, "Stopping Scan");
-                                BLECentralPlugin.this.bluetoothAdapter.stopLeScan(BLECentralPlugin.this);
-                            }
-                        }, scanSeconds * 1000);
-                    }
-                });
-            }
-
-            PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
-            result.setKeepCallback(true);
-            callbackContext.sendPluginResult(result);
+            }, scanSeconds * 1000);
         }
+
+        PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
+        result.setKeepCallback(true);
+        callbackContext.sendPluginResult(result);
     }
 
     private void listKnownDevices(CallbackContext callbackContext) {

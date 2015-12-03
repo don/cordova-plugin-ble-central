@@ -12,6 +12,7 @@ class BLECommand {
     // Types
     public static int READ = 10000;
     public static int REGISTER_NOTIFY = 10001;
+    public static int REMOVE_NOTIFY = 10002;
     // BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
     // BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
 
