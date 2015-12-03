@@ -25,10 +25,23 @@ See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master
 
 # Installing
 
-Install with Cordova CLI
+### Cordova
 
-    $ cd /path/to/your/project
     $ cordova plugin add cordova-plugin-ble-central
+
+### PhoneGap
+
+    $ phonegap plugin add cordova-plugin-ble-central
+
+### PhoneGap Build
+
+Edit config.xml to install the plugin for [PhoneGap Build](http://build.phonegap.com).
+
+    <gap:plugin name="cordova-plugin-ble-central" source="npm" />
+
+### PhoneGap Developer App
+
+This plugin is included in iOS and Android versions of the [PhoneGap Developer App](http://app.phonegap.com/).
 
 Note that this plugin's id changed from `com.megster.cordova.ble` to `cordova-plugin-ble-central` as part of the migration from the [Cordova plugin repo](http://plugins.cordova.io/) to [npm](https://www.npmjs.com/).
 
@@ -165,6 +178,8 @@ Connect to a peripheral.
 ### Description
 
 Function `connect` connects to a BLE peripheral. The callback is long running. Success will be called when the connection is successful. Service and characteristic info will be passed to the success callback in the [peripheral object](#peripheral-data). Failure is called if the connection fails, or later if the peripheral disconnects. An peripheral object is passed to the failure callback.
+
+__NOTE__: the connect failure callback will be called if the peripheral disconnects.
 
 ### Parameters
 
