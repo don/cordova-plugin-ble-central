@@ -278,7 +278,6 @@ public class Peripheral extends BluetoothGattCallback {
         }
 
         BluetoothGattService service = gatt.getService(serviceUUID);
-        //BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUUID);
         BluetoothGattCharacteristic characteristic = findNotifyCharacteristic(service, characteristicUUID);
         String key = generateHashKey(serviceUUID, characteristic);
 
@@ -349,6 +348,11 @@ public class Peripheral extends BluetoothGattCallback {
             }
         }
 
+        // As a last resort, try and find ANY characteristic with this UUID, even if it doesn't have the correct properties
+        if (characteristic == null) {
+            characteristic = service.getCharacteristic(characteristicUUID);
+        }
+
         return characteristic;
     }
 
@@ -362,7 +366,7 @@ public class Peripheral extends BluetoothGattCallback {
         }
 
         BluetoothGattService service = gatt.getService(serviceUUID);
-        BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUUID);
+        BluetoothGattCharacteristic characteristic = findReadableCharacteristic(service, characteristicUUID);
 
         if (characteristic == null) {
             callbackContext.error("Characteristic " + characteristicUUID + " not found.");
@@ -380,6 +384,29 @@ public class Peripheral extends BluetoothGattCallback {
             commandCompleted();
         }
 
+    }
+
+    // Some peripherals re-use UUIDs for multiple characteristics so we need to check the properties
+    // and UUID of all characteristics instead of using service.getCharacteristic(characteristicUUID)
+    private BluetoothGattCharacteristic findReadableCharacteristic(BluetoothGattService service, UUID characteristicUUID) {
+        BluetoothGattCharacteristic characteristic = null;
+
+        int read = BluetoothGattCharacteristic.PROPERTY_READ;
+
+        List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
+        for (BluetoothGattCharacteristic c : characteristics) {
+            if ((c.getProperties() & read) != 0 && characteristicUUID.equals(c.getUuid())) {
+                characteristic = c;
+                break;
+            }
+        }
+
+        // As a last resort, try and find ANY characteristic with this UUID, even if it doesn't have the correct properties
+        if (characteristic == null) {
+            characteristic = service.getCharacteristic(characteristicUUID);
+        }
+
+        return characteristic;
     }
 
     private void writeCharacteristic(CallbackContext callbackContext, UUID serviceUUID, UUID characteristicUUID, byte[] data, int writeType) {
@@ -433,6 +460,12 @@ public class Peripheral extends BluetoothGattCallback {
                 break;
             }
         }
+
+        // As a last resort, try and find ANY characteristic with this UUID, even if it doesn't have the correct properties
+        if (characteristic == null) {
+            characteristic = service.getCharacteristic(characteristicUUID);
+        }
+
         return characteristic;
     }
 

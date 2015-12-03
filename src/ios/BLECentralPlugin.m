@@ -526,14 +526,28 @@
     return nil; //Service not found on this peripheral
 }
 
-// RedBearLab
+// Find a characteristic in service with a specific property
 -(CBCharacteristic *) findCharacteristicFromUUID:(CBUUID *)UUID service:(CBService*)service prop:(CBCharacteristicProperties)prop
+{
+    NSLog(@"Looking for %@ with properties %lu", UUID, (unsigned long)prop);
+    for(int i=0; i < service.characteristics.count; i++)
+    {
+        CBCharacteristic *c = [service.characteristics objectAtIndex:i];
+        if ((c.properties & prop) != 0x0 && [c.UUID.UUIDString isEqualToString: UUID.UUIDString]) {
+            return c;
+        }
+    }
+   return nil; //Characteristic with prop not found on this service
+}
+
+// Find a characteristic in service by UUID
+-(CBCharacteristic *) findCharacteristicFromUUID:(CBUUID *)UUID service:(CBService*)service
 {
     NSLog(@"Looking for %@", UUID);
     for(int i=0; i < service.characteristics.count; i++)
     {
         CBCharacteristic *c = [service.characteristics objectAtIndex:i];
-        if ((c.properties & prop) != 0x0 && [self compareCBUUID:c.UUID UUID2:UUID]) {
+        if ([c.UUID.UUIDString isEqualToString: UUID.UUIDString]) {
             return c;
         }
     }
@@ -605,9 +619,13 @@
         characteristic = [self findCharacteristicFromUUID:characteristicUUID service:service prop:CBCharacteristicPropertyIndicate];
     }
 
+    // As a last resort, try and find ANY characteristic with this UUID, even if it doesn't have the correct properties
+    if (!characteristic) {
+        characteristic = [self findCharacteristicFromUUID:characteristicUUID service:service];
+    }
+
     if (!characteristic)
     {
-        // NOTE: the characteristic might exist, but not have the right property
         NSLog(@"Could not find characteristic with UUID %@ on service with UUID %@ on peripheral with UUID %@",
               characteristicUUIDString,
               serviceUUIDString,
