@@ -306,6 +306,7 @@
         NSString *state = [bluetoothStates objectForKey:[NSNumber numberWithInt:bluetoothState]];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:state];
         [pluginResult setKeepCallbackAsBool:TRUE];
+        NSLog(@"Start state notifications on callback %@", stateCallbackId);
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"State callback already registered"];
     }
@@ -325,6 +326,10 @@
     
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)onReset {
+    stateCallbackId = nil;
 }
 
 #pragma mark - timers
@@ -372,6 +377,7 @@
         NSString *state = [bluetoothStates objectForKey:@(central.state)];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:state];
         [pluginResult setKeepCallbackAsBool:TRUE];
+        NSLog(@"Report Bluetooth state \"%@\" on callback %@", state, stateCallbackId);
         [self.commandDelegate sendPluginResult:pluginResult callbackId:stateCallbackId];
     }
 }

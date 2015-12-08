@@ -58,6 +58,8 @@
 - (void)startStateNotifications:(CDVInvokedUrlCommand *)command;
 - (void)stopStateNotifications:(CDVInvokedUrlCommand *)command;
 
+- (void)onReset;
+
 @end
 
 #endif

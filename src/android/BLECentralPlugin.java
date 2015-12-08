@@ -287,11 +287,12 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         if (this.stateReceiver != null) {
             try {
                 webView.getContext().unregisterReceiver(this.stateReceiver);
-                this.stateReceiver = null;
             } catch (Exception e) {
                 LOG.e(TAG, "Error unregistering state receiver: " + e.getMessage(), e);
             }
         }
+        this.stateCallback = null;
+        this.stateReceiver = null;
     }
 
     private void connect(CallbackContext callbackContext, String macAddress) {
