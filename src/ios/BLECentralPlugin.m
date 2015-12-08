@@ -19,7 +19,9 @@
 #import "BLECentralPlugin.h"
 #import <Cordova/CDV.h>
 
-@interface BLECentralPlugin()
+@interface BLECentralPlugin() {
+    NSDictionary *bluetoothStates;
+}
 - (CBPeripheral *)findPeripheralByUUID:(NSString *)uuid;
 - (void)stopScanTimer:(NSTimer *)timer;
 @end
@@ -45,6 +47,14 @@
     writeCallbacks = [NSMutableDictionary new];
     notificationCallbacks = [NSMutableDictionary new];
     stopNotificationCallbacks = [NSMutableDictionary new];
+    bluetoothStates = [NSDictionary dictionaryWithObjectsAndKeys:
+                       @"unknown", @(CBCentralManagerStateUnknown),
+                       @"resetting", @(CBCentralManagerStateResetting),
+                       @"unsupported", @(CBCentralManagerStateUnsupported),
+                       @"unauthorized", @(CBCentralManagerStateUnauthorized),
+                       @"off", @(CBCentralManagerStatePoweredOff),
+                       @"on", @(CBCentralManagerStatePoweredOn),
+                       nil];
 }
 
 #pragma mark - Cordova Plugin Methods
@@ -287,6 +297,36 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void)startStateNotifications:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult *pluginResult = nil;
+    
+    if (stateCallbackId == nil) {
+        stateCallbackId = [command.callbackId copy];
+        int bluetoothState = [manager state];
+        NSString *state = [bluetoothStates objectForKey:[NSNumber numberWithInt:bluetoothState]];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:state];
+        [pluginResult setKeepCallbackAsBool:TRUE];
+    } else {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"State callback already registered"];
+    }
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)stopStateNotifications:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult *pluginResult = nil;
+    
+    if (stateCallbackId != nil) {
+        // Call with NO_RESULT so Cordova.js will delete the callback without actually calling it
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:stateCallbackId];
+        stateCallbackId = nil;
+    }
+    
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 #pragma mark - timers
 
 -(void)stopScanTimer:(NSTimer *)timer {
@@ -325,6 +365,14 @@
         NSLog(@"=============================================================");
         NSLog(@"WARNING: This hardware does not support Bluetooth Low Energy.");
         NSLog(@"=============================================================");
+    }
+    
+    if (stateCallbackId != nil) {
+        CDVPluginResult *pluginResult = nil;
+        NSString *state = [bluetoothStates objectForKey:@(central.state)];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:state];
+        [pluginResult setKeepCallbackAsBool:TRUE];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:stateCallbackId];
     }
 }
 

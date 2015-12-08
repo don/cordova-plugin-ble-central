@@ -61,6 +61,8 @@ Note that this plugin's id changed from `com.megster.cordova.ble` to `cordova-pl
 - [ble.stopNotification](#stopnotification)
 - [ble.isEnabled](#isenabled)
 - [ble.isConnected](#isconnected)
+- [ble.startStateNotifications](#startstatenotifications)
+- [ble.stopStateNotifications](#stopstatenotifications)
 - [ble.showBluetoothSettings](#showbluetoothsettings)
 - [ble.enable](#enable)
 
@@ -381,6 +383,50 @@ Function `isEnabled` calls the success callback when Bluetooth is enabled and th
             console.log("Bluetooth is *not* enabled");
         }
     );
+
+## startStateNotifications
+
+Registers to be notified when Bluetooth state changes on the device.
+
+    ble.startStateNotifications(success, failure);
+
+### Description
+
+Function `startStateNotifications` calls the success callback when the Bluetooth is enabled or disabled on the device.
+
+__States__
+
+- "on"
+- "off"
+- "turningOn" (Android Only)
+- "turningOff" (Android Only)
+- "unknown" (iOS Only)
+- "resetting" (iOS Only)
+- "unsupported" (iOS Only)
+- "unauthorized" (iOS Only)
+
+### Parameters
+
+- __success__: Success callback function that is invoked with a string for the Bluetooth state.
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
+### Quick Example
+
+    ble.startStateNotifications(
+        function(state) {
+            console.log("Bluetooth is " + state);
+        }
+    );
+
+## stopStateNotifications
+
+Stops state notifications.
+
+    ble.startStateNotifications(success, failure);
+
+### Description
+
+Function `stopStateNotifications` calls the success callback when Bluetooth state notifications have been stopped.
 
 ## showBluetoothSettings
 

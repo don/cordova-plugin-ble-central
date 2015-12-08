@@ -26,6 +26,7 @@
 
 @interface BLECentralPlugin : CDVPlugin <CBCentralManagerDelegate, CBPeripheralDelegate> {
     NSString* discoverPeripherialCallbackId;
+    NSString* stateCallbackId;
     NSMutableDictionary* connectCallbacks;
     NSMutableDictionary *readCallbacks;
     NSMutableDictionary *writeCallbacks;
@@ -53,6 +54,9 @@
 
 - (void)isEnabled:(CDVInvokedUrlCommand *)command;
 - (void)isConnected:(CDVInvokedUrlCommand *)command;
+
+- (void)startStateNotifications:(CDVInvokedUrlCommand *)command;
+- (void)stopStateNotifications:(CDVInvokedUrlCommand *)command;
 
 @end
 
