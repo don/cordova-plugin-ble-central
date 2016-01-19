@@ -1,3 +1,6 @@
+= 1.0.4 =
+Fix compile error with ios@4.0.1 #161
+
 = 1.0.3 =
 Don't block UI thread on Android when starting scan #121 Thanks Kelly Campbell
 Return characteristic even if properties don't match #132 #113 Thanks kanayo
