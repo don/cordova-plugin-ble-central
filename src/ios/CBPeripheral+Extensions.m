@@ -241,7 +241,7 @@ id dataToArrayBuffer(NSData* data)
 {
     return @{
              @"CDVType" : @"ArrayBuffer",
-             @"data" :[data base64EncodedString]
+             @"data" :[data base64EncodedStringWithOptions:0]
              };
 }
 
@@ -264,4 +264,3 @@ id dataToArrayBuffer(NSData* data)
 }
 
 @end
-
