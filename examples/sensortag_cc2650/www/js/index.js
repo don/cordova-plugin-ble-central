@@ -24,16 +24,6 @@ var button = {
     data: "FFE1", // Bit 2: side key, Bit 1- right key, Bit 0 –left key
 };
 
-
-// http://processors.wiki.ti.com/index.php/SensorTag_User_Guide#Accelerometer_2
-//var accelerometer = {
-//    service: "F000AA10-0451-4000-B000-000000000000",
-//    data: "F000AA11-0451-4000-B000-000000000000", // read/notify 3 bytes X : Y : Z
-//    configuration: "F000AA12-0451-4000-B000-000000000000", // read/write 1 byte
-//    period: "F000AA13-0451-4000-B000-000000000000" // read/write 1 byte Period = [Input*10]ms
-//};
-
-//new sensortag
 //http://processors.wiki.ti.com/index.php/CC2650_SensorTag_User%27s_Guide
 var accelerometer = {
     service: "F000AA80-0451-4000-B000-000000000000",
@@ -52,6 +42,11 @@ var barometer = {
 
 };
 
+// button bitmask
+var LEFT_BUTTON = 1;  // 0001
+var RIGHT_BUTTON = 2; // 0010
+var REED_SWITCH = 4;  // 0100
+
 var app = {
     initialize: function() {
         this.bindEvents();
@@ -68,25 +63,18 @@ var app = {
     },
     refreshDeviceList: function() {
         deviceList.innerHTML = ''; // empties the list
-        // scan for all devices
-        ble.scan([], 5, app.onDiscoverDevice, app.onError);
+        // scan for CC2560 SensorTags
+        ble.scan(['AA80'], 5, app.onDiscoverDevice, app.onError);
     },
     onDiscoverDevice: function(device) {
+        var listItem = document.createElement('li'),
+            html = '<b>' + device.name + '</b><br/>' +
+                'RSSI: ' + device.rssi + '&nbsp;|&nbsp;' +
+                device.id;
 
-        // we're not limiting scanning by services, so filter
-        // the list for devices with "Sensor" in the name
-        if (device.name.match(/sensor/i)) {
-
-            var listItem = document.createElement('li'),
-                html = '<b>' + device.name + '</b><br/>' +
-                    'RSSI: ' + device.rssi + '&nbsp;|&nbsp;' +
-                    device.id;
-
-            listItem.dataset.deviceId = device.id;  // TODO
-            listItem.innerHTML = html;
-            deviceList.appendChild(listItem);
-
-        }
+        listItem.dataset.deviceId = device.id;  // TODO
+        listItem.innerHTML = html;
+        deviceList.appendChild(listItem);
     },
     connect: function(e) {
         var deviceId = e.target.dataset.deviceId,
@@ -103,8 +91,8 @@ var app = {
                 // turn accelerometer on
                 var configData = new Uint16Array(1);
                 //Turn on gyro, accel, and mag, 2G range, Disable wake on motion
-                configData[0] = 0x007F; 
-                ble.write(deviceId, accelerometer.service, accelerometer.configuration, configData.buffer, 
+                configData[0] = 0x007F;
+                ble.write(deviceId, accelerometer.service, accelerometer.configuration, configData.buffer,
                     function() { console.log("Started accelerometer."); },app.onError);
 
                 var periodData = new Uint8Array(1);
@@ -112,14 +100,13 @@ var app = {
                 ble.write(deviceId, accelerometer.service, accelerometer.period, periodData.buffer,
                     function() { console.log("Configured accelerometer period."); },app.onError);
 
-
                 //Turn on barometer
                 var barometerConfig = new Uint8Array(1);
                 barometerConfig[0] = 0x01;
-                ble.write(deviceId, barometer.service, barometer.configuration, barometerConfig.buffer, 
+                ble.write(deviceId, barometer.service, barometer.configuration, barometerConfig.buffer,
                     function() { console.log("Started barometer."); },app.onError);
-                
-                //Associate the deviceID with the disconnect button    
+
+                //Associate the deviceID with the disconnect button
                 disconnectButton.dataset.deviceId = deviceId;
                 app.showDetailPage();
             };
@@ -128,35 +115,23 @@ var app = {
     },
     onButtonData: function(data) {
         console.log(data);
-        var message;
-        var a = new Uint8Array(data);
-        switch(a[0]) { // should really check the bits in case bit 3 is set too
-        case 0:
-            message = "No buttons are pressed";
-            break;
-        case 1:
-            message = "Left Button";
-            break;
-        case 2:
-            message = "Power Button";
-            break;
-        case 3:
-            message = "Left and Power Button";
-            break;
-        case 4:
-            message = "Reed Switch";
-            break;
-        case 5:
-            message = "Reed Switch and Left Button";
-            break;
-        case 6:
-            message = "Reed Switch and Right Button";
-            break;
-        case 7:
-            message = "Reed Switch, Left and Right Buttons";
-            break;
-        default:
-            message = "Error";
+        var state = new Uint8Array(data);
+        var message = '';
+
+        if (state === 0) {
+            message = 'No buttons are pressed.';
+        }
+
+        if (state & LEFT_BUTTON) {
+            message += 'Left button is pressed.<br/>';
+        }
+
+        if (state & RIGHT_BUTTON) {
+            message += 'Right button is pressed.<br/>';
+        }
+
+        if (state & REED_SWITCH) {
+            message += 'Reed switch is activated.<br/>';
         }
 
         buttonState.innerHTML = message;
@@ -211,17 +186,17 @@ var app = {
          console.log(data);
          var message;
          var a = new Uint8Array(data);
-            
+
          //0-2 Temp
          //3-5 Pressure
          message =  "Temperature <br/>" +
-                    app.sensorBarometerConvert( a[0] | (a[1] << 8) | (a[2] << 16)) + "Degrees C <br/>" +
+                    app.sensorBarometerConvert( a[0] | (a[1] << 8) | (a[2] << 16)) + "°C <br/>" +
                     "Pressure <br/>" +
                     app.sensorBarometerConvert( a[3] | (a[4] << 8) | (a[5] << 16)) + "hPa <br/>" ;
 
-         
+
         barometerData.innerHTML = message;
-         
+
     },
     disconnect: function(event) {
         var deviceId = event.target.dataset.deviceId;
