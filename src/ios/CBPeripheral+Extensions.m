@@ -130,6 +130,22 @@ static char ADVERTISEMENT_RSSI_IDENTIFER;
 
     }
 
+    // Solicited Services UUIDs is an array of CBUUIDs, convert into Strings
+    NSMutableArray *solicitiedServiceUUIDs = [dict objectForKey:CBAdvertisementDataSolicitedServiceUUIDsKey];
+    NSMutableArray *solicitiedServiceUUIDStrings;
+    if (solicitiedServiceUUIDs) {
+        // NSLog(@"%@", solicitiedServiceUUIDs);
+        solicitiedServiceUUIDStrings = [[NSMutableArray alloc] initWithCapacity:solicitiedServiceUUIDs.count];
+
+        for (CBUUID *uuid in solicitiedServiceUUIDs) {
+            [solicitiedServiceUUIDStrings addObject:[uuid UUIDString]];
+        }
+
+        // replace the UUID list with list of strings
+        [dict removeObjectForKey:CBAdvertisementDataSolicitedServiceUUIDsKey];
+        [dict setObject:solicitiedServiceUUIDStrings forKey:CBAdvertisementDataSolicitedServiceUUIDsKey];
+    }
+
     // Convert the manufacturer data
     NSData *mfgData = [dict objectForKey:CBAdvertisementDataManufacturerDataKey];
     if (mfgData) {
