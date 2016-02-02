@@ -51,7 +51,7 @@ Note that this plugin's id changed from `com.megster.cordova.ble` to `cordova-pl
 
 - [ble.scan](#scan)
 - [ble.startScan](#startscan)
-- [ble.startScan](#startscanwithoptions)
+- [ble.startScanWithOptions](#startscanwithoptions)
 - [ble.stopScan](#stopscan)
 - [ble.connect](#connect)
 - [ble.disconnect](#disconnect)
