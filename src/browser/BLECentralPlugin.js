@@ -27,6 +27,10 @@ module.exports = {
         notSupported();
         if (failure) failure();
     },
+    readRSSI: function(device_id, success, failure) {
+        notSupported();
+        if (failure) failure();
+    },
     write: function(device_id, service_uuid, characteristic_uuid, data, success, failure) {
         notSupported();
         if (failure) failure();

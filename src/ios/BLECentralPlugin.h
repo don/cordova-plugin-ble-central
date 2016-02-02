@@ -32,6 +32,7 @@
     NSMutableDictionary *notificationCallbacks;
     NSMutableDictionary *stopNotificationCallbacks;
     NSMutableDictionary *connectCallbackLatches;
+    NSMutableDictionary *readRSSICallbacks;
 }
 
 @property (strong, nonatomic) NSMutableSet *peripherals;
@@ -54,6 +55,7 @@
 - (void)isEnabled:(CDVInvokedUrlCommand *)command;
 - (void)isConnected:(CDVInvokedUrlCommand *)command;
 
+- (void)readRSSI:(CDVInvokedUrlCommand *)command;
 @end
 
 #endif
