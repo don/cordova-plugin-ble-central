@@ -30,6 +30,7 @@ import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.json.JSONException;
 
 import java.util.*;
@@ -40,6 +41,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String SCAN = "scan";
     private static final String START_SCAN = "startScan";
     private static final String STOP_SCAN = "stopScan";
+    private static final String START_SCAN_WITH_OPTIONS = "startScanWithOptions";
 
     private static final String LIST = "list";
 
@@ -58,6 +60,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     private static final String SETTINGS = "showBluetoothSettings";
     private static final String ENABLE = "enable";
+
     // callbacks
     CallbackContext discoverCallback;
     private CallbackContext enableBluetoothCallback;
@@ -69,6 +72,9 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     // key is the MAC Address
     Map<String, Peripheral> peripherals = new LinkedHashMap<String, Peripheral>();
+
+    // scan options
+    boolean reportDuplicates = false;
 
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
@@ -87,11 +93,13 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
             UUID[] serviceUUIDs = parseServiceUUIDList(args.getJSONArray(0));
             int scanSeconds = args.getInt(1);
+            resetScanOptions();
             findLowEnergyDevices(callbackContext, serviceUUIDs, scanSeconds);
 
         } else if (action.equals(START_SCAN)) {
 
             UUID[] serviceUUIDs = parseServiceUUIDList(args.getJSONArray(0));
+            resetScanOptions();
             findLowEnergyDevices(callbackContext, serviceUUIDs, -1);
 
         } else if (action.equals(STOP_SCAN)) {
@@ -182,6 +190,13 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             cordova.startActivityForResult(this, intent, REQUEST_ENABLE_BLUETOOTH);
 
+        } else if (action.equals(START_SCAN_WITH_OPTIONS)) {
+            UUID[] serviceUUIDs = parseServiceUUIDList(args.getJSONArray(0));
+            JSONObject options = args.getJSONObject(1);
+
+            resetScanOptions();
+            this.reportDuplicates = options.optBoolean("reportDuplicates", false);
+            findLowEnergyDevices(callbackContext, serviceUUIDs, -1);
         } else {
 
             validAction = false;
@@ -348,8 +363,9 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
 
         String address = device.getAddress();
+        boolean alreadyReported = peripherals.containsKey(address);
 
-        if (!peripherals.containsKey(address)) {
+        if (!alreadyReported) {
 
             Peripheral peripheral = new Peripheral(device, rssi, scanRecord);
             peripherals.put(device.getAddress(), peripheral);
@@ -360,14 +376,19 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
                 discoverCallback.sendPluginResult(result);
             }
 
+        } else if (reportDuplicates) {
+            Peripheral peripheral = peripherals.get(address);
+            peripheral.updateRssi(rssi);
+            if (discoverCallback != null) {
+                PluginResult result = new PluginResult(PluginResult.Status.OK, peripheral.asJSONObject());
+                result.setKeepCallback(true);
+                discoverCallback.sendPluginResult(result);
+            } 
         } else {
             // this isn't necessary
             Peripheral peripheral = peripherals.get(address);
             peripheral.updateRssi(rssi);
         }
-
-        // TODO offer option to return duplicates
-
     }
 
     @Override
@@ -393,6 +414,13 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     private UUID uuidFromString(String uuid) {
         return UUIDHelper.uuidFromString(uuid);
+    }
+
+    /**
+     * Reset the BLE scanning options
+     */
+    private void resetScanOptions() {
+        this.reportDuplicates = false;
     }
 
 }

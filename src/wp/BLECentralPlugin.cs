@@ -50,6 +50,10 @@ public class BLECentralPlugin : BaseCommand
     {
       notImplemented();
     }
+    public void startScanWithOptions(string args)
+    {
+      notImplemented();
+    }
     public void connect(string args)
     {
       notImplemented();

@@ -51,6 +51,7 @@ Note that this plugin's id changed from `com.megster.cordova.ble` to `cordova-pl
 
 - [ble.scan](#scan)
 - [ble.startScan](#startscan)
+- [ble.startScan](#startscanwithoptions)
 - [ble.stopScan](#stopscan)
 - [ble.connect](#connect)
 - [ble.disconnect](#disconnect)
@@ -132,6 +133,46 @@ Advertising information format varies depending on your platform. See [Advertisi
         function() { console.log("Scan complete"); },
         function() { console.log("stopScan failed"); }
     );
+
+## startScanWithOptions
+
+Scan and discover BLE peripherals, specifying scan options.
+
+    ble.startScan(services, options, success, failure);
+
+### Description
+
+Function `startScanWithOptions` scans for BLE devices. It operates similarly to the `startScan` function, but allows you to specify extra options (like allowing duplicate device reports).  The success callback is called each time a peripheral is discovered. Scanning will continue until `stopScan` is called. 
+
+    {
+        "name": "TI SensorTag",
+        "id": "BD922605-1B07-4D55-8D09-B66653E51BBA",
+        "rssi": -79,
+        "advertising": /* ArrayBuffer or map */
+    }
+
+Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
+
+### Parameters
+
+- __services__: List of services to discover, or [] to find all devices
+- __options__: an object specifying a set of name-value pairs. The currently acceptable options are:
+  - _reportDuplicates_: true if duplicate devices should be reported, false (default) if devices should only be reported once. [optional]
+- __success__: Success callback function that is invoked which each discovered device.
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
+### Quick Example
+
+    ble.startScan([], function(device) {
+        console.log(JSON.stringify(device));
+    }, failure);
+
+    setTimeout(ble.stopScan,
+        5000,
+        function() { console.log("Scan complete"); },
+        function() { console.log("stopScan failed"); }
+    );
+
 
 ## stopScan
 
