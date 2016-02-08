@@ -484,7 +484,7 @@
             NSLog(@"%@", error);
             pluginResult = [CDVPluginResult
                 resultWithStatus:CDVCommandStatus_ERROR
-                messageAsString:[error localizedDescription]
+                messageAsInt:[error code]
             ];
         } else {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
