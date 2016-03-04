@@ -227,7 +227,7 @@ Raw data is passed from native code to the callback as an [ArrayBuffer](#typed-a
 
 Writes data to a characteristic.
 
-    ble.write(device_id, service_uuid, characteristic_uuid, value, success, failure);
+    ble.write(device_id, service_uuid, characteristic_uuid, data, success, failure);
 
 ### Description
 
@@ -266,7 +266,7 @@ Use an [ArrayBuffer](#typed-arrays) when writing data.
 
 Writes data to a characteristic without confirmation from the peripheral.
 
-    ble.writeWithoutResponse(device_id, service_uuid, characteristic_uuid, value, success, failure);
+    ble.writeWithoutResponse(device_id, service_uuid, characteristic_uuid, data, success, failure);
 
 ### Description
 
