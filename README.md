@@ -252,9 +252,9 @@ Use an [ArrayBuffer](#typed-arrays) when writing data.
 
     // send a 3 byte value with RGB color
     var data = new Uint8Array(3);
-    data[0] = 0xFF;  // red
-    data[0] = 0x00; // green
-    data[0] = 0xFF; // blue
+    data[0] = 0xFF; // red
+    data[1] = 0x00; // green
+    data[2] = 0xFF; // blue
     ble.write(device_id, "ccc0", "ccc1", data.buffer, success, failure);
 
     // send a 32 bit integer
