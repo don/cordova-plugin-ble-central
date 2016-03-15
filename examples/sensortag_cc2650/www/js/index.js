@@ -172,9 +172,9 @@ var app = {
                   "Y: " + app.sensorMpu9250AccConvert(a[4]) + "<br/>" +
                   "Z: " + app.sensorMpu9250AccConvert(a[5]) + "<br/>" +
                   "Mag <br/>"+
-                  "X: " + a[3] + "<br/>" +
-                  "Y: " + a[4] + "<br/>" +
-                  "Z: " + a[5] + "<br/>" ;
+                  "X: " + a[6] + "<br/>" +
+                  "Y: " + a[7] + "<br/>" +
+                  "Z: " + a[8] + "<br/>" ;
 
         accelerometerData.innerHTML = message;
     },
