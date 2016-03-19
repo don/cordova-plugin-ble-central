@@ -368,8 +368,8 @@ Function `isEnabled` calls the success callback when Bluetooth is enabled and th
 
 ### Parameters
 
-- __success__: Success callback function that is invoked with a boolean for connected status.
-- __failure__: Error callback function, invoked when error occurs. [optional]
+- __success__: Success callback function, invoked when Bluetooth is enabled.
+- __failure__: Error callback function, invoked when Bluetooth is disabled.
 
 ### Quick Example
 
