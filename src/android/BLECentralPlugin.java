@@ -58,6 +58,8 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     private static final String SETTINGS = "showBluetoothSettings";
     private static final String ENABLE = "enable";
+    private static final String DISABLE = "disable";
+
     // callbacks
     CallbackContext discoverCallback;
     private CallbackContext enableBluetoothCallback;
@@ -181,6 +183,19 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             enableBluetoothCallback = callbackContext;
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             cordova.startActivityForResult(this, intent, REQUEST_ENABLE_BLUETOOTH);
+
+        } else if(action.equals(DISABLE) {
+
+            if(bluetoothAdapter.isEnabled()){
+                boolean successful = bluetoothAdapter.disable();
+                if(successful) {
+                    callbackContext.success();
+                } else {
+                    callbackContext.error("Disabling failed.");
+                }
+            } else {
+                callbackContext.success("Bluetooth is already disabled.");
+            }
 
         } else {
 
