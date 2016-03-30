@@ -63,6 +63,7 @@ Note that this plugin's id changed from `com.megster.cordova.ble` to `cordova-pl
 - [ble.isConnected](#isconnected)
 - [ble.showBluetoothSettings](#showbluetoothsettings)
 - [ble.enable](#enable)
+- [ble.disable](#disable)
 
 ## scan
 
@@ -299,7 +300,7 @@ Raw data is passed from native code to the success callback as an [ArrayBuffer](
 - __characteristic_uuid__: UUID of the BLE characteristic
 - __success__: Success callback function invoked every time a notification occurs
 - __failure__: Error callback function, invoked when error occurs. [optional]
- 
+
 ### Quick Example
 
     var onData = function(buffer) {
@@ -307,7 +308,7 @@ Raw data is passed from native code to the success callback as an [ArrayBuffer](
         var data = new Uint8Array(buffer);
         alert("Button state changed to " + data[0]);
     }
-    
+
     ble.startNotification(device_id, "FFE0", "FFE1", onData, failure);
 
 ## stopNotification
@@ -436,6 +437,39 @@ If `enable` is called when Bluetooth is already enabled, the user will not promp
             console.log("The user did *not* enable Bluetooth");
         }
     );
+
+## disable
+
+Disable bluetooth on the device.
+
+    ble.disable(success, failure);
+
+### Description
+
+Function `disable` disables the Bluetooth connection on the device.
+
+#### Android
+
+`disable` is only supported on Android and dnoes not work on iOS.
+
+If `disable` is called when Bluetooth is not enabled, the `success` callback will be invoked.
+
+### Parameters
+
+- __success__: Success callback function, invoked if Bluetooth has been disabled.
+- __failure__: Error callback function, invoked if Bluetooth could not be disabled.
+
+### Quick Example
+
+    ble.disable(
+        function() {
+            console.log("Bluetooth is disabled");
+        },
+        function() {
+            console.log("Bluetooth could not be disabled");
+        }
+    );
+
 
 # Peripheral Data
 
