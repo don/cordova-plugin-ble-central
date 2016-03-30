@@ -14,10 +14,11 @@
 
 package com.megster.cordova.ble.central;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
-
 import android.bluetooth.*;
 import android.util.Base64;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
@@ -31,6 +32,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * Peripheral wraps the BluetoothDevice and provides methods to convert to JSON.
  */
+@SuppressLint("NewApi")
 public class Peripheral extends BluetoothGattCallback {
 
     // 0x2902 org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
@@ -89,6 +91,7 @@ public class Peripheral extends BluetoothGattCallback {
             json.put("id", device.getAddress()); // mac address
             json.put("advertising", byteArrayToJSON(advertisingData));
             // TODO real RSSI if we have it, else
+            
             json.put("rssi", advertisingRSSI);
         } catch (JSONException e) { // this shouldn't happen
             e.printStackTrace();
@@ -176,10 +179,17 @@ public class Peripheral extends BluetoothGattCallback {
             PluginResult result = new PluginResult(PluginResult.Status.OK, this.asJSONObject(gatt));
             result.setKeepCallback(true);
             connectCallback.sendPluginResult(result);
+
+            
+
+
         } else {
             LOG.e(TAG, "Service discovery failed. status = " + status);
             connectCallback.error(this.asJSONObject());
             disconnect();
+
+
+
         }
     }
 
@@ -193,14 +203,52 @@ public class Peripheral extends BluetoothGattCallback {
             connected = true;
             gatt.discoverServices();
 
+
+
+            //Lets start a loop for rssi
+
+            boolean rssiStatus = gatt.readRemoteRssi();
+
         } else {
 
-            if (connectCallback != null) {
-                connectCallback.error(this.asJSONObject());
+            if (readCallback != null) {
+                readCallback.error(this.asJSONObject());
             }
             disconnect();
+
+            //Lets stop the loop for rssi
         }
 
+    }
+
+     
+
+    @Override
+    public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
+        // TODO Auto-generated method stub
+        super.onReadRemoteRssi(gatt, rssi, status);
+         System.out.println("reading rssi done");
+         
+           if (readCallback != null) {
+               System.out.println("readcallback is there");
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    System.out.println("rssi "+rssi);
+                    readCallback.success(rssi);
+                } else {
+                    readCallback.error("Error reading rssi status=" + status);
+                }
+
+                readCallback = null;
+
+            }
+           else{
+               System.out.println("readcallback is not there");
+           }
+
+            commandCompleted();
+        
+        
+        
     }
 
     @Override
@@ -415,6 +463,35 @@ public class Peripheral extends BluetoothGattCallback {
         }
 
     }
+    
+    private void readRssi(CallbackContext callbackContext) {
+        System.out.println("Reading RSSI Command Sent");
+
+        boolean success = false;
+        if (gatt == null) {
+            System.out.println("BluetoothGatt is null");
+            callbackContext.error("BluetoothGatt is null");
+            return;
+        }
+
+        readCallback = callbackContext;
+        if (gatt.readRemoteRssi()) {
+            System.out.println("Success rssi");
+            success = true;
+        } else {
+            readCallback = null;
+            System.out.println("Fail rssi");
+            callbackContext.error("Read failed");
+        }
+
+
+        
+        if (!success) {
+            commandCompleted();
+        }
+        
+
+    }
 
     // Some peripherals re-use UUIDs for multiple characteristics so we need to check the properties
     // and UUID of all characteristics instead of using service.getCharacteristic(characteristicUUID)
@@ -503,6 +580,11 @@ public class Peripheral extends BluetoothGattCallback {
         BLECommand command = new BLECommand(callbackContext, serviceUUID, characteristicUUID, BLECommand.READ);
         queueCommand(command);
     }
+    public void queueReadRssi(CallbackContext callbackContext) {
+        BLECommand command = new BLECommand(callbackContext, BLECommand.READRSSI);
+        queueCommand(command);
+    }
+
 
     public void queueWrite(CallbackContext callbackContext, UUID serviceUUID, UUID characteristicUUID, byte[] data, int writeType) {
         BLECommand command = new BLECommand(callbackContext, serviceUUID, characteristicUUID, data, writeType);
@@ -552,7 +634,12 @@ public class Peripheral extends BluetoothGattCallback {
                 LOG.d(TAG,"Read " + command.getCharacteristicUUID());
                 bleProcessing = true;
                 readCharacteristic(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID());
-            } else if (command.getType() == BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) {
+            } 
+            else if (command.getType() == BLECommand.READRSSI) {
+                LOG.d(TAG,"Read Rssi ");
+                bleProcessing = true;
+                readRssi(command.getCallbackContext());
+            }else if (command.getType() == BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) {
                 LOG.d(TAG,"Write " + command.getCharacteristicUUID());
                 bleProcessing = true;
                 writeCharacteristic(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID(), command.getData(), command.getType());

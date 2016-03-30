@@ -11,6 +11,7 @@ import java.util.UUID;
 class BLECommand {
     // Types
     public static int READ = 10000;
+    public static int READRSSI = 10003;
     public static int REGISTER_NOTIFY = 10001;
     public static int REMOVE_NOTIFY = 10002;
     // BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
@@ -22,6 +23,12 @@ class BLECommand {
     private byte[] data;
     private int type;
 
+     public BLECommand(CallbackContext callbackContext, int type) {
+        this.callbackContext = callbackContext;
+        this.serviceUUID = serviceUUID;
+        this.characteristicUUID = characteristicUUID;
+        this.type = type;
+    }
 
     public BLECommand(CallbackContext callbackContext, UUID serviceUUID, UUID characteristicUUID, int type) {
         this.callbackContext = callbackContext;

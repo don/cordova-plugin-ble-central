@@ -14,6 +14,7 @@
 
 package com.megster.cordova.ble.central;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -22,8 +23,8 @@ import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
-
 import android.provider.Settings;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaPlugin;
@@ -34,6 +35,7 @@ import org.json.JSONException;
 
 import java.util.*;
 
+@SuppressLint("NewApi")
 public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.LeScanCallback {
 
     // actions
@@ -47,6 +49,8 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String DISCONNECT = "disconnect";
 
     private static final String READ = "read";
+    private static final String READRSSI = "readrssi";
+    
     private static final String WRITE = "write";
     private static final String WRITE_WITHOUT_RESPONSE = "writeWithoutResponse";
 
@@ -120,7 +124,15 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             UUID characteristicUUID = uuidFromString(args.getString(2));
             read(callbackContext, macAddress, serviceUUID, characteristicUUID);
 
-        } else if (action.equals(WRITE)) {
+        } 
+        else if (action.equals(READRSSI)) {
+
+            String macAddress = args.getString(0);
+            readrssi(callbackContext, macAddress);
+
+        }
+        
+        else if (action.equals(WRITE)) {
 
             String macAddress = args.getString(0);
             UUID serviceUUID = uuidFromString(args.getString(1));
@@ -239,6 +251,27 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
         //peripheral.readCharacteristic(callbackContext, serviceUUID, characteristicUUID);
         peripheral.queueRead(callbackContext, serviceUUID, characteristicUUID);
+
+    }
+    
+    private void readrssi(CallbackContext callbackContext, String macAddress) {
+        System.out.println("Reading in central started");
+
+        Peripheral peripheral = peripherals.get(macAddress);
+
+        if (peripheral == null) {
+            callbackContext.error("Peripheral " + macAddress + " not found.");
+            return;
+        }
+
+        if (!peripheral.isConnected()) {
+            callbackContext.error("Peripheral " + macAddress + " is not connected.");
+            return;
+        }
+
+        //peripheral.readCharacteristic(callbackContext, serviceUUID, characteristicUUID);
+        
+        peripheral.queueReadRssi(callbackContext);
 
     }
 

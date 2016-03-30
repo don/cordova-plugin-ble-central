@@ -7,6 +7,7 @@ The plugin provides a simple [JavaScript API](#api) for iOS and Android.
  * Scan for peripherals
  * Connect to a peripheral
  * Read the value of a characteristic
+ * Read RSSI of a connected device
  * Write new value to a characteristic
  * Get notified when characteristic's value changes
 
@@ -55,6 +56,7 @@ Note that this plugin's id changed from `com.megster.cordova.ble` to `cordova-pl
 - [ble.connect](#connect)
 - [ble.disconnect](#disconnect)
 - [ble.read](#read)
+- [ble.readrssi](#readrssi)
 - [ble.write](#write)
 - [ble.writeWithoutResponse](#writewithoutresponse)
 - [ble.startNotification](#startnotification)
@@ -222,6 +224,26 @@ Raw data is passed from native code to the callback as an [ArrayBuffer](#typed-a
 - __characteristic_uuid__: UUID of the BLE characteristic
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
+
+## readrssi
+
+Reads the rssi of a connected device
+
+    ble.readrssi(device_id, success, failure);
+
+### Description
+
+Read rssi of the connected device
+ NOTE: Android Only
+
+
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __success__: Success callback function that is invoked when the rssi is read. [optional]
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
 
 ## write
 
