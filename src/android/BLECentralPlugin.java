@@ -14,6 +14,7 @@
 
 package com.megster.cordova.ble.central;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -21,6 +22,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 
 import android.provider.Settings;
@@ -28,6 +30,7 @@ import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.LOG;
+import org.apache.cordova.PermissionHelper;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,6 +61,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     private static final String SETTINGS = "showBluetoothSettings";
     private static final String ENABLE = "enable";
+
     // callbacks
     CallbackContext discoverCallback;
     private CallbackContext enableBluetoothCallback;
@@ -69,6 +73,14 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     // key is the MAC Address
     Map<String, Peripheral> peripherals = new LinkedHashMap<String, Peripheral>();
+
+    // Android 23 requires new permissions for BluetoothLeScanner.startScan()
+    private static final String ACCESS_COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
+    private static final int REQUEST_ACCESS_COARSE_LOCATION = 2;
+    private static final int PERMISSION_DENIED_ERROR = 20;
+    private CallbackContext permissionCallback;
+    private UUID[] serviceUUIDs;
+    private int scanSeconds;
 
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
@@ -293,10 +305,21 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     }
 
-
     private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds) {
 
-        // TODO skip if currently scanning
+        if(!PermissionHelper.hasPermission(this, ACCESS_COARSE_LOCATION)) {
+            // save info so we can call this method again after permissions are granted
+            permissionCallback = callbackContext;
+            this.serviceUUIDs = serviceUUIDs;
+            this.scanSeconds = scanSeconds;
+            PermissionHelper.requestPermission(this, REQUEST_ACCESS_COARSE_LOCATION, ACCESS_COARSE_LOCATION);
+            return;
+        }
+
+        // ignore if currently scanning, alternately could return an error
+        if (bluetoothAdapter.isDiscovering()) {
+            return;
+        }
 
         // clear non-connected cached peripherals
         for(Iterator<Map.Entry<String, Peripheral>> iterator = peripherals.entrySet().iterator(); iterator.hasNext(); ) {
@@ -388,6 +411,29 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             }
 
             enableBluetoothCallback = null;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionResult(int requestCode, String[] permissions,
+                                          int[] grantResults) /* throws JSONException */ {
+        for(int result:grantResults) {
+            if(result == PackageManager.PERMISSION_DENIED)
+            {
+                LOG.d(TAG, "User *rejected* Coarse Location Access");
+                this.permissionCallback.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, PERMISSION_DENIED_ERROR));
+                return;
+            }
+        }
+
+        switch(requestCode) {
+            case REQUEST_ACCESS_COARSE_LOCATION:
+                LOG.d(TAG, "User granted Coarse Location Access");
+                findLowEnergyDevices(permissionCallback, serviceUUIDs, scanSeconds);
+                this.permissionCallback = null;
+                this.serviceUUIDs = null;
+                this.scanSeconds = -1;
+                break;
         }
     }
 
