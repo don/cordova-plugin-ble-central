@@ -58,5 +58,13 @@ module.exports = {
     enable: function(success, failure) {
         notSupported();
         if (failure) failure();
+    },
+    startStateNotifications: function(success, failure) {
+      notSupported();
+      if (failure) failure();
+    },
+    stopStateNotifications: function(success, failure) {
+      notSupported();
+      if (failure) failure();
     }
 };

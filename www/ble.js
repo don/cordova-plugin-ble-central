@@ -138,6 +138,14 @@ module.exports = {
 
     showBluetoothSettings: function (success, failure) {
         cordova.exec(success, failure, "BLE", "showBluetoothSettings", []);
+    },
+
+    startStateNotifications: function (success, failure) {
+        cordova.exec(success, failure, "BLE", "startStateNotifications", []);
+    },
+
+    stopStateNotifications: function (success, failure) {
+        cordova.exec(success, failure, "BLE", "stopStateNotifications", []);
     }
 
 };
