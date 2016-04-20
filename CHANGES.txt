@@ -1,6 +1,9 @@
 = 1.0.x =
-read RSSI value from an active BLE connection. #171 Thanks Chris Armstrong
-register for callbacks on Bluetooth state change #136 Thanks Ryan Harvey
+Add option to report duplicates during scan #172 Thanks Chris Armstrong
+Read RSSI value from an active BLE connection #171 Thanks Chris Armstrong
+Register for callbacks on Bluetooth state change #136 Thanks Ryan Harvey
+Fix example for write characteristic #195 Thanks Wynout van der Veer
+Fix documentation for write & writeWithoutResponse #193 Thanks Blake Parkinson
 
 = 1.0.6 =
 Fix compile error with Cordova 5.x #219
