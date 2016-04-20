@@ -92,6 +92,11 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'read', [device_id, service_uuid, characteristic_uuid]);
     },
 
+    // RSSI value comes back as an integer
+    readRSSI: function(device_id, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'readRSSI', [device_id]);
+    },
+
     // value must be an ArrayBuffer
     write: function (device_id, service_uuid, characteristic_uuid, value, success, failure) {
         cordova.exec(success, failure, 'BLE', 'write', [device_id, service_uuid, characteristic_uuid, value]);
