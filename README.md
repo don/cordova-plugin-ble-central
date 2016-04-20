@@ -65,6 +65,7 @@ Note that this plugin's id changed from `com.megster.cordova.ble` to `cordova-pl
 - [ble.stopStateNotifications](#stopstatenotifications)
 - [ble.showBluetoothSettings](#showbluetoothsettings)
 - [ble.enable](#enable)
+- [ble.readRSSI](#readrssi)
 
 ## scan
 
@@ -482,6 +483,38 @@ If `enable` is called when Bluetooth is already enabled, the user will not promp
             console.log("The user did *not* enable Bluetooth");
         }
     );
+
+## readRSSI
+
+Read the RSSI value on the device connection.
+
+    ble.readRSSI(device_id, success, failure);
+
+### Description
+
+Samples the RSSI value (a measure of signal strength) on the connection to a bluetooth device. Requires that you have established a connection before invoking (otherwise an error will be raised). 
+
+### Parameters
+
+- __device_id__: device identifier
+- __success__: Success callback function, invoked with the RSSI value (as an integer)
+- __failure__: Error callback function, invoked if there is no current connection or if there is an error reading the RSSI.
+
+### Quick Example
+    var rssiSample;
+    ble.connect(device_id, 
+        function(device) {
+            rssiSample = setInterval(function() {
+                    ble.readRSSI(device_id, function(rssi) {
+                            console.log('read RSSI',rssi,'with device', device_id);
+                        }, function(err) {
+                            console.error('unable to read RSSI',err);
+                            clearInterval(rssiSample);
+                            })
+                }, 5000);
+        },
+        function(err) { console.error('error connecting to device')}
+        );
 
 # Peripheral Data
 

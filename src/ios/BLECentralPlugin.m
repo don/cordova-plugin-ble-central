@@ -55,6 +55,7 @@
                        @"off", @(CBCentralManagerStatePoweredOff),
                        @"on", @(CBCentralManagerStatePoweredOn),
                        nil];
+    readRSSICallbacks = [NSMutableDictionary new];
 }
 
 #pragma mark - Cordova Plugin Methods
@@ -299,7 +300,7 @@
 
 - (void)startStateNotifications:(CDVInvokedUrlCommand *)command {
     CDVPluginResult *pluginResult = nil;
-    
+
     if (stateCallbackId == nil) {
         stateCallbackId = [command.callbackId copy];
         int bluetoothState = [manager state];
@@ -310,26 +311,44 @@
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"State callback already registered"];
     }
-    
+
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void)stopStateNotifications:(CDVInvokedUrlCommand *)command {
     CDVPluginResult *pluginResult = nil;
-    
+
     if (stateCallbackId != nil) {
         // Call with NO_RESULT so Cordova.js will delete the callback without actually calling it
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:stateCallbackId];
         stateCallbackId = nil;
     }
-    
+
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void)onReset {
     stateCallbackId = nil;
+}
+
+- (void)readRSSI:(CDVInvokedUrlCommand*)command {
+    NSLog(@"readRSSI");
+    NSString *uuid = [command.arguments objectAtIndex:0];
+
+    CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
+
+    if (peripheral && peripheral.state == CBPeripheralStateConnected) {
+        [readRSSICallbacks setObject:[command.callbackId copy] forKey:[peripheral uuidAsString]];
+        [peripheral readRSSI];
+    } else {
+        NSString *error = [NSString stringWithFormat:@"Need to be connected to peripheral %@ to read RSSI.", uuid];
+        NSLog(@"%@", error);
+        CDVPluginResult *pluginResult = nil;
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
 }
 
 #pragma mark - timers
@@ -371,7 +390,7 @@
         NSLog(@"WARNING: This hardware does not support Bluetooth Low Energy.");
         NSLog(@"=============================================================");
     }
-    
+
     if (stateCallbackId != nil) {
         CDVPluginResult *pluginResult = nil;
         NSString *state = [bluetoothStates objectForKey:@(central.state)];
@@ -547,6 +566,30 @@
         [writeCallbacks removeObjectForKey:key];
     }
 
+}
+
+- (void)peripheralDidUpdateRSSI:(CBPeripheral*)peripheral error:(NSError*)error {
+    [self peripheral: peripheral didReadRSSI: [peripheral RSSI] error: error];
+}
+
+- (void)peripheral:(CBPeripheral*)peripheral didReadRSSI:(NSNumber*)rssi error:(NSError*)error {
+    NSLog(@"didReadRSSI %@", rssi);
+    NSString *key = [peripheral uuidAsString];
+    NSString *readRSSICallbackId = [readRSSICallbacks objectForKey: key];
+    if (readRSSICallbackId) {
+        CDVPluginResult* pluginResult = nil;
+        if (error) {
+            NSLog(@"%@", error);
+            pluginResult = [CDVPluginResult
+                resultWithStatus:CDVCommandStatus_ERROR
+                messageAsString:[error localizedDescription]];
+        } else {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                messageAsInt: [rssi integerValue]];
+        }
+        [self.commandDelegate sendPluginResult:pluginResult callbackId: readRSSICallbackId];
+        [readRSSICallbacks removeObjectForKey:readRSSICallbackId];
+    }
 }
 
 #pragma mark - internal implemetation

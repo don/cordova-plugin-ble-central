@@ -263,6 +263,23 @@ public class Peripheral extends BluetoothGattCallback {
         commandCompleted();
     }
 
+
+    @Override
+    public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
+        super.onReadRemoteRssi(gatt, rssi, status);
+        if (readCallback != null) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                updateRssi(rssi);
+                readCallback.success(rssi);
+            } else {
+                readCallback.error("Error reading RSSI status=" + status);
+            }
+
+            readCallback = null;
+        }
+        commandCompleted();
+    }
+
     public void updateRssi(int rssi) {
         advertisingRSSI = rssi;
     }
@@ -416,6 +433,30 @@ public class Peripheral extends BluetoothGattCallback {
 
     }
 
+    private void readRSSI(CallbackContext callbackContext) {
+
+        boolean success = false;
+
+        if (gatt == null) {
+            callbackContext.error("BluetoothGatt is null");
+            return;
+        }
+
+        readCallback = callbackContext;
+
+        if (gatt.readRemoteRssi()) {
+            success = true;
+        } else {
+            readCallback = null;
+            callbackContext.error("Read RSSI failed");
+        }
+
+        if (!success) {
+            commandCompleted();
+        }
+
+    }
+
     // Some peripherals re-use UUIDs for multiple characteristics so we need to check the properties
     // and UUID of all characteristics instead of using service.getCharacteristic(characteristicUUID)
     private BluetoothGattCharacteristic findReadableCharacteristic(BluetoothGattService service, UUID characteristicUUID) {
@@ -519,6 +560,12 @@ public class Peripheral extends BluetoothGattCallback {
         queueCommand(command);
     }
 
+
+    public void queueReadRSSI(CallbackContext callbackContext) {
+        BLECommand command = new BLECommand(callbackContext, null, null, BLECommand.READ_RSSI);
+        queueCommand(command);
+    }
+
     // add a new command to the queue
     private void queueCommand(BLECommand command) {
         LOG.d(TAG,"Queuing Command " + command);
@@ -568,6 +615,10 @@ public class Peripheral extends BluetoothGattCallback {
                 LOG.d(TAG,"Remove Notify " + command.getCharacteristicUUID());
                 bleProcessing = true;
                 removeNotifyCallback(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID());
+            } else if (command.getType() == BLECommand.READ_RSSI) {
+                LOG.d(TAG,"Read RSSI");
+                bleProcessing = true;
+                readRSSI(command.getCallbackContext());
             } else {
                 // this shouldn't happen
                 throw new RuntimeException("Unexpected BLE Command type " + command.getType());

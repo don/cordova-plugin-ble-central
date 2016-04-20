@@ -62,6 +62,10 @@ public class BLECentralPlugin : BaseCommand
     {
       notImplemented();
     }
+    public void readRSSI(string args) 
+    {
+      notImplemented();
+    }
     public void write(string args)
     {
       notImplemented();

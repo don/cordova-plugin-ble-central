@@ -55,6 +55,8 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String WRITE = "write";
     private static final String WRITE_WITHOUT_RESPONSE = "writeWithoutResponse";
 
+    private static final String READ_RSSI = "readRSSI";
+
     private static final String START_NOTIFICATION = "startNotification"; // register for characteristic notification
     private static final String STOP_NOTIFICATION = "stopNotification"; // remove characteristic notification
 
@@ -154,6 +156,11 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             UUID serviceUUID = uuidFromString(args.getString(1));
             UUID characteristicUUID = uuidFromString(args.getString(2));
             read(callbackContext, macAddress, serviceUUID, characteristicUUID);
+
+        } else if (action.equals(READ_RSSI)) {
+            
+            String macAddress = args.getString(0);
+            readRSSI(callbackContext, macAddress);
 
         } else if (action.equals(WRITE)) {
 
@@ -344,6 +351,22 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         //peripheral.readCharacteristic(callbackContext, serviceUUID, characteristicUUID);
         peripheral.queueRead(callbackContext, serviceUUID, characteristicUUID);
 
+    }
+
+    private void readRSSI(CallbackContext callbackContext, String macAddress) {
+        
+        Peripheral peripheral = peripherals.get(macAddress);
+
+        if (peripheral == null) {
+            callbackContext.error("Peripheral " + macAddress + " not found.");
+            return;
+        }
+
+        if (!peripheral.isConnected()) {
+            callbackContext.error("Peripheral " + macAddress + " is not connected.");
+            return;
+        }
+        peripheral.queueReadRSSI(callbackContext);
     }
 
     private void write(CallbackContext callbackContext, String macAddress, UUID serviceUUID, UUID characteristicUUID,
