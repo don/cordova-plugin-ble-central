@@ -1,3 +1,7 @@
+= 1.0.x =
+read RSSI value from an active BLE connection. #171 Thanks Chris Armstrong
+register for callbacks on Bluetooth state change #136 Thanks Ryan Harvey
+
 = 1.0.6 =
 Fix compile error with Cordova 5.x #219
 
