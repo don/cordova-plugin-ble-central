@@ -1,3 +1,6 @@
+= 1.0.6 =
+Fix compile error with Cordova 5.x #219
+
 = 1.0.5 =
 Request Permissions for Android 6.0 (API level 23) #182
 Update documentation for isEnabled #170

@@ -414,7 +414,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         }
     }
 
-    @Override
+    /* @Override */
     public void onRequestPermissionResult(int requestCode, String[] permissions,
                                           int[] grantResults) /* throws JSONException */ {
         for(int result:grantResults) {
