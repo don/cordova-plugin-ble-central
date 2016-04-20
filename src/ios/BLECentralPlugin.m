@@ -269,6 +269,28 @@
 
 }
 
+- (void)startScanWithOptions:(CDVInvokedUrlCommand*)command {
+    NSLog(@"startScanWithOptions");
+    discoverPeripherialCallbackId = [command.callbackId copy];
+    NSArray *serviceUUIDStrings = [command.arguments objectAtIndex:0];
+    NSMutableArray *serviceUUIDs = [NSMutableArray new];
+    NSDictionary *options = command.arguments[1];
+
+    for (int i = 0; i < [serviceUUIDStrings count]; i++) {
+        CBUUID *serviceUUID =[CBUUID UUIDWithString:[serviceUUIDStrings objectAtIndex: i]];
+        [serviceUUIDs addObject:serviceUUID];
+    }
+
+    NSMutableDictionary *scanOptions = [NSMutableDictionary new];
+    NSNumber *reportDuplicates = [options valueForKey: @"reportDuplicates"];
+    if (reportDuplicates) {
+        [scanOptions setValue:reportDuplicates 
+                       forKey:CBCentralManagerScanOptionAllowDuplicatesKey];
+    }
+    
+    [manager scanForPeripheralsWithServices:serviceUUIDs options:scanOptions];   
+}
+
 - (void)stopScan:(CDVInvokedUrlCommand*)command {
 
     NSLog(@"stopScan");

@@ -41,6 +41,7 @@
 
 - (void)scan:(CDVInvokedUrlCommand *)command;
 - (void)startScan:(CDVInvokedUrlCommand *)command;
+- (void)startScanWithOptions:(CDVInvokedUrlCommand *)command;
 - (void)stopScan:(CDVInvokedUrlCommand *)command;
 
 - (void)connect:(CDVInvokedUrlCommand *)command;
