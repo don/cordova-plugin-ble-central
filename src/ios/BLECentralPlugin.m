@@ -2,7 +2,7 @@
 //  BLECentralPlugin.m
 //  BLE Central Cordova Plugin
 //
-//  (c) 2104-2015 Don Coleman
+//  (c) 2104-2016 Don Coleman
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@
 - (void)pluginInitialize {
 
     NSLog(@"Cordova BLE Central Plugin");
-    NSLog(@"(c)2014-2015 Don Coleman");
+    NSLog(@"(c)2014-2016 Don Coleman");
 
     [super pluginInitialize];
 
@@ -284,11 +284,11 @@
     NSMutableDictionary *scanOptions = [NSMutableDictionary new];
     NSNumber *reportDuplicates = [options valueForKey: @"reportDuplicates"];
     if (reportDuplicates) {
-        [scanOptions setValue:reportDuplicates 
+        [scanOptions setValue:reportDuplicates
                        forKey:CBCentralManagerScanOptionAllowDuplicatesKey];
     }
-    
-    [manager scanForPeripheralsWithServices:serviceUUIDs options:scanOptions];   
+
+    [manager scanForPeripheralsWithServices:serviceUUIDs options:scanOptions];
 }
 
 - (void)stopScan:(CDVInvokedUrlCommand*)command {

@@ -1,4 +1,4 @@
-// (c) 2104 Don Coleman
+// (c) 2014-2016 Don Coleman
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -165,7 +165,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             read(callbackContext, macAddress, serviceUUID, characteristicUUID);
 
         } else if (action.equals(READ_RSSI)) {
-            
+
             String macAddress = args.getString(0);
             readRSSI(callbackContext, macAddress);
 
@@ -369,7 +369,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     }
 
     private void readRSSI(CallbackContext callbackContext, String macAddress) {
-        
+
         Peripheral peripheral = peripherals.get(macAddress);
 
         if (peripheral == null) {
@@ -521,7 +521,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
                 PluginResult result = new PluginResult(PluginResult.Status.OK, peripheral.asJSONObject());
                 result.setKeepCallback(true);
                 discoverCallback.sendPluginResult(result);
-            } 
+            }
         } else {
             // this isn't necessary
             Peripheral peripheral = peripherals.get(address);

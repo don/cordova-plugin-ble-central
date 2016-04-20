@@ -1,4 +1,4 @@
-// (c) 2014 Don Coleman
+// (c) 2014-2016 Don Coleman
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ module.exports = {
             success(peripheral);
         };
         options = options || {};
-        cordova.exec(successWrapper, failure, 'BLE', 'startScanWithOptions', [services, options]);        
+        cordova.exec(successWrapper, failure, 'BLE', 'startScanWithOptions', [services, options]);
     },
 
     // this will probably be removed
