@@ -20,9 +20,11 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.IntentFilter;
 import android.os.Handler;
 
 import android.provider.Settings;
@@ -62,6 +64,9 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String SETTINGS = "showBluetoothSettings";
     private static final String ENABLE = "enable";
 
+    private static final String START_STATE_NOTIFICATIONS = "startStateNotifications";
+    private static final String STOP_STATE_NOTIFICATIONS = "stopStateNotifications";
+
     // callbacks
     CallbackContext discoverCallback;
     private CallbackContext enableBluetoothCallback;
@@ -81,6 +86,24 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private CallbackContext permissionCallback;
     private UUID[] serviceUUIDs;
     private int scanSeconds;
+
+    // Bluetooth state notification
+    CallbackContext stateCallback;
+    BroadcastReceiver stateReceiver;
+    Map<Integer, String> bluetoothStates = new Hashtable<Integer, String>() {{
+        put(BluetoothAdapter.STATE_OFF, "off");
+        put(BluetoothAdapter.STATE_TURNING_OFF, "turningOff");
+        put(BluetoothAdapter.STATE_ON, "on");
+        put(BluetoothAdapter.STATE_TURNING_ON, "turningOn");
+    }};
+
+    public void onDestroy() {
+        removeStateListener();
+    }
+
+    public void onReset() {
+        removeStateListener();
+    }
 
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
@@ -194,6 +217,28 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             cordova.startActivityForResult(this, intent, REQUEST_ENABLE_BLUETOOTH);
 
+        } else if (action.equals(START_STATE_NOTIFICATIONS)) {
+
+            if (this.stateCallback != null) {
+                callbackContext.error("State callback already registered.");
+            } else {
+                this.stateCallback = callbackContext;
+                addStateListener();
+                sendBluetoothStateChange(bluetoothAdapter.getState());
+            }
+
+        } else if (action.equals(STOP_STATE_NOTIFICATIONS)) {
+
+            if (this.stateCallback != null) {
+                // Clear callback in JavaScript without actually calling it
+                PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
+                result.setKeepCallback(false);
+                this.stateCallback.sendPluginResult(result);
+                this.stateCallback = null;
+            }
+            removeStateListener();
+            callbackContext.success();
+
         } else {
 
             validAction = false;
@@ -212,6 +257,53 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         }
 
         return serviceUUIDs.toArray(new UUID[jsonArray.length()]);
+    }
+
+    private void onBluetoothStateChange(Intent intent) {
+        final String action = intent.getAction();
+
+        if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+            final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+            sendBluetoothStateChange(state);
+        }
+    }
+
+    private void sendBluetoothStateChange(int state) {
+        if (this.stateCallback != null) {
+            PluginResult result = new PluginResult(PluginResult.Status.OK, this.bluetoothStates.get(state));
+            result.setKeepCallback(true);
+            this.stateCallback.sendPluginResult(result);
+        }
+    }
+
+    private void addStateListener() {
+        if (this.stateReceiver == null) {
+            this.stateReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    onBluetoothStateChange(intent);
+                }
+            };
+        }
+
+        try {
+            IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+            webView.getContext().registerReceiver(this.stateReceiver, intentFilter);
+        } catch (Exception e) {
+            LOG.e(TAG, "Error registering state receiver: " + e.getMessage(), e);
+        }
+    }
+
+    private void removeStateListener() {
+        if (this.stateReceiver != null) {
+            try {
+                webView.getContext().unregisterReceiver(this.stateReceiver);
+            } catch (Exception e) {
+                LOG.e(TAG, "Error unregistering state receiver: " + e.getMessage(), e);
+            }
+        }
+        this.stateCallback = null;
+        this.stateReceiver = null;
     }
 
     private void connect(CallbackContext callbackContext, String macAddress) {
