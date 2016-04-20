@@ -160,15 +160,18 @@ Advertising information format varies depending on your platform. See [Advertisi
 
 - __services__: List of services to discover, or [] to find all devices
 - __options__: an object specifying a set of name-value pairs. The currently acceptable options are:
-  - _reportDuplicates_: true if duplicate devices should be reported, false (default) if devices should only be reported once. [optional]
+- _reportDuplicates_: true if duplicate devices should be reported, false (default) if devices should only be reported once. [optional]
 - __success__: Success callback function that is invoked which each discovered device.
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
 
-    ble.startScan([], function(device) {
-        console.log(JSON.stringify(device));
-    }, failure);
+    ble.startScan([], 
+        { reportDuplicates: true }
+        function(device) {
+            console.log(JSON.stringify(device));
+        }, 
+        failure);
 
     setTimeout(ble.stopScan,
         5000,
