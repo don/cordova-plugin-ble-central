@@ -339,7 +339,7 @@ Function `startNotification` registers a callback that is called *every time* th
 
 Raw data is passed from native code to the success callback as an [ArrayBuffer](#typed-arrays).
 
-See [Background Notifications on iOS](#backgroundnotificationsonios)
+See [Background Notifications on iOS](#background-notifications-on-ios)
 
 ### Parameters
 
