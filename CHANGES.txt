@@ -1,9 +1,12 @@
 = 1.0.x =
+Add documentation about receiving notifications in the background on iOS #169
 Add option to report duplicates during scan #172 Thanks Chris Armstrong
 Read RSSI value from an active BLE connection #171 Thanks Chris Armstrong
 Register for callbacks on Bluetooth state change #136 Thanks Ryan Harvey
 Fix example for write characteristic #195 Thanks Wynout van der Veer
 Fix documentation for write & writeWithoutResponse #193 Thanks Blake Parkinson
+Update CC2650 example #200 Thanks jplourenco
+Connect peripheral with missing ble-flag (Android SDK 23) #226 Thanks PeacePan
 
 = 1.0.6 =
 Fix compile error with Cordova 5.x #219
