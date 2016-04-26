@@ -339,6 +339,8 @@ Function `startNotification` registers a callback that is called *every time* th
 
 Raw data is passed from native code to the success callback as an [ArrayBuffer](#typed-arrays).
 
+See [Background Notifications on iOS](#backgroundnotificationsonios)
+
 ### Parameters
 
 - __device_id__: UUID or MAC address of the peripheral
@@ -694,7 +696,7 @@ You can read more about typed arrays in these articles on [MDN](https://develope
 
 UUIDs are always strings and not numbers. Some 16-bit UUIDs, such as '2220' look like integers, but they're not. (The integer 2220 is 0x8AC in hex.) This isn't a problem with 128 bit UUIDs since they look like strings 82b9e6e1-593a-456f-be9b-9215160ebcac. All 16-bit UUIDs should also be passed to methods as strings.
 
-# Receiving Notification with Application in the Background
+# Background Notifications on iOS
 
 Android applications will continue to receive notification while the application is in the background.
 
@@ -702,12 +704,12 @@ iOS applications need additional configuration to allow Bluetooth to run in the 
 
 Install the [cordova-custom-config](https://www.npmjs.com/package/cordova-custom-config) plugin.
 
+    cordova plugin add cordova-custom-config
+
 Add a new section to config.xml
 
     <platform name="ios">
-        <allow-intent href="itms:&#42;" />
-        <allow-intent href="itms-apps:&#42;" />
-        <config-file parent="UIBackgroundModes" target="&#42;-Info.plist">
+        <config-file parent="UIBackgroundModes" target="*-Info.plist">
             <array>
                 <string>bluetooth-central</string>
             </array>
