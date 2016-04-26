@@ -694,6 +694,26 @@ You can read more about typed arrays in these articles on [MDN](https://develope
 
 UUIDs are always strings and not numbers. Some 16-bit UUIDs, such as '2220' look like integers, but they're not. (The integer 2220 is 0x8AC in hex.) This isn't a problem with 128 bit UUIDs since they look like strings 82b9e6e1-593a-456f-be9b-9215160ebcac. All 16-bit UUIDs should also be passed to methods as strings.
 
+# Receiving Notification with Application in the Background
+
+Android applications will continue to receive notification while the application is in the background.
+
+iOS applications need additional configuration to allow Bluetooth to run in the background.
+
+Install the [cordova-custom-config](https://www.npmjs.com/package/cordova-custom-config) plugin.
+
+Add a new section to config.xml
+
+    <platform name="ios">
+        <allow-intent href="itms:&#42;" />
+        <allow-intent href="itms-apps:&#42;" />
+        <config-file parent="UIBackgroundModes" target="&#42;-Info.plist">
+            <array>
+                <string>bluetooth-central</string>
+            </array>
+        </config-file>
+    </platform>
+    
 # Testing the Plugin
 
 Tests require the [Cordova Plugin Test Framework](https://github.com/apache/cordova-plugin-test-framework)
