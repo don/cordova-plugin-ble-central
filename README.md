@@ -145,7 +145,7 @@ Scan and discover BLE peripherals, specifying scan options.
 
 ### Description
 
-Function `startScanWithOptions` scans for BLE devices. It operates similarly to the `startScan` function, but allows you to specify extra options (like allowing duplicate device reports).  The success callback is called each time a peripheral is discovered. Scanning will continue until `stopScan` is called. 
+Function `startScanWithOptions` scans for BLE devices. It operates similarly to the `startScan` function, but allows you to specify extra options (like allowing duplicate device reports).  The success callback is called each time a peripheral is discovered. Scanning will continue until `stopScan` is called.
 
     {
         "name": "TI SensorTag",
@@ -166,11 +166,11 @@ Advertising information format varies depending on your platform. See [Advertisi
 
 ### Quick Example
 
-    ble.startScan([], 
+    ble.startScan([],
         { reportDuplicates: true }
         function(device) {
             console.log(JSON.stringify(device));
-        }, 
+        },
         failure);
 
     setTimeout(ble.stopScan,
@@ -346,7 +346,7 @@ Raw data is passed from native code to the success callback as an [ArrayBuffer](
 - __characteristic_uuid__: UUID of the BLE characteristic
 - __success__: Success callback function invoked every time a notification occurs
 - __failure__: Error callback function, invoked when error occurs. [optional]
- 
+
 ### Quick Example
 
     var onData = function(buffer) {
@@ -354,7 +354,7 @@ Raw data is passed from native code to the success callback as an [ArrayBuffer](
         var data = new Uint8Array(buffer);
         alert("Button state changed to " + data[0]);
     }
-    
+
     ble.startNotification(device_id, "FFE0", "FFE1", onData, failure);
 
 ## stopNotification
@@ -536,7 +536,7 @@ Read the RSSI value on the device connection.
 
 ### Description
 
-Samples the RSSI value (a measure of signal strength) on the connection to a bluetooth device. Requires that you have established a connection before invoking (otherwise an error will be raised). 
+Samples the RSSI value (a measure of signal strength) on the connection to a bluetooth device. Requires that you have established a connection before invoking (otherwise an error will be raised).
 
 ### Parameters
 
@@ -546,7 +546,7 @@ Samples the RSSI value (a measure of signal strength) on the connection to a blu
 
 ### Quick Example
     var rssiSample;
-    ble.connect(device_id, 
+    ble.connect(device_id,
         function(device) {
             rssiSample = setInterval(function() {
                     ble.readRSSI(device_id, function(rssi) {
@@ -654,13 +654,13 @@ Note that iOS uses the string value of the constants for the [Advertisement Data
             "kCBAdvDataChannel": 37,
             "kCBAdvDataServiceData": {
                 "FED8": {
-                    "byteLength": 7 /* data not shown */
+                    "byteLength": 7 // data not shown
                 }
             },
             "kCBAdvDataLocalName": "demo",
             "kCBAdvDataServiceUUIDs": ["FED8"],
             "kCBAdvDataManufacturerData": {
-                "byteLength": 7  /* data not shown */
+                "byteLength": 7  // data not shown
             },
             "kCBAdvDataTxPowerLevel": 32,
             "kCBAdvDataIsConnectable": true
