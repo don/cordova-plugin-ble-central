@@ -1,4 +1,4 @@
-= 1.0.x =
+= 1.1.0 =
 Add documentation about receiving notifications in the background on iOS #169
 Add option to report duplicates during scan #172 Thanks Chris Armstrong
 Read RSSI value from an active BLE connection #171 Thanks Chris Armstrong
