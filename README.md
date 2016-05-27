@@ -38,6 +38,7 @@ See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master
 Edit config.xml to install the plugin for [PhoneGap Build](http://build.phonegap.com).
 
     <gap:plugin name="cordova-plugin-ble-central" source="npm" />
+    <preference name="phonegap-version" value="cli-6.1.0" />
 
 ### PhoneGap Developer App
 
