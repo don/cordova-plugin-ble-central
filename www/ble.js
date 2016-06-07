@@ -1,19 +1,19 @@
 // (c) 2014-2016 Don Coleman
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
+// distributed under the License is distributed on an 'AS IS' BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
 /* global cordova, module */
-"use strict";
+'use strict';
 
 var stringToArrayBuffer = function(str) {
     var ret = new Uint8Array(str.length);
@@ -54,7 +54,7 @@ module.exports = {
             convertToNativeJS(peripheral);
             success(peripheral);
         };
-        cordova.exec(successWrapper, failure, 'BLE', 'scan', [services, seconds]);
+        cordova.exec(successWrapper, failure, 'BLE_CENTRAL', 'scan', [services, seconds]);
     },
 
     startScan: function (services, success, failure) {
@@ -62,11 +62,11 @@ module.exports = {
             convertToNativeJS(peripheral);
             success(peripheral);
         };
-        cordova.exec(successWrapper, failure, 'BLE', 'startScan', [services]);
+        cordova.exec(successWrapper, failure, 'BLE_CENTRAL', 'startScan', [services]);
     },
 
     stopScan: function (success, failure) {
-        cordova.exec(success, failure, 'BLE', 'stopScan', []);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'stopScan', []);
     },
 
     startScanWithOptions: function(services, options, success, failure) {
@@ -75,12 +75,12 @@ module.exports = {
             success(peripheral);
         };
         options = options || {};
-        cordova.exec(successWrapper, failure, 'BLE', 'startScanWithOptions', [services, options]);
+        cordova.exec(successWrapper, failure, 'BLE_CENTRAL', 'startScanWithOptions', [services, options]);
     },
 
     // this will probably be removed
     list: function (success, failure) {
-        cordova.exec(success, failure, 'BLE', 'list', []);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'list', []);
     },
 
     connect: function (device_id, success, failure) {
@@ -88,77 +88,77 @@ module.exports = {
             convertToNativeJS(peripheral);
             success(peripheral);
         };
-        cordova.exec(successWrapper, failure, 'BLE', 'connect', [device_id]);
+        cordova.exec(successWrapper, failure, 'BLE_CENTRAL', 'connect', [device_id]);
     },
 
     disconnect: function (device_id, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'disconnect', [device_id]);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'disconnect', [device_id]);
     },
 
     // characteristic value comes back as ArrayBuffer in the success callback
     read: function (device_id, service_uuid, characteristic_uuid, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'read', [device_id, service_uuid, characteristic_uuid]);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'read', [device_id, service_uuid, characteristic_uuid]);
     },
 
     // RSSI value comes back as an integer
     readRSSI: function(device_id, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'readRSSI', [device_id]);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'readRSSI', [device_id]);
     },
 
     // value must be an ArrayBuffer
     write: function (device_id, service_uuid, characteristic_uuid, value, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'write', [device_id, service_uuid, characteristic_uuid, value]);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'write', [device_id, service_uuid, characteristic_uuid, value]);
     },
 
     // value must be an ArrayBuffer
     writeWithoutResponse: function (device_id, service_uuid, characteristic_uuid, value, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'writeWithoutResponse', [device_id, service_uuid, characteristic_uuid, value]);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'writeWithoutResponse', [device_id, service_uuid, characteristic_uuid, value]);
     },
 
     // value must be an ArrayBuffer
     writeCommand: function (device_id, service_uuid, characteristic_uuid, value, success, failure) {
-        console.log("WARNING: writeCommand is deprecated, use writeWithoutResponse");
-        cordova.exec(success, failure, 'BLE', 'writeWithoutResponse', [device_id, service_uuid, characteristic_uuid, value]);
+        console.log('WARNING: writeCommand is deprecated, use writeWithoutResponse');
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'writeWithoutResponse', [device_id, service_uuid, characteristic_uuid, value]);
     },
 
     // success callback is called on notification
     notify: function (device_id, service_uuid, characteristic_uuid, success, failure) {
-        console.log("WARNING: notify is deprecated, use startNotification");
-        cordova.exec(success, failure, 'BLE', 'startNotification', [device_id, service_uuid, characteristic_uuid]);
+        console.log('WARNING: notify is deprecated, use startNotification');
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'startNotification', [device_id, service_uuid, characteristic_uuid]);
     },
 
     // success callback is called on notification
     startNotification: function (device_id, service_uuid, characteristic_uuid, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'startNotification', [device_id, service_uuid, characteristic_uuid]);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'startNotification', [device_id, service_uuid, characteristic_uuid]);
     },
 
     // success callback is called when the descriptor 0x2902 is written
     stopNotification: function (device_id, service_uuid, characteristic_uuid, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'stopNotification', [device_id, service_uuid, characteristic_uuid]);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'stopNotification', [device_id, service_uuid, characteristic_uuid]);
     },
 
     isConnected: function (device_id, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'isConnected', [device_id]);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'isConnected', [device_id]);
     },
 
     isEnabled: function (success, failure) {
-        cordova.exec(success, failure, 'BLE', 'isEnabled', []);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'isEnabled', []);
     },
 
     enable: function (success, failure) {
-        cordova.exec(success, failure, "BLE", "enable", []);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'enable', []);
     },
 
     showBluetoothSettings: function (success, failure) {
-        cordova.exec(success, failure, "BLE", "showBluetoothSettings", []);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'showBluetoothSettings', []);
     },
 
     startStateNotifications: function (success, failure) {
-        cordova.exec(success, failure, "BLE", "startStateNotifications", []);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'startStateNotifications', []);
     },
 
     stopStateNotifications: function (success, failure) {
-        cordova.exec(success, failure, "BLE", "stopStateNotifications", []);
+        cordova.exec(success, failure, 'BLE_CENTRAL', 'stopStateNotifications', []);
     }
 
 };

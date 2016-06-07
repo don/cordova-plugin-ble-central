@@ -22,7 +22,7 @@
     <platform name="ios">
 
         <config-file target="config.xml" parent="/widget">
-            <feature name="BLE">
+            <feature name="BLE_CENTRAL">
                 <param name="ios-package" value="BLECentralPlugin" onload="true"/>
             </feature>
         </config-file>
@@ -43,7 +43,7 @@
 
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/widget">
-            <feature name="BLE">
+            <feature name="BLE_CENTRAL">
                 <param name="android-package" value="com.megster.cordova.ble.central.BLECentralPlugin"/>
             </feature>
         </config-file>
@@ -75,7 +75,7 @@
 
     <platform name="wp8">
         <config-file target="config.xml" parent="/*">
-            <feature name="BLE">
+            <feature name="BLE_CENTRAL">
                 <param name="wp-package" value="BLECentralPlugin"/>
             </feature>
         </config-file>
