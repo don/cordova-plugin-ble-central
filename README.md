@@ -142,7 +142,7 @@ Advertising information format varies depending on your platform. See [Advertisi
 
 Scan and discover BLE peripherals, specifying scan options.
 
-    ble.startScan(services, options, success, failure);
+    ble.startScanWithOptions(services, options, success, failure);
 
 ### Description
 
