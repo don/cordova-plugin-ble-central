@@ -421,6 +421,13 @@
         NSLog(@"Report Bluetooth state \"%@\" on callback %@", state, stateCallbackId);
         [self.commandDelegate sendPluginResult:pluginResult callbackId:stateCallbackId];
     }
+
+    // check and handle disconnected peripherals
+    for (CBPeripheral *peripheral in peripherals) {
+        if (peripheral.state == CBPeripheralStateDisconnected) {
+            [self centralManager:central didDisconnectPeripheral:peripheral error:nil];
+        }
+    }
 }
 
 - (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
@@ -443,8 +450,21 @@
     [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
 
     if (connectCallbackId) {
+
+        NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[peripheral asDictionary]];
+
+        // add error info
+        [dict setObject:@"Peripheral Disconnected" forKey:@"errorMessage"];
+        if (error) {
+            [dict setObject:[error localizedDescription] forKey:@"errorDescription"];
+        }
+        // remove extra junk
+        [dict removeObjectForKey:@"rssi"];
+        [dict removeObjectForKey:@"advertising"];
+        [dict removeObjectForKey:@"services"];
+
         CDVPluginResult *pluginResult = nil;
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[peripheral asDictionary]];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:dict];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
     }
 
