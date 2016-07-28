@@ -102,6 +102,21 @@ public class Peripheral extends BluetoothGattCallback {
         return json;
     }
 
+    public JSONObject asJSONObject(String errorMessage)  {
+
+        JSONObject json = new JSONObject();
+
+        try {
+            json.put("name", device.getName());
+            json.put("id", device.getAddress()); // mac address
+            json.put("errorMessage", errorMessage);
+        } catch (JSONException e) { // this shouldn't happen
+            e.printStackTrace();
+        }
+
+        return json;
+    }
+
     public JSONObject asJSONObject(BluetoothGatt gatt) {
 
         JSONObject json = asJSONObject();
@@ -183,7 +198,7 @@ public class Peripheral extends BluetoothGattCallback {
             connectCallback.sendPluginResult(result);
         } else {
             LOG.e(TAG, "Service discovery failed. status = " + status);
-            connectCallback.error(this.asJSONObject());
+            connectCallback.error(this.asJSONObject("Service discovery failed"));
             disconnect();
         }
     }
@@ -201,7 +216,7 @@ public class Peripheral extends BluetoothGattCallback {
         } else {
 
             if (connectCallback != null) {
-                connectCallback.error(this.asJSONObject());
+                connectCallback.error(this.asJSONObject("Peripheral Disconnected"));
             }
             disconnect();
         }
