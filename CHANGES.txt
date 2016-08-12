@@ -1,3 +1,9 @@
+= 1.1.2 =
+Call connect failure callback for peripheral if user disables Bluetooth #264
+Add errorMessage to JSON object that is returned (to connect failure callback) when a peripheral disconnects
+
+
+
 = 1.1.1 =
 Update advertising data in peripheral while scanning (Android) #253
 
