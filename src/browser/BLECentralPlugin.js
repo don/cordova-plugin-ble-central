@@ -15,6 +15,10 @@ module.exports = {
         notSupported();
         if (failure) failure();
     },
+    startScanWithOptions: function(services, options, success, failure) {
+        notSupported();
+        if (failure) failure();
+    },
     connect: function(device_id, connectSuccess, connectFailure) {
         notSupported();
         if (connectFailure) connectFailure();
@@ -24,6 +28,10 @@ module.exports = {
         if (connectFailure) connectFailure();
     },
     read: function(device_id, service_uuid, characteristic_uuid, success, failure) {
+        notSupported();
+        if (failure) failure();
+    },
+    readRSSI: function(device_id, success, failure) {
         notSupported();
         if (failure) failure();
     },
@@ -58,5 +66,13 @@ module.exports = {
     enable: function(success, failure) {
         notSupported();
         if (failure) failure();
+    },
+    startStateNotifications: function(success, failure) {
+      notSupported();
+      if (failure) failure();
+    },
+    stopStateNotifications: function(success, failure) {
+      notSupported();
+      if (failure) failure();
     }
 };

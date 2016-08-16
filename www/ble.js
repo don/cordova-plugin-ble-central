@@ -1,4 +1,4 @@
-// (c) 2014 Don Coleman
+// (c) 2014-2016 Don Coleman
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -69,6 +69,14 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'stopScan', []);
     },
 
+    startScanWithOptions: function(services, options, success, failure) {
+        var successWrapper = function(peripheral) {
+            convertToNativeJS(peripheral);
+            success(peripheral);
+        };
+        options = options || {};
+        cordova.exec(successWrapper, failure, 'BLE', 'startScanWithOptions', [services, options]);
+    },
 
     // this will probably be removed
     list: function (success, failure) {
@@ -90,6 +98,11 @@ module.exports = {
     // characteristic value comes back as ArrayBuffer in the success callback
     read: function (device_id, service_uuid, characteristic_uuid, success, failure) {
         cordova.exec(success, failure, 'BLE', 'read', [device_id, service_uuid, characteristic_uuid]);
+    },
+
+    // RSSI value comes back as an integer
+    readRSSI: function(device_id, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'readRSSI', [device_id]);
     },
 
     // value must be an ArrayBuffer
@@ -138,6 +151,14 @@ module.exports = {
 
     showBluetoothSettings: function (success, failure) {
         cordova.exec(success, failure, "BLE", "showBluetoothSettings", []);
+    },
+
+    startStateNotifications: function (success, failure) {
+        cordova.exec(success, failure, "BLE", "startStateNotifications", []);
+    },
+
+    stopStateNotifications: function (success, failure) {
+        cordova.exec(success, failure, "BLE", "stopStateNotifications", []);
     }
 
 };

@@ -1,3 +1,29 @@
+= 1.1.2 =
+Call connect failure callback for peripheral if user disables Bluetooth #264
+Fix iOS problem with multiple keys in service data #288 Thanks Lebbeous Fogle-Weekley
+Add errorMessage to JSON object that is returned (to connect failure callback) when a peripheral disconnects
+Call gatt.disconnect() before gatt.close() to get problematic devices to disconnect #221, #254, #214
+
+= 1.1.1 =
+Update advertising data in peripheral while scanning (Android) #253
+
+= 1.1.0 =
+Add documentation about receiving notifications in the background on iOS #169
+Add option to report duplicates during scan #172 Thanks Chris Armstrong
+Read RSSI value from an active BLE connection #171 Thanks Chris Armstrong
+Register for callbacks on Bluetooth state change #136 Thanks Ryan Harvey
+Fix example for write characteristic #195 Thanks Wynout van der Veer
+Fix documentation for write & writeWithoutResponse #193 Thanks Blake Parkinson
+Update CC2650 example #200 Thanks jplourenco
+Connect peripheral with missing ble-flag (Android SDK 23) #226 Thanks PeacePan
+
+= 1.0.6 =
+Fix compile error with Cordova 5.x #219
+
+= 1.0.5 =
+Request Permissions for Android 6.0 (API level 23) #182
+Update documentation for isEnabled #170
+
 = 1.0.4 =
 Fix compile error with ios@4.0.1 #161
 

@@ -50,6 +50,10 @@ public class BLECentralPlugin : BaseCommand
     {
       notImplemented();
     }
+    public void startScanWithOptions(string args)
+    {
+      notImplemented();
+    }
     public void connect(string args)
     {
       notImplemented();
@@ -59,6 +63,10 @@ public class BLECentralPlugin : BaseCommand
       notImplemented();
     }
     public void read(string args)
+    {
+      notImplemented();
+    }
+    public void readRSSI(string args) 
     {
       notImplemented();
     }
