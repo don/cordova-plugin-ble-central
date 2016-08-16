@@ -39,6 +39,12 @@
         <!-- frameworks -->
         <framework src="CoreBluetooth.framework" />
 
+        <config-file target="*-Info.plist" parent="UIBackgroundModes">
+          <array>
+            <string>bluetooth-central</string>
+          </array>
+        </config-file>
+
     </platform>
 
     <platform name="android">
