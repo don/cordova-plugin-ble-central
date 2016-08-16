@@ -162,3 +162,84 @@ module.exports = {
     }
 
 };
+
+module.exports.withPromises = {
+    scan: module.exports.scan,
+    startScan: module.exports.startScan,
+    startScanWithOptions: module.exports.startScanWithOptions,
+    connect: module.exports.connect,
+    startNotification: module.exports.startNotification,
+    startStateNotifications: module.exports.startStateNotifications,
+
+    stopScan: function() {
+        return new Promise(function(resolve, reject) {
+            module.exports.stopScan(resolve, reject);
+        });
+    },
+
+    disconnect: function(device_id) {
+        return new Promise(function(resolve, reject) {
+            module.exports.disconnect(device_id, resolve, reject);
+        });
+    },
+
+    read: function(device_id, service_uuid, characteristic_uuid) {
+        return new Promise(function(resolve, reject) {
+            module.exports.read(device_id, service_uuid, characteristic_uuid, resolve, reject);
+        });
+    },
+
+    write: function(device_id, service_uuid, characteristic_uuid, value) {
+        return new Promise(function(resolve, reject) {
+            module.exports.write(device_id, service_uuid, characteristic_uuid, value, resolve, reject);
+        });
+    },
+
+    writeWithoutResponse: function (device_id, service_uuid, characteristic_uuid, value) {
+        return new Promise(function(resolve, reject) {
+            module.exports.writeWithoutResponse(device_id, service_uuid, characteristic_uuid, value, resolve, reject);
+        });
+    },
+
+    stopNotification: function (device_id, service_uuid, characteristic_uuid) {
+        return new Promise(function(resolve, reject) {
+            module.exports.stopNotification(device_id, service_uuid, characteristic_uuid, resolve, reject);
+        });
+    },
+
+    isConnected: function (device_id) {
+        return new Promise(function(resolve, reject) {
+            module.exports.isConnected(device_id);
+        });
+    },
+
+    isEnabled: function () {
+        return new Promise(function(resolve, reject) {
+            module.exports.isEnabled(resolve, reject);
+        });
+    },
+
+    enable: function () {
+        return new Promise(function(resolve, reject) {
+            module.exports.enable(resolve, reject);
+        });
+    },
+
+    showBluetoothSettings: function () {
+        return new Promise(function(resolve, reject) {
+            module.exports.showBluetoothSettings(resolve, reject);
+        });
+    },
+
+    stopStateNotifications: function () {
+        return new Promise(function(resolve, reject) {
+            module.exports.stopStateNotifications(resolve, reject);
+        });
+    },
+
+    readRSSI: function(device_id) {
+        return new Promise(function(resolve, reject) {
+            module.exports.readRSSI(device_id);
+        });
+    }
+}
