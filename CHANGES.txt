@@ -3,6 +3,8 @@ Call connect failure callback for peripheral if user disables Bluetooth #264
 Fix iOS problem with multiple keys in service data #288 Thanks Lebbeous Fogle-Weekley
 Add errorMessage to JSON object that is returned (to connect failure callback) when a peripheral disconnects
 Call gatt.disconnect() before gatt.close() to get problematic devices to disconnect #221, #254, #214
+Include version of JavaScript API with promises #247 Thanks Kelly Campbell
+stopNotification on Android writes DISABLE_NOTIFICATION_VALUE to the descriptor #225 Thanks zjw1918
 
 = 1.1.1 =
 Update advertising data in peripheral while scanning (Android) #253
