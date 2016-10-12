@@ -88,6 +88,8 @@ Function `scan` scans for BLE devices.  The success callback is called each time
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
 
+*Note* in Android SDK >= 23, Location Services must be enabled. If it has not been enabled, the scan method will return no results even when BLE devices are in proximity.
+
 ### Parameters
 
 - __services__: List of services to discover, or [] to find all devices
@@ -119,6 +121,8 @@ Function `startScan` scans for BLE devices.  The success callback is called each
     }
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
+
+*Note* cf. note above about Location Services in Android SDK >= 23.
 
 ### Parameters
 
