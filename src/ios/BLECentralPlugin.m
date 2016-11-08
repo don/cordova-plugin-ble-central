@@ -195,9 +195,9 @@
 
 // stopNotification: function (device_id, service_uuid, characteristic_uuid, success, failure) {
 - (void)stopNotification:(CDVInvokedUrlCommand*)command {
-    NSLog(@"registering for notification");
+    NSLog(@"stop notification");
 
-    BLECommandContext *context = [self getData:command prop:CBCharacteristicPropertyNotify]; // TODO name this better
+    BLECommandContext *context = [self getData:command prop:CBCharacteristicPropertyNotify];
 
     if (context) {
         CBPeripheral *peripheral = [context peripheral];
