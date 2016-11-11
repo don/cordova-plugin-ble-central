@@ -181,6 +181,10 @@ public class Peripheral extends BluetoothGattCallback {
         return object;
     }
 
+    public void updateConnectListener(CallbackContext callbackContext) {
+        connectCallback = callbackContext;
+    }
+
     public boolean isConnected() {
         return connected;
     }

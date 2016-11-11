@@ -82,6 +82,10 @@ module.exports = {
     list: function (success, failure) {
         cordova.exec(success, failure, 'BLE', 'list', []);
     },
+    
+    updateConnectListener: function(device_id, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'updateConnectListener', [device_id]);
+    },
 
     connect: function (device_id, success, failure) {
         var successWrapper = function(peripheral) {
@@ -170,6 +174,7 @@ module.exports.withPromises = {
     connect: module.exports.connect,
     startNotification: module.exports.startNotification,
     startStateNotifications: module.exports.startStateNotifications,
+    updateConnectListener: module.exports.updateConnectListener,
 
     stopScan: function() {
         return new Promise(function(resolve, reject) {

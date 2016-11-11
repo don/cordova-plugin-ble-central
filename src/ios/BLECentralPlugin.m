@@ -60,6 +60,14 @@
 
 #pragma mark - Cordova Plugin Methods
 
+- (void)updateConnectListener:(CDVInvokedUrlCommand *)command {
+    
+    NSString *uuid = [command.arguments objectAtIndex:0];
+    CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
+    [connectCallbacks setObject:[command.callbackId copy] forKey:[peripheral uuidAsString]];
+    
+}
+
 - (void)connect:(CDVInvokedUrlCommand *)command {
 
     NSLog(@"connect");

@@ -1,5 +1,5 @@
 {
-  "name": "cordova-plugin-ble-central",
+  "name": "cordova-plugin-ble-central”,
   "version": "1.1.3",
   "description": "Bluetooth Low Energy (BLE) Central Plugin",
   "cordova": {

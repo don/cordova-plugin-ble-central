@@ -50,6 +50,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     private static final String LIST = "list";
 
+    private static final String UPDATE_CONNECT_LISTENER = "updateConnectListener";
     private static final String CONNECT = "connect";
     private static final String DISCONNECT = "disconnect";
 
@@ -147,6 +148,12 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
             listKnownDevices(callbackContext);
 
+        } else if (action.equals(UPDATE_CONNECT_LISTENER)) {
+            
+            String macAddress = args.getString(0);
+            Peripheral peripheral = peripherals.get(macAddress);
+            peripheral.updateConnectListener(callbackContext);
+            
         } else if (action.equals(CONNECT)) {
 
             String macAddress = args.getString(0);
