@@ -372,7 +372,7 @@ See [Background Notifications on iOS](#background-notifications-on-ios)
 
 Stop being notified when the value of a characteristic changes.
 
-ble.stopNotification(device_id, service_uuid, characteristic_uuid, success, failure);
+    ble.stopNotification(device_id, service_uuid, characteristic_uuid, success, failure);
 
 ### Description
 
@@ -478,7 +478,7 @@ __States__
 
 Stops state notifications.
 
-    ble.startStateNotifications(success, failure);
+    ble.stopStateNotifications(success, failure);
 
 ### Description
 
