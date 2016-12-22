@@ -41,7 +41,6 @@ import org.json.JSONException;
 import java.util.*;
 
 public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.LeScanCallback {
-
     // actions
     private static final String SCAN = "scan";
     private static final String START_SCAN = "startScan";
@@ -114,7 +113,6 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-
         LOG.d(TAG, "action = " + action);
 
         if (bluetoothAdapter == null) {
@@ -329,7 +327,6 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     }
 
     private void connect(CallbackContext callbackContext, String macAddress) {
-
         Peripheral peripheral = peripherals.get(macAddress);
         if (peripheral != null) {
             peripheral.connect(callbackContext, cordova.getActivity());
@@ -454,7 +451,12 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         // clear non-connected cached peripherals
         for(Iterator<Map.Entry<String, Peripheral>> iterator = peripherals.entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<String, Peripheral> entry = iterator.next();
-            if(!entry.getValue().isConnected()) {
+            Peripheral device = entry.getValue();
+            boolean connecting = device.isConnecting();
+            if (connecting){
+                LOG.d(TAG, "Not removing connecting device: " + device.getDevice().getAddress());
+            }
+            if(!entry.getValue().isConnected() && !connecting) {
                 iterator.remove();
             }
         }
