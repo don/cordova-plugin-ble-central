@@ -416,6 +416,11 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         Peripheral peripheral = peripherals.get(macAddress);
         if (peripheral != null) {
 
+            if (!peripheral.isConnected()) {
+                callbackContext.error("Peripheral " + macAddress + " is not connected.");
+                return;
+            }
+
             //peripheral.setOnDataCallback(serviceUUID, characteristicUUID, callbackContext);
             peripheral.queueRegisterNotifyCallback(callbackContext, serviceUUID, characteristicUUID);
 
@@ -431,6 +436,11 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
         Peripheral peripheral = peripherals.get(macAddress);
         if (peripheral != null) {
+
+            if (!peripheral.isConnected()) {
+                callbackContext.error("Peripheral " + macAddress + " is not connected.");
+                return;
+            }
 
             peripheral.queueRemoveNotifyCallback(callbackContext, serviceUUID, characteristicUUID);
 
