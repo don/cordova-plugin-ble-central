@@ -118,12 +118,12 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
         if (bluetoothAdapter == null) {
             Activity activity = cordova.getActivity();
-            boolean hasBleFeature = activity.getApplicationContext()
+            boolean hardwareSupportsBLE = activity.getApplicationContext()
                                             .getPackageManager()
                                             .hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) &&
                                             Build.VERSION.SDK_INT >= 18;
-            if (hasBleFeature == false) {
-              LOG.w(TAG, "This hardware does not support Bluetooth Low Energy.")
+            if (!hardwareSupportsBLE) {
+              LOG.w(TAG, "This hardware does not support Bluetooth Low Energy.");
               callbackContext.error("This hardware does not support Bluetooth Low Energy.");
               return false;
             }
