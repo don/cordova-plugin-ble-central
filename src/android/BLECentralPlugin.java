@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.IntentFilter;
 import android.os.Handler;
+import android.os.Build;
 
 import android.provider.Settings;
 import org.apache.cordova.CallbackContext;
@@ -119,6 +120,14 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
         if (bluetoothAdapter == null) {
             Activity activity = cordova.getActivity();
+            boolean hasBleFeature = activity.getApplicationContext()
+                                            .getPackageManager()
+                                            .hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) &&
+                                            Build.VERSION.SDK_INT >= 18;
+            if (hasBleFeature == false) {
+              callbackContext.error("No BLE Feature");
+              return false;
+            }
             BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
             bluetoothAdapter = bluetoothManager.getAdapter();
         }
