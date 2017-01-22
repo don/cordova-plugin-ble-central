@@ -267,6 +267,10 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'stopStateNotifications', []);
     },
 
+    upgradeFirmware: function (device_id, url, success, failure) {
+        cordova.exec(success, failure, "BLE", "upgradeFirmware", [device_id, url]);
+    },
+
     restoredBluetoothState: function (success, failure) {
         cordova.exec(success, failure, 'BLE', 'restoredBluetoothState', []);
     },
@@ -488,4 +492,10 @@ module.exports.withPromises.l2cap = {
             module.exports.l2cap.write(device_id, psm, data, resolve, reject);
         });
     },
+
+    upgradeFirmware: function(device_id, url) {
+        return new Promise(function(resolve, reject) {
+            module.exports.write(device_id, url, resolve, reject);
+        });
+    }
 };

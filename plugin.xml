@@ -80,6 +80,13 @@
 
         <hook type="after_prepare" src="hooks/after_prepare.js"/>
 
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <activity android:name="com.megster.cordova.ble.central.NotificationActivity" />
+            <service android:name="com.megster.cordova.ble.central.DfuService" />
+        </config-file>
+
+        <framework src="no.nordicsemi.android:dfu:1.1.1"/>
+
         <source-file src="src/android/BLECentralPlugin.java"
             target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/SequentialCallbackContext.java"
@@ -94,6 +101,12 @@
             target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/L2CAPContext.java"
             target-dir="src/com/megster/cordova/ble/central"/>
+
+        <source-file src="src/android/DfuService.java"
+            target-dir="src/com/megster/cordova/ble/central"/>
+        <source-file src="src/android/NotificationActivity.java"
+            target-dir="src/com/megster/cordova/ble/central"/>
+
     </platform>
 
     <platform name="browser">
