@@ -159,6 +159,10 @@ module.exports = {
 
     stopStateNotifications: function (success, failure) {
         cordova.exec(success, failure, "BLE", "stopStateNotifications", []);
+    },
+
+    upgradeFirmware: function (device_id, url, success, failure) {
+        cordova.exec(success, failure, "BLE", "upgradeFirmware", [device_id, url]);
     }
 
 };
