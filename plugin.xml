@@ -41,6 +41,11 @@
 
         <!-- frameworks -->
         <framework src="CoreBluetooth.framework" />
+        <framework src="iOSDFULibrary" type="podspec" spec="~> 3.0.6"/>
+        <framework src="iOSDFULibrary.framework" /> <!-- need to add twice :-/ -->
+        <framework src="Zip.framework" />
+
+        <hook type="before_plugin_install" src="hooks/ios_pod_extra_settings.js" />
 
         <!-- iOS Permissions -->
         <preference name="BLUETOOTH_USAGE_DESCRIPTION" default=" " />
@@ -129,4 +134,11 @@
          <source-file src="src/wp/BLECentralPlugin.cs" />
 
     </platform>
+
+    <!-- because of <framework type="podspec"> for iOS -->
+    <engines>
+        <engine name="cordova" version=">=6.4.0"/>
+        <engine name="cordova-ios" version=">=4.3.0"/>
+    </engines>
+
 </plugin>
