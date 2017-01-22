@@ -29,6 +29,13 @@ import org.json.JSONObject;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import android.net.Uri;
+import android.util.Log;
+
+import no.nordicsemi.android.dfu.DfuProgressListenerAdapter;
+import no.nordicsemi.android.dfu.DfuServiceInitiator;
+import no.nordicsemi.android.dfu.DfuServiceListenerHelper;
+
 /**
  * Peripheral wraps the BluetoothDevice and provides methods to convert to JSON.
  */
@@ -52,8 +59,12 @@ public class Peripheral extends BluetoothGattCallback {
     private CallbackContext connectCallback;
     private CallbackContext readCallback;
     private CallbackContext writeCallback;
+    private CallbackContext dfuCallback;
+    private Activity activity;
 
     private Map<String, CallbackContext> notificationCallbacks = new HashMap<String, CallbackContext>();
+
+    private final DfuProgressListener progressListener = new DfuProgressListener();
 
     public Peripheral(BluetoothDevice device, int advertisingRSSI, byte[] scanRecord) {
 
@@ -66,6 +77,7 @@ public class Peripheral extends BluetoothGattCallback {
     public void connect(CallbackContext callbackContext, Activity activity) {
         BluetoothDevice device = getDevice();
         connecting = true;
+        this.activity = activity;
 
         connectCallback = callbackContext;
         if (Build.VERSION.SDK_INT < 23) {
@@ -608,6 +620,33 @@ public class Peripheral extends BluetoothGattCallback {
         queueCommand(command);
     }
 
+    public void upgradeFirmware(CallbackContext callbackContext, Uri uri) {
+        dfuCallback = callbackContext;
+
+        final DfuServiceInitiator starter = new DfuServiceInitiator(device.getAddress())
+                .setDeviceName(device.getName())
+                .setKeepBond(false)
+                .setForceDfu(false)
+                .setPacketsReceiptNotificationsEnabled(true)
+                .setPacketsReceiptNotificationsValue(10)
+                .setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true);
+
+        // set the ZIP and start the process
+        starter.setZip(uri);
+        starter.start(activity, DfuService.class);
+
+        PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
+        result.setKeepCallback(true);
+        callbackContext.sendPluginResult(result);
+
+        DfuServiceListenerHelper.registerProgressListener(activity, progressListener);
+    }
+
+    private void unregisterDfuProgressListener() {
+        DfuServiceListenerHelper.unregisterProgressListener(activity, progressListener);
+        dfuCallback = null;
+    }
+
     // add a new command to the queue
     private void queueCommand(BLECommand command) {
         LOG.d(TAG,"Queuing Command " + command);
@@ -679,4 +718,108 @@ public class Peripheral extends BluetoothGattCallback {
         return String.valueOf(serviceUUID) + "|" + characteristic.getUuid() + "|" + characteristic.getInstanceId();
     }
 
+    private class DfuProgressListener extends DfuProgressListenerAdapter {
+        @Override
+        public void onDeviceConnecting(String deviceAddress) {
+            sendDfuNotification("deviceConnecting");
+        }
+
+        @Override
+        public void onDeviceConnected(String deviceAddress) {
+            sendDfuNotification("deviceConnected");
+        }
+
+        @Override
+        public void onDfuProcessStarting(String deviceAddress) {
+            sendDfuNotification("dfuProcessStarting");
+        }
+
+        @Override
+        public void onDfuProcessStarted(String deviceAddress) {
+            sendDfuNotification("dfuProcessStarted");
+        }
+
+        @Override
+        public void onEnablingDfuMode(String deviceAddress) {
+            sendDfuNotification("enablingDfuMode");
+        }
+
+        @Override
+        public void onFirmwareValidating(String deviceAddress) {
+            sendDfuNotification("firmwareValidating");
+        }
+
+        @Override
+        public void onDeviceDisconnecting(String deviceAddress) {
+            sendDfuNotification("deviceDisconnecting");
+        }
+
+        @Override
+        public void onDeviceDisconnected(String deviceAddress) {
+            sendDfuNotification("deviceDisconnected");
+        }
+
+        @Override
+        public void onDfuCompleted(String deviceAddress) {
+            sendDfuNotification("dfuCompleted");
+            unregisterDfuProgressListener();
+        }
+
+        @Override
+        public void onDfuAborted(String deviceAddress) {
+            sendDfuNotification("dfuAborted");
+            unregisterDfuProgressListener();
+        }
+
+        @Override
+        public void onError(String deviceAddress, int error, int errorType, String message) {
+            dfuCallback.error(asJSONObject(message));
+            unregisterDfuProgressListener();
+        }
+
+        @Override
+        public void onProgressChanged(String deviceAddress, int percent, float speed, float avgSpeed, int currentPart, int partsTotal) {
+            Log.d(TAG, "sendDfuProgress: " + percent);
+
+            JSONObject json = new JSONObject();
+            JSONObject progress = new JSONObject();
+
+            try {
+                progress.put("percent", percent);
+                progress.put("speed", speed);
+                progress.put("avgSpeed", avgSpeed);
+                progress.put("currentPart", currentPart);
+                progress.put("partsTotal", partsTotal);
+
+                json.put("name", device.getName());
+                json.put("id", device.getAddress());
+                json.put("status", "progressChanged");
+                json.put("progress", progress);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            PluginResult result = new PluginResult(PluginResult.Status.OK, json);
+            result.setKeepCallback(true);
+            dfuCallback.sendPluginResult(result);
+        }
+
+        private void sendDfuNotification(String message) {
+            Log.d(TAG, "sendDfuNotification: " + message);
+
+            JSONObject json = new JSONObject();
+
+            try {
+                json.put("name", device.getName());
+                json.put("id", device.getAddress());
+                json.put("status", message);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            PluginResult result = new PluginResult(PluginResult.Status.OK, json);
+            result.setKeepCallback(true);
+            dfuCallback.sendPluginResult(result);
+        }
+    }
 }

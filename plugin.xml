@@ -58,6 +58,13 @@
             <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
         </config-file>
 
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <activity android:name="com.megster.cordova.ble.central.NotificationActivity" />
+            <service android:name="com.megster.cordova.ble.central.DfuService" />
+        </config-file>
+
+        <framework src="no.nordicsemi.android:dfu:1.1.1"/>
+
         <source-file src="src/android/BLECentralPlugin.java"
             target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/BLECommand.java"
@@ -67,6 +74,10 @@
         <source-file src="src/android/Helper.java"
             target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/UUIDHelper.java"
+            target-dir="src/com/megster/cordova/ble/central"/>
+        <source-file src="src/android/DfuService.java"
+            target-dir="src/com/megster/cordova/ble/central"/>
+        <source-file src="src/android/NotificationActivity.java"
             target-dir="src/com/megster/cordova/ble/central"/>
 
     </platform>

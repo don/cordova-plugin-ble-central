@@ -28,6 +28,8 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Build;
 
+import android.net.Uri;
+
 import android.provider.Settings;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
@@ -70,6 +72,8 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     private static final String START_STATE_NOTIFICATIONS = "startStateNotifications";
     private static final String STOP_STATE_NOTIFICATIONS = "stopStateNotifications";
+
+    private static final String UPGRADE_FIRMWARE = "upgradeFirmware";
 
     // callbacks
     CallbackContext discoverCallback;
@@ -260,6 +264,13 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             }
             removeStateListener();
             callbackContext.success();
+
+        } else if (action.equals(UPGRADE_FIRMWARE)) {
+
+            String macAddress = args.getString(0);
+            Uri uri = Uri.parse(args.getString(1));
+            int type = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT;
+            upgradeFirmware(callbackContext, macAddress, uri);
 
         } else if (action.equals(START_SCAN_WITH_OPTIONS)) {
             UUID[] serviceUUIDs = parseServiceUUIDList(args.getJSONArray(0));
@@ -600,6 +611,27 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
      */
     private void resetScanOptions() {
         this.reportDuplicates = false;
+    }
+
+    private void upgradeFirmware(final CallbackContext callbackContext, String macAddress, final Uri uri) {
+
+        final Peripheral peripheral = peripherals.get(macAddress);
+
+        if (peripheral == null) {
+            callbackContext.error("Peripheral " + macAddress + " not found.");
+            return;
+        }
+
+        if (!peripheral.isConnected()) {
+            callbackContext.error("Peripheral " + macAddress + " is not connected.");
+            return;
+        }
+
+        cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
+                peripheral.upgradeFirmware(callbackContext, uri);
+            }
+        });
     }
 
 }
