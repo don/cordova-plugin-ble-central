@@ -42,8 +42,6 @@
         <!-- frameworks -->
         <framework src="CoreBluetooth.framework" />
         <framework src="iOSDFULibrary" type="podspec" spec="~> 3.0.6"/>
-        <framework src="iOSDFULibrary.framework" /> <!-- need to add twice :-/ -->
-        <framework src="Zip.framework" />
 
         <hook type="before_plugin_install" src="hooks/ios_pod_extra_settings.js" />
 
