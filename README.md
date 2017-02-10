@@ -96,6 +96,8 @@ Function `scan` scans for BLE devices.  The success callback is called each time
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
 
+*Note* in Android SDK >= 23, Location Services must be enabled. If it has not been enabled, the scan method will return no results even when BLE devices are in proximity.
+
 ### Parameters
 
 - __services__: List of services to discover, or [] to find all devices
@@ -127,6 +129,8 @@ Function `startScan` scans for BLE devices.  The success callback is called each
     }
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
+
+*Note* cf. note above about Location Services in Android SDK >= 23.
 
 ### Parameters
 
@@ -234,6 +238,8 @@ Connect to a peripheral.
 ### Description
 
 Function `connect` connects to a BLE peripheral. The callback is long running. Success will be called when the connection is successful. Service and characteristic info will be passed to the success callback in the [peripheral object](#peripheral-data). Failure is called if the connection fails, or later if the peripheral disconnects. An peripheral object is passed to the failure callback.
+
+[ble.scan](#scan) must be called before calling connect, so the plugin has a list of avaiable peripherals.
 
 __NOTE__: the connect failure callback will be called if the peripheral disconnects.
 
@@ -372,7 +378,7 @@ See [Background Notifications on iOS](#background-notifications-on-ios)
 
 Stop being notified when the value of a characteristic changes.
 
-ble.stopNotification(device_id, service_uuid, characteristic_uuid, success, failure);
+    ble.stopNotification(device_id, service_uuid, characteristic_uuid, success, failure);
 
 ### Description
 
@@ -478,7 +484,7 @@ __States__
 
 Stops state notifications.
 
-    ble.startStateNotifications(success, failure);
+    ble.stopStateNotifications(success, failure);
 
 ### Description
 
