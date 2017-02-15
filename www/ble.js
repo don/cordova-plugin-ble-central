@@ -209,7 +209,7 @@ module.exports.withPromises = {
 
     isConnected: function (device_id) {
         return new Promise(function(resolve, reject) {
-            module.exports.isConnected(device_id);
+            module.exports.isConnected(device_id, resolve, reject);
         });
     },
 
@@ -239,7 +239,7 @@ module.exports.withPromises = {
 
     readRSSI: function(device_id) {
         return new Promise(function(resolve, reject) {
-            module.exports.readRSSI(device_id);
+            module.exports.readRSSI(device_id, resolve, reject);
         });
     }
-}
+};
