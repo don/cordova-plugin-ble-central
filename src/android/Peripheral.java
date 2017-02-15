@@ -43,6 +43,7 @@ public class Peripheral extends BluetoothGattCallback {
     private byte[] advertisingData;
     private int advertisingRSSI;
     private boolean connected = false;
+    private boolean connecting = false;
     private ConcurrentLinkedQueue<BLECommand> commandQueue = new ConcurrentLinkedQueue<BLECommand>();
     private boolean bleProcessing;
 
@@ -64,6 +65,8 @@ public class Peripheral extends BluetoothGattCallback {
 
     public void connect(CallbackContext callbackContext, Activity activity) {
         BluetoothDevice device = getDevice();
+        connecting = true;
+
         connectCallback = callbackContext;
         if (Build.VERSION.SDK_INT < 23) {
             gatt = device.connectGatt(activity, false, this);
@@ -79,6 +82,8 @@ public class Peripheral extends BluetoothGattCallback {
     public void disconnect() {
         connectCallback = null;
         connected = false;
+        connecting = false;
+
         if (gatt != null) {
             gatt.disconnect();
             gatt.close();
@@ -185,6 +190,10 @@ public class Peripheral extends BluetoothGattCallback {
         return connected;
     }
 
+    public boolean isConnecting() {
+        return connecting;
+    }
+
     public BluetoothDevice getDevice() {
         return device;
     }
@@ -212,6 +221,7 @@ public class Peripheral extends BluetoothGattCallback {
         if (newState == BluetoothGatt.STATE_CONNECTED) {
 
             connected = true;
+            connecting = false;
             gatt.discoverServices();
 
         } else {
@@ -383,6 +393,11 @@ public class Peripheral extends BluetoothGattCallback {
             notificationCallbacks.remove(key);
 
             if (gatt.setCharacteristicNotification(characteristic, false)) {
+                BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIGURATION_UUID);
+                if (descriptor != null) {
+                    descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+                    gatt.writeDescriptor(descriptor);
+                }
                 callbackContext.success();
             } else {
                 // TODO we can probably ignore and return success anyway since we removed the notification callback
