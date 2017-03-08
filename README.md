@@ -179,7 +179,7 @@ Advertising information format varies depending on your platform. See [Advertisi
 
 ### Quick Example
 
-    ble.startScan([],
+    ble.startScanWithOptions([],
         { reportDuplicates: true }
         function(device) {
             console.log(JSON.stringify(device));
