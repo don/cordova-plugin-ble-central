@@ -16,6 +16,8 @@ All access is via service and characteristic UUIDs. The plugin manages handles i
 
 Simultaneous connections to multiple peripherals are supported.
 
+_This plugin isn't intended for scanning beacons._ Try [cordova-plugin-ibeacon](https://github.com/petermetz/cordova-plugin-ibeacon) for iBeacons.
+
 See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master/examples) for ideas on how this plugin can be used.
 
 ## Supported Platforms
