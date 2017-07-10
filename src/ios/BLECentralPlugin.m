@@ -543,11 +543,17 @@
 
     NSString *readCallbackId = [readCallbacks objectForKey:key];
 
-    if(readCallbackId) {
+    if (readCallbackId) {
         NSData *data = characteristic.value; // send RAW data to Javascript
 
         CDVPluginResult *pluginResult = nil;
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
+        if (data) {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
+        }
+        else {
+            NSLog(@"characteristic.value == nil in didUpdateValueForCharacteristic");
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+        }
         [self.commandDelegate sendPluginResult:pluginResult callbackId:readCallbackId];
 
         [readCallbacks removeObjectForKey:key];
