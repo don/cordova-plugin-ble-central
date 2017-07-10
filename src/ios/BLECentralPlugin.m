@@ -543,11 +543,17 @@
 
     NSString *readCallbackId = [readCallbacks objectForKey:key];
 
-    if(readCallbackId) {
+    if (readCallbackId) {
         NSData *data = characteristic.value; // send RAW data to Javascript
 
         CDVPluginResult *pluginResult = nil;
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
+        if (data) {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
+        }
+        else {
+            NSLog(@"characteristic.value == nil in didUpdateValueForCharacteristic");
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+        }
         [self.commandDelegate sendPluginResult:pluginResult callbackId:readCallbackId];
 
         [readCallbacks removeObjectForKey:key];
@@ -627,7 +633,7 @@
                 messageAsString:[error localizedDescription]];
         } else {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                messageAsInt: [rssi integerValue]];
+                messageAsInt: (int) [rssi integerValue]];
         }
         [self.commandDelegate sendPluginResult:pluginResult callbackId: readRSSICallbackId];
         [readRSSICallbacks removeObjectForKey:readRSSICallbackId];
@@ -698,8 +704,8 @@
 {
     char b1[16];
     char b2[16];
-    [UUID1.data getBytes:b1];
-    [UUID2.data getBytes:b2];
+    [UUID1.data getBytes:b1 length:16];
+    [UUID2.data getBytes:b2 length:16];
 
     if (memcmp(b1, b2, UUID1.data.length) == 0)
         return 1;
