@@ -19,7 +19,7 @@
 #import "CBPeripheral+Extensions.h"
 
 static char ADVERTISING_IDENTIFER;
-static char ADVERTISEMENT_RSSI_IDENTIFER;
+static char SAVED_RSSI_IDENTIFER;
 
 static NSDictionary *dataToArrayBuffer(NSData* data) {
     return @{
@@ -54,10 +54,8 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
         [dictionary setObject: [self name] forKey: @"name"];
     }
 
-    if ([self RSSI]) {
-        [dictionary setObject: [self RSSI] forKey: @"rssi"];
-    } else if ([self advertisementRSSI]) {
-        [dictionary setObject: [self advertisementRSSI] forKey: @"rssi"];
+    if ([self savedRSSI]) {
+        [dictionary setObject: [self savedRSSI] forKey: @"rssi"];
     }
 
     if ([self advertising]) {
@@ -76,7 +74,7 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
 -(void)setAdvertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)rssi{
 
     [self setAdvertising:[self serializableAdvertisementData: advertisementData]];
-    [self setAdvertisementRSSI: rssi];
+    [self setSavedRSSI: rssi];
 
 }
 
@@ -268,12 +266,12 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
 }
 
 
--(void)setAdvertisementRSSI:(NSNumber *)newAdvertisementRSSIValue {
-    objc_setAssociatedObject(self, &ADVERTISEMENT_RSSI_IDENTIFER, newAdvertisementRSSIValue, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+-(void)setSavedRSSI:(NSNumber *)newSavedRSSIValue {
+    objc_setAssociatedObject(self, &SAVED_RSSI_IDENTIFER, newSavedRSSIValue, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
--(NSString*)advertisementRSSI{
-    return objc_getAssociatedObject(self, &ADVERTISEMENT_RSSI_IDENTIFER);
+-(NSString*)savedRSSI{
+    return objc_getAssociatedObject(self, &SAVED_RSSI_IDENTIFER);
 }
 
 @end

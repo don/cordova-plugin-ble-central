@@ -622,15 +622,11 @@
     }
 
 }
-
-- (void)peripheralDidUpdateRSSI:(CBPeripheral*)peripheral error:(NSError*)error {
-    [self peripheral: peripheral didReadRSSI: [peripheral RSSI] error: error];
-}
-
 - (void)peripheral:(CBPeripheral*)peripheral didReadRSSI:(NSNumber*)rssi error:(NSError*)error {
     NSLog(@"didReadRSSI %@", rssi);
     NSString *key = [peripheral uuidAsString];
     NSString *readRSSICallbackId = [readRSSICallbacks objectForKey: key];
+    [peripheral setSavedRSSI:rssi];
     if (readRSSICallbackId) {
         CDVPluginResult* pluginResult = nil;
         if (error) {
@@ -640,7 +636,7 @@
                 messageAsString:[error localizedDescription]];
         } else {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                messageAsInt: [rssi integerValue]];
+                messageAsInt: (int) [rssi integerValue]];
         }
         [self.commandDelegate sendPluginResult:pluginResult callbackId: readRSSICallbackId];
         [readRSSICallbacks removeObjectForKey:readRSSICallbackId];
@@ -711,8 +707,8 @@
 {
     char b1[16];
     char b2[16];
-    [UUID1.data getBytes:b1];
-    [UUID2.data getBytes:b2];
+    [UUID1.data getBytes:b1 length:16];
+    [UUID2.data getBytes:b2 length:16];
 
     if (memcmp(b1, b2, UUID1.data.length) == 0)
         return 1;
