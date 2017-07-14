@@ -233,7 +233,7 @@
 - (void)scan:(CDVInvokedUrlCommand*)command {
 
     NSLog(@"scan");
-    discoverPeripherialCallbackId = [command.callbackId copy];
+    discoverPeripheralCallbackId = [command.callbackId copy];
 
     NSArray *serviceUUIDStrings = [command.arguments objectAtIndex:0];
     NSNumber *timeoutSeconds = [command.arguments objectAtIndex:1];
@@ -257,7 +257,7 @@
 - (void)startScan:(CDVInvokedUrlCommand*)command {
 
     NSLog(@"startScan");
-    discoverPeripherialCallbackId = [command.callbackId copy];
+    discoverPeripheralCallbackId = [command.callbackId copy];
     NSArray *serviceUUIDStrings = [command.arguments objectAtIndex:0];
     NSMutableArray *serviceUUIDs = [NSMutableArray new];
 
@@ -272,7 +272,7 @@
 
 - (void)startScanWithOptions:(CDVInvokedUrlCommand*)command {
     NSLog(@"startScanWithOptions");
-    discoverPeripherialCallbackId = [command.callbackId copy];
+    discoverPeripheralCallbackId = [command.callbackId copy];
     NSArray *serviceUUIDStrings = [command.arguments objectAtIndex:0];
     NSMutableArray *serviceUUIDs = [NSMutableArray new];
     NSDictionary *options = command.arguments[1];
@@ -298,8 +298,8 @@
 
     [manager stopScan];
 
-    if (discoverPeripherialCallbackId) {
-        discoverPeripherialCallbackId = nil;
+    if (discoverPeripheralCallbackId) {
+        discoverPeripheralCallbackId = nil;
     }
 
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -381,8 +381,8 @@
 
     [manager stopScan];
 
-    if (discoverPeripherialCallbackId) {
-        discoverPeripherialCallbackId = nil;
+    if (discoverPeripheralCallbackId) {
+        discoverPeripheralCallbackId = nil;
     }
 }
 
@@ -393,12 +393,12 @@
     [peripherals addObject:peripheral];
     [peripheral setAdvertisementData:advertisementData RSSI:RSSI];
 
-    if (discoverPeripherialCallbackId) {
+    if (discoverPeripheralCallbackId) {
         CDVPluginResult *pluginResult = nil;
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[peripheral asDictionary]];
         NSLog(@"Discovered %@", [peripheral asDictionary]);
         [pluginResult setKeepCallbackAsBool:TRUE];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:discoverPeripherialCallbackId];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:discoverPeripheralCallbackId];
     }
 
 }
@@ -737,9 +737,9 @@
 
     if (!peripheral) {
 
-        NSLog(@"Could not find peripherial with UUID %@", deviceUUIDString);
+        NSLog(@"Could not find peripheral with UUID %@", deviceUUIDString);
 
-        NSString *errorMessage = [NSString stringWithFormat:@"Could not find peripherial with UUID %@", deviceUUIDString];
+        NSString *errorMessage = [NSString stringWithFormat:@"Could not find peripheral with UUID %@", deviceUUIDString];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 
