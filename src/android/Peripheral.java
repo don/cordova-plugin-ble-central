@@ -79,7 +79,6 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     public void disconnect() {
-        connectCallback = null;
         connected = false;
         connecting = false;
 
