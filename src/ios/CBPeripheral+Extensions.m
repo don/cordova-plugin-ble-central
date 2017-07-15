@@ -60,15 +60,12 @@ static char SAVED_RSSI_IDENTIFER;
     }
 
     return dictionary;
-
 }
 
 // AdvertisementData is from didDiscoverPeripheral. RFduino advertises a service name in the Mfg Data Field.
--(void)setAdvertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)rssi{
-
+-(void)setAdvertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)rssi {
     [self setAdvertising:[self serializableAdvertisementData: advertisementData]];
     [self setSavedRSSI: rssi];
-
 }
 
 // Translates the Advertisement Data from didDiscoverPeripheral into a structure that can be serialized as JSON
@@ -97,7 +94,6 @@ static char SAVED_RSSI_IDENTIFER;
 //     kCBAdvDataTxPowerLevel = 32;
 //};
 - (NSDictionary *) serializableAdvertisementData: (NSDictionary *) advertisementData {
-
     NSMutableDictionary *dict = [advertisementData mutableCopy];
 
     // Service Data is a dictionary of CBUUID and NSData
@@ -156,7 +152,6 @@ static char SAVED_RSSI_IDENTIFER;
 // Put the service, characteristic, and descriptor data in a format that will serialize through JSON
 // sending a list of services and a list of characteristics
 - (void) serviceAndCharacteristicInfo: (NSMutableDictionary *) info {
-
     NSMutableArray *serviceList = [NSMutableArray new];
     NSMutableArray *characteristicList = [NSMutableArray new];
 
@@ -198,7 +193,6 @@ static char SAVED_RSSI_IDENTIFER;
 
     [info setObject:serviceList forKey:@"services"];
     [info setObject:characteristicList forKey:@"characteristics"];
-
 }
 
 -(NSArray *) decodeCharacteristicProperties: (CBCharacteristic *) characteristic {
