@@ -109,6 +109,11 @@
     if (context) {
 
         CBPeripheral *peripheral = [context peripheral];
+        if ([peripheral state] != CBPeripheralStateConnected) {
+            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral is not connected"];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            return;
+        }
         CBCharacteristic *characteristic = [context characteristic];
 
         NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
@@ -129,6 +134,11 @@
         if (message != nil) {
 
             CBPeripheral *peripheral = [context peripheral];
+            if ([peripheral state] != CBPeripheralStateConnected) {
+                CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral is not connected"];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                return;
+            }
             CBCharacteristic *characteristic = [context characteristic];
 
             NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
@@ -159,6 +169,11 @@
         CDVPluginResult *pluginResult = nil;
         if (message != nil) {
             CBPeripheral *peripheral = [context peripheral];
+            if ([peripheral state] != CBPeripheralStateConnected) {
+                CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral is not connected"];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                return;
+            }
             CBCharacteristic *characteristic = [context characteristic];
 
             // TODO need to check the max length
@@ -181,6 +196,11 @@
 
     if (context) {
         CBPeripheral *peripheral = [context peripheral];
+        if ([peripheral state] != CBPeripheralStateConnected) {
+            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral is not connected"];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            return;
+        }
         CBCharacteristic *characteristic = [context characteristic];
 
         NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
@@ -201,7 +221,7 @@
     BLECommandContext *context = [self getData:command prop:CBCharacteristicPropertyNotify];
 
     if (context) {
-        CBPeripheral *peripheral = [context peripheral];
+        CBPeripheral *peripheral = [context peripheral];    // FIXME is setNotifyValue:NO legal to call on a peripheral not connected?
         CBCharacteristic *characteristic = [context characteristic];
 
         NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
