@@ -45,6 +45,7 @@
     readCallbacks = [NSMutableDictionary new];
     writeCallbacks = [NSMutableDictionary new];
     notificationCallbacks = [NSMutableDictionary new];
+    startNotificationCallbacks = [NSMutableDictionary new];
     stopNotificationCallbacks = [NSMutableDictionary new];
     bluetoothStates = [NSDictionary dictionaryWithObjectsAndKeys:
                        @"unknown", @(CBCentralManagerStateUnknown),
@@ -88,6 +89,7 @@
     CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
 
     [connectCallbacks removeObjectForKey:uuid];
+    [self cleanupOperationCallbacks:peripheral withResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral disconnected"]];
 
     if (peripheral && peripheral.state != CBPeripheralStateDisconnected) {
         [manager cancelPeripheralConnection:peripheral];
@@ -446,6 +448,7 @@
 
     NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
     [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
+    [self cleanupOperationCallbacks:peripheral withResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral disconnected"]];
 
     if (connectCallbackId) {
 
@@ -472,6 +475,7 @@
 
     NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
     [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
+    [self cleanupOperationCallbacks:peripheral withResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral disconnected"]];
 
     CDVPluginResult *pluginResult = nil;
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[peripheral asDictionary]];
@@ -555,7 +559,7 @@
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
     NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
-    NSString *notificationCallbackId = [notificationCallbacks objectForKey:key];
+    NSString *startNotificationCallbackId = [startNotificationCallbacks objectForKey:key];
     NSString *stopNotificationCallbackId = [stopNotificationCallbacks objectForKey:key];
 
     CDVPluginResult *pluginResult = nil;
@@ -573,12 +577,20 @@
         [self.commandDelegate sendPluginResult:pluginResult callbackId:stopNotificationCallbackId];
         [stopNotificationCallbacks removeObjectForKey:key];
         [notificationCallbacks removeObjectForKey:key];
-
-    } else if (notificationCallbackId && error) {
-
-        NSLog(@"%@", error);
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:notificationCallbackId];
+        NSAssert(![startNotificationCallbacks objectForKey:key], @"%@ existed in both start and stop notification callback dicts!", key);
+    }
+    
+    if (startNotificationCallbackId) {
+        if (error) {
+            NSLog(@"%@", error);
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:startNotificationCallbackId];
+            [startNotificationCallbacks removeObjectForKey:key];
+        } else {
+            // notification start succeeded, move the callback to the value notifications dict
+            [notificationCallbacks setObject:startNotificationCallbackId forKey:key];
+            [startNotificationCallbacks removeObjectForKey:key];
+        }
     }
 }
 
@@ -777,6 +789,47 @@
 
 -(NSString *) keyForPeripheral: (CBPeripheral *)peripheral andCharacteristic:(CBCharacteristic *)characteristic {
     return [NSString stringWithFormat:@"%@|%@", [peripheral uuidAsString], [characteristic UUID]];
+}
+
++(BOOL) isKey: (NSString *)key forPeripheral:(CBPeripheral *)peripheral {
+    NSArray *keyArray = [key componentsSeparatedByString: @"|"];
+    return [[peripheral uuidAsString] compare:keyArray[0]] == NSOrderedSame;
+}
+
+-(void) cleanupOperationCallbacks: (CBPeripheral *)peripheral withResult:(CDVPluginResult *) result {
+    for(id key in readCallbacks.allKeys) {
+        if([BLECentralPlugin isKey:key forPeripheral:peripheral]) {
+            NSString *callbackId = [readCallbacks valueForKey:key];
+            [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+            [readCallbacks removeObjectForKey:key];
+            NSLog(@"Cleared read callback %@ for key %@", callbackId, key);
+        }
+    }
+    for(id key in writeCallbacks.allKeys) {
+        if([BLECentralPlugin isKey:key forPeripheral:peripheral]) {
+            NSString *callbackId = [writeCallbacks valueForKey:key];
+            [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+            [writeCallbacks removeObjectForKey:key];
+            NSLog(@"Cleared write callback %@ for key %@", callbackId, key);
+        }
+    }
+    for(id key in startNotificationCallbacks.allKeys) {
+        if([BLECentralPlugin isKey:key forPeripheral:peripheral]) {
+            NSString *callbackId = [startNotificationCallbacks valueForKey:key];
+            [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+            [startNotificationCallbacks removeObjectForKey:key];
+            NSLog(@"Cleared start notification callback %@ for key %@", callbackId, key);
+        }
+    }
+    for(id key in stopNotificationCallbacks.allKeys) {
+        if([BLECentralPlugin isKey:key forPeripheral:peripheral]) {
+            NSString *callbackId = [stopNotificationCallbacks valueForKey:key];
+            [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+            [stopNotificationCallbacks removeObjectForKey:key];
+            NSLog(@"Cleared stop notification callback %@ for key %@", callbackId, key);
+        }
+    }
+    [notificationCallbacks removeAllObjects];
 }
 
 #pragma mark - util
