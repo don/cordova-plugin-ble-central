@@ -62,7 +62,7 @@
 
 - (void)connect:(CDVInvokedUrlCommand *)command {
     NSLog(@"connect");
-    NSString *uuid = [command.arguments objectAtIndex:0];
+    NSString *uuid = [command argumentAtIndex:0];
 
     CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
 
@@ -85,7 +85,7 @@
 - (void)disconnect:(CDVInvokedUrlCommand*)command {
     NSLog(@"disconnect");
 
-    NSString *uuid = [command.arguments objectAtIndex:0];
+    NSString *uuid = [command argumentAtIndex:0];
     CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
 
     [connectCallbacks removeObjectForKey:uuid];
@@ -124,7 +124,7 @@
 // write: function (device_id, service_uuid, characteristic_uuid, value, success, failure) {
 - (void)write:(CDVInvokedUrlCommand*)command {
     BLECommandContext *context = [self getData:command prop:CBCharacteristicPropertyWrite];
-    NSData *message = [command.arguments objectAtIndex:3]; // This is binary
+    NSData *message = [command argumentAtIndex:3]; // This is binary
     if (context) {
         if (message != nil) {
             CBPeripheral *peripheral = [context peripheral];
@@ -155,7 +155,7 @@
     NSLog(@"writeWithoutResponse");
 
     BLECommandContext *context = [self getData:command prop:CBCharacteristicPropertyWriteWithoutResponse];
-    NSData *message = [command.arguments objectAtIndex:3]; // This is binary
+    NSData *message = [command argumentAtIndex:3]; // This is binary
 
     if (context) {
         CDVPluginResult *pluginResult = nil;
@@ -243,8 +243,8 @@
     NSLog(@"scan");
     discoverPeripheralCallbackId = [command.callbackId copy];
 
-    NSArray *serviceUUIDStrings = [command.arguments objectAtIndex:0];
-    NSNumber *timeoutSeconds = [command.arguments objectAtIndex:1];
+    NSArray *serviceUUIDStrings = [command argumentAtIndex:0];
+    NSNumber *timeoutSeconds = [command argumentAtIndex:1];
     NSMutableArray *serviceUUIDs = [NSMutableArray new];
 
     for (int i = 0; i < [serviceUUIDStrings count]; i++) {
@@ -264,7 +264,7 @@
 - (void)startScan:(CDVInvokedUrlCommand*)command {
     NSLog(@"startScan");
     discoverPeripheralCallbackId = [command.callbackId copy];
-    NSArray *serviceUUIDStrings = [command.arguments objectAtIndex:0];
+    NSArray *serviceUUIDStrings = [command argumentAtIndex:0];
     NSMutableArray *serviceUUIDs = [NSMutableArray new];
 
     for (int i = 0; i < [serviceUUIDStrings count]; i++) {
@@ -278,7 +278,7 @@
 - (void)startScanWithOptions:(CDVInvokedUrlCommand*)command {
     NSLog(@"startScanWithOptions");
     discoverPeripheralCallbackId = [command.callbackId copy];
-    NSArray *serviceUUIDStrings = [command.arguments objectAtIndex:0];
+    NSArray *serviceUUIDStrings = [command argumentAtIndex:0];
     NSMutableArray *serviceUUIDs = [NSMutableArray new];
     NSDictionary *options = command.arguments[1];
 
@@ -313,7 +313,7 @@
 
 - (void)isConnected:(CDVInvokedUrlCommand*)command {
     CDVPluginResult *pluginResult = nil;
-    CBPeripheral *peripheral = [self findPeripheralByUUID:[command.arguments objectAtIndex:0]];
+    CBPeripheral *peripheral = [self findPeripheralByUUID:[command argumentAtIndex:0]];
 
     if (peripheral && peripheral.state == CBPeripheralStateConnected) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -360,7 +360,7 @@
 
 - (void)readRSSI:(CDVInvokedUrlCommand*)command {
     NSLog(@"readRSSI");
-    NSString *uuid = [command.arguments objectAtIndex:0];
+    NSString *uuid = [command argumentAtIndex:0];
 
     CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
 
@@ -712,9 +712,9 @@
 
     CDVPluginResult *pluginResult = nil;
 
-    NSString *deviceUUIDString = [command.arguments objectAtIndex:0];
-    NSString *serviceUUIDString = [command.arguments objectAtIndex:1];
-    NSString *characteristicUUIDString = [command.arguments objectAtIndex:2];
+    NSString *deviceUUIDString = [command argumentAtIndex:0];
+    NSString *serviceUUIDString = [command argumentAtIndex:1];
+    NSString *characteristicUUIDString = [command argumentAtIndex:2];
 
     CBUUID *serviceUUID = [CBUUID UUIDWithString:serviceUUIDString];
     CBUUID *characteristicUUID = [CBUUID UUIDWithString:characteristicUUIDString];
