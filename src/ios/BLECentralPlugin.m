@@ -537,7 +537,13 @@
         NSData *data = characteristic.value; // send RAW data to Javascript
 
         CDVPluginResult *pluginResult = nil;
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
+        if (error) {
+            NSLog(@"%@", error);
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
+        } else {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
+        }
+
         [pluginResult setKeepCallbackAsBool:TRUE]; // keep for notification
         [self.commandDelegate sendPluginResult:pluginResult callbackId:notifyCallbackId];
     }
@@ -548,12 +554,12 @@
         NSData *data = characteristic.value; // send RAW data to Javascript
         CDVPluginResult *pluginResult = nil;
         
-		    if (error) {
-			    NSLog(@"%@", error);
-			    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
-		    } else {
-			    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
-		    }
+        if (error) {
+            NSLog(@"%@", error);
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
+        } else {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
+        }
         
         [self.commandDelegate sendPluginResult:pluginResult callbackId:readCallbackId];
 
