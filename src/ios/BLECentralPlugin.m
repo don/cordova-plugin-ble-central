@@ -546,12 +546,15 @@
 
     if(readCallbackId) {
         NSData *data = characteristic.value; // send RAW data to Javascript
-
         CDVPluginResult *pluginResult = nil;
-        if (data == nil)
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
-        else
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
+        
+		    if (error) {
+			    NSLog(@"%@", error);
+			    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
+		    } else {
+			    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
+		    }
+        
         [self.commandDelegate sendPluginResult:pluginResult callbackId:readCallbackId];
 
         [readCallbacks removeObjectForKey:key];
