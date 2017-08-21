@@ -16,6 +16,8 @@ All access is via service and characteristic UUIDs. The plugin manages handles i
 
 Simultaneous connections to multiple peripherals are supported.
 
+_This plugin isn't intended for scanning beacons._ Try [cordova-plugin-ibeacon](https://github.com/petermetz/cordova-plugin-ibeacon) for iBeacons.
+
 See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master/examples) for ideas on how this plugin can be used.
 
 ## Supported Platforms
@@ -179,7 +181,7 @@ Advertising information format varies depending on your platform. See [Advertisi
 
 ### Quick Example
 
-    ble.startScan([],
+    ble.startScanWithOptions([],
         { reportDuplicates: true }
         function(device) {
             console.log(JSON.stringify(device));
@@ -239,7 +241,7 @@ Connect to a peripheral.
 
 Function `connect` connects to a BLE peripheral. The callback is long running. Success will be called when the connection is successful. Service and characteristic info will be passed to the success callback in the [peripheral object](#peripheral-data). Failure is called if the connection fails, or later if the peripheral disconnects. An peripheral object is passed to the failure callback.
 
-[ble.scan](#scan) must be called before calling connect, so the plugin has a list of avaiable peripherals.
+[ble.scan](#scan) must be called before calling connect, so the plugin has a list of available peripherals.
 
 __NOTE__: the connect failure callback will be called if the peripheral disconnects.
 
@@ -285,6 +287,21 @@ Raw data is passed from native code to the callback as an [ArrayBuffer](#typed-a
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
+### Quick Example
+
+Retrieves an [ArrayBuffer](#typed-arrays) when reading data.
+
+    // read data from a characteristic, do something with output data
+    ble.read(device_id, service_uuid, characteristic_uuid, 
+        function(data){
+            console.log("Hooray we have data"+JSON.stringify(data));
+            alert("Successfully read data from device."+JSON.stringify(data));
+        },
+        function(failure){
+            alert("Failed to read characteristic from device.");
+        }
+    );
+   
 ## write
 
 Writes data to a characteristic.
@@ -712,6 +729,7 @@ You can read more about typed arrays in these articles on [MDN](https://develope
 UUIDs are always strings and not numbers. Some 16-bit UUIDs, such as '2220' look like integers, but they're not. (The integer 2220 is 0x8AC in hex.) This isn't a problem with 128 bit UUIDs since they look like strings 82b9e6e1-593a-456f-be9b-9215160ebcac. All 16-bit UUIDs should also be passed to methods as strings.
 
 <a name="background-notifications-on-ios">
+
 # Background Scanning and Notifications on iOS
 
 Android applications will continue to receive notification while the application is in the background.
