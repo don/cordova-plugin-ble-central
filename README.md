@@ -285,6 +285,21 @@ Raw data is passed from native code to the callback as an [ArrayBuffer](#typed-a
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
+### Quick Example
+
+Retrieves an [ArrayBuffer](#typed-arrays) when reading data.
+
+    // read data from a characteristic, do something with output data
+    ble.read(device_id, service_uuid, characteristic_uuid, 
+        function(data){
+            console.log("Hooray we have data"+JSON.stringify(data));
+            alert("Successfully read data from device."+JSON.stringify(data));
+        },
+        function(failure){
+            alert("Failed to read characteristic from device.");
+        }
+    );
+   
 ## write
 
 Writes data to a characteristic.
