@@ -773,6 +773,10 @@ Change the start page in `config.xml`
 Run the app on your phone
 
     cordova run android --device
+    
+# Nordic DFU
+
+If you need Nordic DFU capability, Tomáš Bedřich has a [fork](https://github.com/fxe-gear/cordova-plugin-ble-central) of this plugin that adds an `updateFirmware()` method that allows users to upgrade nRF5x based chips over the air. https://github.com/fxe-gear/cordova-plugin-ble-central
 
 # License
 
