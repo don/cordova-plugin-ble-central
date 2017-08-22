@@ -9,6 +9,5 @@
     </author>
     <content src="index.html" />
     <access origin="*" />
-    <engine name="android" spec="~6.2.3" />
     <plugin name="cordova-plugin-ble-central" spec="~1.1.4" />
 </widget>

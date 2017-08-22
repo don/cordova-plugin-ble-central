@@ -21,6 +21,10 @@ To
 
 	cordova platform add ios
 	cordova run ios --device
+	
+Note: Sometimes Xcode can't deploy from the command line. If that happens, open BluefruitLE.xcworkspace and deploy to your phone using Xcode.
+
+    open platforms/ios/BluefruitLE.xcworkspace
 
 ## Building a Peripheral
 
