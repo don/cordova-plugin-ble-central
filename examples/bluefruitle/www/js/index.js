@@ -56,9 +56,10 @@ var app = {
     },
     refreshDeviceList: function() {
         deviceList.innerHTML = ''; // empties the list
+        ble.scan([bluefruit.serviceUUID], 5, app.onDiscoverDevice, app.onError);
+        
         // if Android can't find your device try scanning for all devices
         // ble.scan([], 5, app.onDiscoverDevice, app.onError);
-        ble.scan([bluefruit.serviceUUID], 5, app.onDiscoverDevice, app.onError);
     },
     onDiscoverDevice: function(device) {
         var listItem = document.createElement('li'),
