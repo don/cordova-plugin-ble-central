@@ -154,6 +154,6 @@ var app = {
         detailPage.hidden = false;
     },
     onError: function(reason) {
-        alert("ERROR: " + reason); // real apps should use notification.alert
+        alert("ERROR: " + JSON.stringify(reason)); // real apps should use notification.alert
     }
 };
