@@ -1,13 +1,26 @@
+= 1.1.x =
+Use same characteristic uuid with different service in iOS #349 Thanks Riccardo Degan (riccardodegan-geekcups)
+ble.read() example #346 Thanks Kelton Temby (ktemby)
+Remove pending stopNotificationCallback for iOS #355 Thanks Georges-Etienne Legendre (legege)
+add missing `resolve` and `reject` callbacks to Promise wrapper #360 Thanks Audrius Jakumavicius
+(aj-dev)
+Fix documentation typo #371 Thanks keanyc
+Fix documentation typo #424 Thanks ChanHyuk-Im
+Fix duplicate symbol when using with with cordova-plugin-ble-peripheral #373 Thanks Luca Torella (lucatorella)
+Add admonition about using with beacons #413 Hugh Barnes (hughbris)
+Handle errors in didUpdateValueForCharacteristic #385 Thanks soyelporras
+Fix spelling error in Android code # Thanks doug-a-brunner
+
 = 1.1.4 =
 Prevents scan from removing connecting Peripherals on Android #315 & #341 Thanks mebrunet
-Documentation fixes #330 Thanks motla  
+Documentation fixes #330 Thanks motla
 Documenation clarification about Location Services #318 Thanks petrometro
 Ensure peripheral is connected for startNotification and stopNotification on Android #343
 Error message for Android 4.3 devices that don't support BLE #263 Thanks PeacePan
 Must call scan before connect. Update documentation #340
 
 = 1.1.3 =
-NSBluetoothPeripheralUsageDescription #324 Thanks Tim Kim 
+NSBluetoothPeripheralUsageDescription #324 Thanks Tim Kim
 
 = 1.1.2 =
 Call connect failure callback for peripheral if user disables Bluetooth #264
