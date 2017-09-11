@@ -723,7 +723,7 @@ public class Peripheral extends BluetoothGattCallback {
                 bleProcessing = true;
                 readCharacteristic(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID());
             } else if (command.getType() == BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) {
-                LOG.d(TAG,"Write " + bytes2HexString(command.getData()));
+                LOG.d(TAG,"Write " + command.getCharacteristicUUID());
                 bleProcessing = true;
                 writeCharacteristic(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID(), command.getData(), command.getType());
             } else if (command.getType() == BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE) {
@@ -758,22 +758,5 @@ public class Peripheral extends BluetoothGattCallback {
 
     private String generateHashKey(UUID serviceUUID, BluetoothGattCharacteristic characteristic) {
         return String.valueOf(serviceUUID) + "|" + characteristic.getUuid() + "|" + characteristic.getInstanceId();
-    }
-
-
-    // TODO REMOVE
-    public static String bytes2HexString(byte[] b) {
-        String ret = "";
-
-        for(int i = 0; i < b.length; ++i) {
-            String hex = Integer.toHexString(b[i] & 255);
-            if(hex.length() == 1) {
-                hex = '0' + hex;
-            }
-
-            ret = ret + hex.toUpperCase(Locale.getDefault());
-        }
-
-        return ret;
     }
 }
