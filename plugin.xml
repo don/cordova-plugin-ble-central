@@ -30,6 +30,9 @@
         <header-file src="src/ios/BLECentralPlugin.h" target-dir="BLECentralPlugin" />
         <source-file src="src/ios/BLECentralPlugin.m" target-dir="BLECentralPlugin" />
 
+        <header-file src="src/ios/BLECentralPluginHook.h" target-dir="BLECentralPlugin" />
+        <source-file src="src/ios/BLECentralPluginHook.m" target-dir="BLECentralPlugin" />
+
         <header-file src="src/ios/CBPeripheral+Extensions.h" target-dir="BLECentralPlugin" />
         <source-file src="src/ios/CBPeripheral+Extensions.m" target-dir="BLECentralPlugin" />
 
@@ -59,6 +62,8 @@
         </config-file>
 
         <source-file src="src/android/BLECentralPlugin.java"
+            target-dir="src/com/megster/cordova/ble/central"/>
+        <source-file src="src/android/BLECentralPluginHook.java"
             target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/BLECommand.java"
             target-dir="src/com/megster/cordova/ble/central"/>

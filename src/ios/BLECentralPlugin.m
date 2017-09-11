@@ -30,6 +30,7 @@
 
 @synthesize manager;
 @synthesize peripherals;
+@synthesize hooks;
 
 - (void)pluginInitialize {
 
@@ -38,6 +39,7 @@
 
     [super pluginInitialize];
 
+    hooks = [NSMutableSet set];
     peripherals = [NSMutableSet set];
     manager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
 
@@ -59,6 +61,20 @@
 }
 
 #pragma mark - Cordova Plugin Methods
+
+- (void)registerHook:(BLECentralPluginHook *)hk forPeripheral:(NSString *)uuid {
+
+    NSLog(@"registerHook");
+    
+    [hooks addObject:hk];
+}
+
+- (void)removeHook:(BLECentralPluginHook *)hk {
+
+    NSLog(@"removeHook");
+
+    [hooks removeObject:hk];
+}
 
 - (void)connect:(CDVInvokedUrlCommand *)command {
 
@@ -527,34 +543,49 @@
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
+    
     NSLog(@"didUpdateValueForCharacteristic");
+
+    NSData *data = characteristic.value; // send RAW data to Javascript
+
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
+
+    // Hook behavior
+    BLECentralPluginHook *hk = [self findHookByUUID:[peripheral uuidAsString]];
+
+    if (hk) {
+
+        pluginResult = hk.didUpdateValueForCharacteristic(pluginResult);
+    }
 
     NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
     NSString *notifyCallbackId = [notificationCallbacks objectForKey:key];
 
     if (notifyCallbackId) {
-        NSData *data = characteristic.value; // send RAW data to Javascript
+        
+        if (pluginResult != nil) {
 
-        CDVPluginResult *pluginResult = nil;
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
-        [pluginResult setKeepCallbackAsBool:TRUE]; // keep for notification
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:notifyCallbackId];
+            [pluginResult setKeepCallbackAsBool:TRUE]; // keep for notification
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:notifyCallbackId];
+        }
     }
 
     NSString *readCallbackId = [readCallbacks objectForKey:key];
 
-    if(readCallbackId) {
-        NSData *data = characteristic.value; // send RAW data to Javascript
-
-        CDVPluginResult *pluginResult = nil;
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:readCallbackId];
+    if (readCallbackId) {
+        
+        if (pluginResult != nil) {
+        
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:readCallbackId];
+        }
 
         [readCallbacks removeObjectForKey:key];
     }
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
+
+    NSLog(@"didUpdateNotificationStateForCharacteristic");
 
     NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
     NSString *notificationCallbackId = [notificationCallbacks objectForKey:key];
@@ -590,24 +621,42 @@
 - (void)peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
     // This is the callback for write
 
-    NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
-    NSString *writeCallbackId = [writeCallbacks objectForKey:key];
+    NSLog(@"didWriteValueForCharacteristic");
 
-    if (writeCallbackId) {
-        CDVPluginResult *pluginResult = nil;
-        if (error) {
-            NSLog(@"%@", error);
-            pluginResult = [CDVPluginResult
-                resultWithStatus:CDVCommandStatus_ERROR
-                messageAsString:[error localizedDescription]
-            ];
-        } else {
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        }
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:writeCallbackId];
-        [writeCallbacks removeObjectForKey:key];
+    CDVPluginResult *pluginResult = nil;
+
+    if (error) {
+
+        NSLog(@"%@", error);
+        pluginResult = [CDVPluginResult
+            resultWithStatus:CDVCommandStatus_ERROR
+            messageAsString:[error localizedDescription]
+        ];
+    }
+    else {
+
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     }
 
+    // Hook behavior
+    BLECentralPluginHook *hk = [self findHookByUUID:[peripheral uuidAsString]];
+
+    if (hk) {
+
+        pluginResult = hk.didWriteValueForCharacteristic(pluginResult);
+    }
+
+    NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
+    NSString *writeCallbackId = [writeCallbacks objectForKey:key];
+    
+    if (writeCallbackId) {
+
+        if (pluginResult != nil) {
+
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:writeCallbackId];
+        }
+        [writeCallbacks removeObjectForKey:key];
+    }
 }
 
 - (void)peripheralDidUpdateRSSI:(CBPeripheral*)peripheral error:(NSError*)error {
@@ -635,6 +684,22 @@
 }
 
 #pragma mark - internal implemetation
+
+- (BLECentralPluginHook*)findHookByUUID:(NSString*)uuid {
+
+    BLECentralPluginHook *hk = nil;
+
+    for (BLECentralPluginHook *h in hooks) {
+
+        NSString* other = h.uuid;
+
+        if ([uuid isEqualToString:other]) {
+            hk = h;
+            break;
+        }
+    }
+    return hk;
+}
 
 - (CBPeripheral*)findPeripheralByUUID:(NSString*)uuid {
 

@@ -23,6 +23,7 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "BLECommandContext.h"
 #import "CBPeripheral+Extensions.h"
+#import "BLECentralPluginHook.h"
 
 @interface BLECentralPlugin : CDVPlugin <CBCentralManagerDelegate, CBPeripheralDelegate> {
     NSString* discoverPeripherialCallbackId;
@@ -36,8 +37,12 @@
     NSMutableDictionary *readRSSICallbacks;
 }
 
+@property (strong, nonatomic) NSMutableSet *hooks;
 @property (strong, nonatomic) NSMutableSet *peripherals;
 @property (strong, nonatomic) CBCentralManager *manager;
+
+- (void)registerHook:(BLECentralPluginHook *)hk forPeripheral:(NSString *)uuid;
+- (void)removeHook:(NSString *)uuid;
 
 - (void)scan:(CDVInvokedUrlCommand *)command;
 - (void)startScan:(CDVInvokedUrlCommand *)command;

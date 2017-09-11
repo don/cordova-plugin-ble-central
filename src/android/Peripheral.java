@@ -55,12 +55,28 @@ public class Peripheral extends BluetoothGattCallback {
 
     private Map<String, CallbackContext> notificationCallbacks = new HashMap<String, CallbackContext>();
 
+    private Map<String, BLECentralPluginHook> hooks = new LinkedHashMap<String, BLECentralPluginHook>();
+
     public Peripheral(BluetoothDevice device, int advertisingRSSI, byte[] scanRecord) {
 
         this.device = device;
         this.advertisingRSSI = advertisingRSSI;
         this.advertisingData = scanRecord;
 
+    }
+
+    public void removeHook(String id) {
+
+        LOG.d(TAG, "Hook removed for " + id);
+
+        hooks.remove(id);
+    }
+
+    public void registerHook(BLECentralPluginHook hk, String id) {
+
+        LOG.d(TAG, "Hook registered for " + id);
+
+        hooks.put(id, hk);
     }
 
     public void connect(CallbackContext callbackContext, Activity activity) {
@@ -236,15 +252,36 @@ public class Peripheral extends BluetoothGattCallback {
 
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+
         super.onCharacteristicChanged(gatt, characteristic);
+
         LOG.d(TAG, "onCharacteristicChanged " + characteristic);
 
-        CallbackContext callback = notificationCallbacks.get(generateHashKey(characteristic));
+        PluginResult result = new PluginResult(PluginResult.Status.OK, characteristic.getValue());
+        
+        result.setKeepCallback(true);
 
-        if (callback != null) {
-            PluginResult result = new PluginResult(PluginResult.Status.OK, characteristic.getValue());
-            result.setKeepCallback(true);
-            callback.sendPluginResult(result);
+        if (!hooks.isEmpty()) {
+
+            for (Map.Entry<String, BLECentralPluginHook> entry : hooks.entrySet()) {
+                
+                BLECentralPluginHook hk = entry.getValue();
+
+                LOG.d(TAG, "Hook found and notified");
+
+                result = hk.onCharacteristicChanged(result);
+
+                if (result == null) return;
+            }
+        }
+        if (result != null) {
+
+            CallbackContext callback = notificationCallbacks.get(generateHashKey(characteristic));
+
+            if (callback != null) {
+
+                callback.sendPluginResult(result);
+            }
         }
     }
 
@@ -253,16 +290,38 @@ public class Peripheral extends BluetoothGattCallback {
         super.onCharacteristicRead(gatt, characteristic, status);
         LOG.d(TAG, "onCharacteristicRead " + characteristic);
 
-        if (readCallback != null) {
+        PluginResult result;
 
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                readCallback.success(characteristic.getValue());
-            } else {
-                readCallback.error("Error reading " + characteristic.getUuid() + " status=" + status);
+        if (status == BluetoothGatt.GATT_SUCCESS) {
+
+            // readCallback.success(characteristic.getValue());
+            result = new PluginResult(PluginResult.Status.OK, characteristic.getValue());
+
+        } else {
+
+            // readCallback.error("Error reading " + characteristic.getUuid() + " status=" + status);
+            result = new PluginResult(PluginResult.Status.ERROR, "Error reading " + characteristic.getUuid() + " status=" + status);
+        }
+
+        if (!hooks.isEmpty()) {
+
+            for (Map.Entry<String, BLECentralPluginHook> entry : hooks.entrySet()) {
+                
+                BLECentralPluginHook hk = entry.getValue();
+
+                LOG.d(TAG, "Hook found and notified");
+
+                result = hk.onCharacteristicRead(result);
+
+                if (result == null) break;
             }
+        }
+
+        if (readCallback != null && result != null) {
+
+            readCallback.sendPluginResult(result);
 
             readCallback = null;
-
         }
 
         commandCompleted();
@@ -273,17 +332,39 @@ public class Peripheral extends BluetoothGattCallback {
         super.onCharacteristicWrite(gatt, characteristic, status);
         LOG.d(TAG, "onCharacteristicWrite " + characteristic);
 
-        if (writeCallback != null) {
+        PluginResult result;
 
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                writeCallback.success();
-            } else {
-                writeCallback.error(status);
+        if (status == BluetoothGatt.GATT_SUCCESS) {
+
+            // readCallback.success(characteristic.getValue());
+            result = new PluginResult(PluginResult.Status.OK);
+
+        } else {
+
+            // readCallback.error("Error reading " + characteristic.getUuid() + " status=" + status);
+            result = new PluginResult(PluginResult.Status.ERROR, status);
+        }
+
+        if (!hooks.isEmpty()) {
+
+            for (Map.Entry<String, BLECentralPluginHook> entry : hooks.entrySet()) {
+                
+                BLECentralPluginHook hk = entry.getValue();
+
+                LOG.d(TAG, "Hook found and notified");
+
+                result = hk.onCharacteristicWrite(result);
+
+                if (result == null) break;
             }
+        }
+
+        if (writeCallback != null && result != null) {
+
+            writeCallback.sendPluginResult(result);
 
             writeCallback = null;
         }
-
         commandCompleted();
     }
 
@@ -642,7 +723,7 @@ public class Peripheral extends BluetoothGattCallback {
                 bleProcessing = true;
                 readCharacteristic(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID());
             } else if (command.getType() == BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) {
-                LOG.d(TAG,"Write " + command.getCharacteristicUUID());
+                LOG.d(TAG,"Write " + bytes2HexString(command.getData()));
                 bleProcessing = true;
                 writeCharacteristic(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID(), command.getData(), command.getType());
             } else if (command.getType() == BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE) {
@@ -679,4 +760,20 @@ public class Peripheral extends BluetoothGattCallback {
         return String.valueOf(serviceUUID) + "|" + characteristic.getUuid() + "|" + characteristic.getInstanceId();
     }
 
+
+    // TODO REMOVE
+    public static String bytes2HexString(byte[] b) {
+        String ret = "";
+
+        for(int i = 0; i < b.length; ++i) {
+            String hex = Integer.toHexString(b[i] & 255);
+            if(hex.length() == 1) {
+                hex = '0' + hex;
+            }
+
+            ret = ret + hex.toUpperCase(Locale.getDefault());
+        }
+
+        return ret;
+    }
 }

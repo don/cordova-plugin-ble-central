@@ -104,6 +104,36 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         put(BluetoothAdapter.STATE_TURNING_ON, "turningOn");
     }};
 
+    public boolean removeHook(String id, String pId) {
+
+        LOG.d(TAG, "Attempt to remove hook "+id+" for "+pId);
+
+        Peripheral peripheral = peripherals.get(pId);
+
+        if (peripheral != null) {
+
+            peripheral.removeHook(id);
+            return true;
+        }
+        LOG.d(TAG, "No peripheral found with id  "+pId);
+        return false;
+    }
+
+    public boolean registerHook(BLECentralPluginHook hk, String id, String pId) {
+
+        LOG.d(TAG, "Attempt to register hook "+id+" for "+pId);
+
+        Peripheral peripheral = peripherals.get(pId);
+
+        if (peripheral != null) {
+
+            peripheral.registerHook(hk, id);
+            return true;
+        }
+        LOG.d(TAG, "No peripheral found with id  "+pId);
+        return false;
+    }
+
     public void onDestroy() {
         removeStateListener();
     }
