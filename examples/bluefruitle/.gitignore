@@ -1,2 +1,4 @@
 platforms
 plugins
+node_modules
+npm-debug.log

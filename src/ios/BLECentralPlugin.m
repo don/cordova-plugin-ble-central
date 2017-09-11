@@ -202,6 +202,7 @@
         NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
         NSString *callback = [command.callbackId copy];
         [notificationCallbacks setObject: callback forKey: key];
+        [stopNotificationCallbacks removeObjectForKey:key];
 
         [peripheral setNotifyValue:YES forCharacteristic:characteristic];
 
@@ -565,19 +566,40 @@
         
         if (pluginResult != nil) {
 
-            [pluginResult setKeepCallbackAsBool:TRUE]; // keep for notification
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:notifyCallbackId];
+        CDVPluginResult *pluginResult = nil;
+
+        if (error) {
+
+            NSLog(@"%@", error);
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
         }
+        else {
+
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
+        }
+
+        [pluginResult setKeepCallbackAsBool:TRUE]; // keep for notification
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:notifyCallbackId];
     }
 
     NSString *readCallbackId = [readCallbacks objectForKey:key];
 
     if (readCallbackId) {
+
+        NSData *data = characteristic.value; // send RAW data to Javascript
+        CDVPluginResult *pluginResult = nil;
         
-        if (pluginResult != nil) {
-        
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:readCallbackId];
+        if (error) {
+
+            NSLog(@"%@", error);
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
         }
+        else {
+
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
+        }
+        
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:readCallbackId];
 
         [readCallbacks removeObjectForKey:key];
     }
@@ -855,7 +877,7 @@
 }
 
 -(NSString *) keyForPeripheral: (CBPeripheral *)peripheral andCharacteristic:(CBCharacteristic *)characteristic {
-    return [NSString stringWithFormat:@"%@|%@", [peripheral uuidAsString], [characteristic UUID]];
+    return [NSString stringWithFormat:@"%@|%@|%@", [peripheral uuidAsString], [characteristic.service UUID], [characteristic UUID]];
 }
 
 #pragma mark - util

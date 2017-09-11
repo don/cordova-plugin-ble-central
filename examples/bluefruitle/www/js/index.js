@@ -56,11 +56,10 @@ var app = {
     },
     refreshDeviceList: function() {
         deviceList.innerHTML = ''; // empties the list
-        if (cordova.platformId === 'android') { // Android filtering is broken
-            ble.scan([], 5, app.onDiscoverDevice, app.onError);
-        } else {
-            ble.scan([bluefruit.serviceUUID], 5, app.onDiscoverDevice, app.onError);
-        }
+        ble.scan([bluefruit.serviceUUID], 5, app.onDiscoverDevice, app.onError);
+        
+        // if Android can't find your device try scanning for all devices
+        // ble.scan([], 5, app.onDiscoverDevice, app.onError);
     },
     onDiscoverDevice: function(device) {
         var listItem = document.createElement('li'),
@@ -154,6 +153,6 @@ var app = {
         detailPage.hidden = false;
     },
     onError: function(reason) {
-        alert("ERROR: " + reason); // real apps should use notification.alert
+        alert("ERROR: " + JSON.stringify(reason)); // real apps should use notification.alert
     }
 };
