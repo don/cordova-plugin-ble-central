@@ -549,7 +549,17 @@
 
     NSData *data = characteristic.value; // send RAW data to Javascript
 
-    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
+    CDVPluginResult *pluginResult;
+
+    if (error) {
+
+        NSLog(@"%@", error);
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
+    }
+    else {
+
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
+    }
 
     // Hook behavior
     BLECentralPluginHook *hk = [self findHookByUUID:[peripheral uuidAsString]];
@@ -557,6 +567,8 @@
     if (hk) {
 
         pluginResult = hk.didUpdateValueForCharacteristic(pluginResult);
+
+        if (pluginResult != nil) return;
     }
 
     NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
@@ -564,20 +576,6 @@
 
     if (notifyCallbackId) {
         
-        if (pluginResult != nil) {
-
-        CDVPluginResult *pluginResult = nil;
-
-        if (error) {
-
-            NSLog(@"%@", error);
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
-        }
-        else {
-
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
-        }
-
         [pluginResult setKeepCallbackAsBool:TRUE]; // keep for notification
         [self.commandDelegate sendPluginResult:pluginResult callbackId:notifyCallbackId];
     }
@@ -586,19 +584,6 @@
 
     if (readCallbackId) {
 
-        NSData *data = characteristic.value; // send RAW data to Javascript
-        CDVPluginResult *pluginResult = nil;
-        
-        if (error) {
-
-            NSLog(@"%@", error);
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
-        }
-        else {
-
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
-        }
-        
         [self.commandDelegate sendPluginResult:pluginResult callbackId:readCallbackId];
 
         [readCallbacks removeObjectForKey:key];
