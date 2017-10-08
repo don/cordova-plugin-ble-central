@@ -91,4 +91,24 @@
          <source-file src="src/wp/BLECentralPlugin.cs" />
 
     </platform>
+    
+    <platform name="windows">
+        <config-file target="config.xml" parent="/*">
+            <feature name="BLE">
+                <param name="windows-package" value="BLECentralPlugin" />
+            </feature>
+        </config-file>
+    
+        <config-file target="package.appxmanifest" parent="/Package/Capabilities" versions=">=10.0.0">
+            <DeviceCapability Name="bluetooth"/>
+        </config-file>
+        <config-file target="package.appxmanifest" parent="/Package/Capabilities" versions="<10.0.0">
+            <DeviceCapability Name="bluetooth"/>
+        </config-file>
+
+        <js-module src="src/windows/BLECentralPlugin.js" name="BLECentralPlugin">
+            <runs />
+        </js-module>
+
+    </platform>
 </plugin>

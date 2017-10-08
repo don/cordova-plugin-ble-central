@@ -51,10 +51,11 @@ module.exports = {
 
     scan: function (services, seconds, success, failure) {
         var successWrapper = function(peripheral) {
-            convertToNativeJS(peripheral);
+            if(device.platform == "iOS") //Don't ConvertToNativeJS on Windows platform
+                convertToNativeJS(peripheral);
             success(peripheral);
         };
-        cordova.exec(successWrapper, failure, 'BLE', 'scan', [services, seconds]);
+        cordova.exec(successWrapper, failure, 'BLE', 'scan', [services, seconds, successWrapper]); //It's neccesary to send the Success as parameter to do multi-calls in Windows
     },
 
     startScan: function (services, success, failure) {
