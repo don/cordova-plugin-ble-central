@@ -91,6 +91,10 @@ public class Peripheral extends BluetoothGattCallback {
         }
     }
 
+    // Closes the connection completely
+    public void close() {
+    }
+
     public JSONObject asJSONObject()  {
 
         JSONObject json = new JSONObject();
