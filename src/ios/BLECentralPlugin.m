@@ -2,7 +2,7 @@
 //  BLECentralPlugin.m
 //  BLE Central Cordova Plugin
 //
-//  (c) 2104-2016 Don Coleman
+//  (c) 2014-2017 Don Coleman
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@
 - (void)pluginInitialize {
 
     NSLog(@"Cordova BLE Central Plugin");
-    NSLog(@"(c)2014-2016 Don Coleman");
+    NSLog(@"(c)2014-2017 Don Coleman");
 
     [super pluginInitialize];
 
@@ -553,14 +553,14 @@
     if(readCallbackId) {
         NSData *data = characteristic.value; // send RAW data to Javascript
         CDVPluginResult *pluginResult = nil;
-        
+
         if (error) {
             NSLog(@"%@", error);
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
         } else {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
         }
-        
+
         [self.commandDelegate sendPluginResult:pluginResult callbackId:readCallbackId];
 
         [readCallbacks removeObjectForKey:key];
