@@ -81,14 +81,12 @@ public class Peripheral extends BluetoothGattCallback {
 
     public void disconnect() {
         connectCallback = null;
-        connected = false;
-        connecting = false;
 
         if (gatt != null) {
             gatt.disconnect();
-            gatt.close();
-            gatt = null;
         }
+
+        close();
     }
 
     // Closes the connection completely
