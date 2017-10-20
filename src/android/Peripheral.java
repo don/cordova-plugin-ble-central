@@ -93,6 +93,7 @@ public class Peripheral extends BluetoothGattCallback {
     public void close() {
         connected = false;
         connecting = false;
+        bleProcessing = false;
         commandQueue.clear();
 
         if (gatt != null) {
