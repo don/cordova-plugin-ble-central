@@ -10,6 +10,7 @@ Fix duplicate symbol when using with with cordova-plugin-ble-peripheral #373 Tha
 Add admonition about using with beacons #413 Hugh Barnes (hughbris)
 Handle errors in didUpdateValueForCharacteristic #385 Thanks soyelporras
 Fix spelling error in Android code # Thanks doug-a-brunner
+cordova-plugin-compat deprecated #466 #483 thanks ddugue
 
 = 1.1.4 =
 Prevents scan from removing connecting Peripherals on Android #315 & #341 Thanks mebrunet
