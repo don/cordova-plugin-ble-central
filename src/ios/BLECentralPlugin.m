@@ -640,6 +640,9 @@
 - (void)clearDfuHandlers {
     dfuCallbackId = nil;
     dfuController = nil;
+
+    // Reinitialize
+    [self pluginInitialize];
 }
 
 - (void)onReset {
