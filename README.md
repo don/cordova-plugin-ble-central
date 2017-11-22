@@ -65,7 +65,7 @@ This can be done when the plugin is installed using the BLUETOOTH_USAGE_DESCRIPT
 - [ble.startScanWithOptions](#startscanwithoptions)
 - [ble.stopScan](#stopscan)
 - [ble.connect](#connect)
-- [ble.autoConnect](#autoConnect)
+- [ble.autoConnect](#autoconnect)
 - [ble.disconnect](#disconnect)
 - [ble.read](#read)
 - [ble.write](#write)
