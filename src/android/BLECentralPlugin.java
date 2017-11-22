@@ -51,6 +51,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String LIST = "list";
 
     private static final String CONNECT = "connect";
+    private static final String AUTOCONNECT = "autoConnect";
     private static final String DISCONNECT = "disconnect";
 
     private static final String READ = "read";
@@ -159,6 +160,11 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
             String macAddress = args.getString(0);
             connect(callbackContext, macAddress);
+
+        } else if (action.equals(AUTOCONNECT)) {
+
+            String macAddress = args.getString(0);
+            autoConnect(callbackContext, macAddress);
 
         } else if (action.equals(DISCONNECT)) {
 
@@ -339,7 +345,17 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private void connect(CallbackContext callbackContext, String macAddress) {
         Peripheral peripheral = peripherals.get(macAddress);
         if (peripheral != null) {
-            peripheral.connect(callbackContext, cordova.getActivity());
+            peripheral.connect(callbackContext, cordova.getActivity(), false);
+        } else {
+            callbackContext.error("Peripheral " + macAddress + " not found.");
+        }
+
+    }
+
+    private void autoConnect(CallbackContext callbackContext, String macAddress) {
+        Peripheral peripheral = peripherals.get(macAddress);
+        if (peripheral != null) {
+            peripheral.connect(callbackContext, cordova.getActivity(), true);
         } else {
             callbackContext.error("Peripheral " + macAddress + " not found.");
         }
