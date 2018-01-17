@@ -553,14 +553,14 @@
     if(readCallbackId) {
         NSData *data = characteristic.value; // send RAW data to Javascript
         CDVPluginResult *pluginResult = nil;
-        
+
         if (error) {
             NSLog(@"%@", error);
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
         } else {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
         }
-        
+
         [self.commandDelegate sendPluginResult:pluginResult callbackId:readCallbackId];
 
         [readCallbacks removeObjectForKey:key];
@@ -578,7 +578,7 @@
     // we always call the stopNotificationCallbackId if we have a callback
     // we only call the notificationCallbackId on errors and if there is no stopNotificationCallbackId
 
-    if (stopNotificationCallbackId) {
+    if (!characteristic.isNotifying && stopNotificationCallbackId) {
 
         if (error) {
             NSLog(@"%@", error);
