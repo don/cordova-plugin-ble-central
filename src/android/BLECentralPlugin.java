@@ -494,8 +494,10 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             return;
         }
 
-        // ignore if currently scanning, alternately could return an error
+        // return error if already scanning
         if (bluetoothAdapter.isDiscovering()) {
+            LOG.w(TAG, "Tried to start scan while already running.");
+            callbackContext.error("Tried to start scan while already running.");
             return;
         }
 
