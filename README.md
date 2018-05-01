@@ -65,6 +65,7 @@ This can be done when the plugin is installed using the BLUETOOTH_USAGE_DESCRIPT
 - [ble.startScanWithOptions](#startscanwithoptions)
 - [ble.stopScan](#stopscan)
 - [ble.connect](#connect)
+- [ble.autoConnect](#autoconnect)
 - [ble.disconnect](#disconnect)
 - [ble.read](#read)
 - [ble.write](#write)
@@ -244,6 +245,27 @@ Function `connect` connects to a BLE peripheral. The callback is long running. S
 [ble.scan](#scan) must be called before calling connect, so the plugin has a list of available peripherals.
 
 __NOTE__: the connect failure callback will be called if the peripheral disconnects.
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __connectSuccess__: Success callback function that is invoked when the connection is successful.
+- __connectFailure__: Error callback function, invoked when error occurs or the connection disconnects.
+
+## autoConnect
+
+Establish an automatic connection to a peripheral. 
+
+    ble.autoConnect(device_id, connectSuccess, connectFailure);
+
+### Description
+
+Behaves similarly to `connect`. The difference is if the connection breaks, i.e. the peripheral is out of reach, the central will attempt a reconnection.
+Both callback could be triggered several times. `connectSuccess` will be called each time a connection is established and `connectFailure` is called if the peripheral disconnects, or if there is an error.
+
+On ios, [background notifications on ios](#background-notifications-on-ios) must be enabled. On android, this relies on the autoConnect argument of `BluetoothDevice.connectGatt()`. Not all Android devices implements correctly (or at all) this feature.
+
+As with `connect`, [ble.scan](#scan) must be called before calling connect, so the plugin has a list of available peripherals.
 
 ### Parameters
 

@@ -42,6 +42,7 @@ public class Peripheral extends BluetoothGattCallback {
     private BluetoothDevice device;
     private byte[] advertisingData;
     private int advertisingRSSI;
+    private boolean autoconnect = false;
     private boolean connected = false;
     private boolean connecting = false;
     private ConcurrentLinkedQueue<BLECommand> commandQueue = new ConcurrentLinkedQueue<BLECommand>();
@@ -52,6 +53,7 @@ public class Peripheral extends BluetoothGattCallback {
     private CallbackContext connectCallback;
     private CallbackContext readCallback;
     private CallbackContext writeCallback;
+    private Activity currentActivity;
 
     private Map<String, CallbackContext> notificationCallbacks = new HashMap<String, CallbackContext>();
 
@@ -63,16 +65,31 @@ public class Peripheral extends BluetoothGattCallback {
 
     }
 
-    public void connect(CallbackContext callbackContext, Activity activity) {
+    private void gattConnect() {
+
+        queueCleanup();
+        if (gatt != null) {
+            gatt.disconnect();
+            gatt.close();
+            gatt = null;
+        }
+
         BluetoothDevice device = getDevice();
         connecting = true;
-
-        connectCallback = callbackContext;
         if (Build.VERSION.SDK_INT < 23) {
-            gatt = device.connectGatt(activity, false, this);
+            gatt = device.connectGatt(currentActivity, autoconnect, this);
         } else {
-            gatt = device.connectGatt(activity, false, this, BluetoothDevice.TRANSPORT_LE);
+            gatt = device.connectGatt(currentActivity, autoconnect, this, BluetoothDevice.TRANSPORT_LE);
         }
+
+    }
+
+    public void connect(CallbackContext callbackContext, Activity activity, boolean auto) {
+        currentActivity = activity;
+        autoconnect = auto;
+        connectCallback = callbackContext;
+
+        gattConnect();
 
         PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
         result.setKeepCallback(true);
@@ -83,6 +100,7 @@ public class Peripheral extends BluetoothGattCallback {
         connectCallback = null;
         connected = false;
         connecting = false;
+        queueCleanup();
 
         if (gatt != null) {
             gatt.disconnect();
@@ -219,17 +237,22 @@ public class Peripheral extends BluetoothGattCallback {
         this.gatt = gatt;
 
         if (newState == BluetoothGatt.STATE_CONNECTED) {
-
             connected = true;
             connecting = false;
             gatt.discoverServices();
 
         } else {
-
+            connected = false;
             if (connectCallback != null) {
-                connectCallback.error(this.asJSONObject("Peripheral Disconnected"));
+                PluginResult result = new PluginResult(PluginResult.Status.ERROR, this.asJSONObject("Peripheral Disconnected"));
+                result.setKeepCallback(autoconnect);
+                connectCallback.sendPluginResult(result);
             }
-            disconnect();
+            if(autoconnect) {
+                gattConnect();
+            } else {
+                disconnect();
+            }
         }
 
     }
@@ -618,6 +641,14 @@ public class Peripheral extends BluetoothGattCallback {
     public void queueReadRSSI(CallbackContext callbackContext) {
         BLECommand command = new BLECommand(callbackContext, null, null, BLECommand.READ_RSSI);
         queueCommand(command);
+    }
+
+    private void queueCleanup() {
+        bleProcessing = false;
+        BLECommand command;
+        do {
+            command = commandQueue.poll();
+        } while (command != null);
     }
 
     // add a new command to the queue
