@@ -1,4 +1,4 @@
-= 1.1.x =
+= 1.1.5 =
 Use same characteristic uuid with different service in iOS #349 Thanks Riccardo Degan (riccardodegan-geekcups)
 ble.read() example #346 Thanks Kelton Temby (ktemby)
 Remove pending stopNotificationCallback for iOS #355 Thanks Georges-Etienne Legendre (legege)
@@ -11,6 +11,13 @@ Add admonition about using with beacons #413 Hugh Barnes (hughbris)
 Handle errors in didUpdateValueForCharacteristic #385 Thanks soyelporras
 Fix spelling error in Android code # Thanks doug-a-brunner
 cordova-plugin-compat deprecated #466 #483 thanks ddugue
+Fix NullPointer exception on scan #504
+Fixed deprecated iOS CBPeripheral RSSI calls and build warning #446 Thanks doug-a-brunner
+Trapped commands that caused iOS API misuse warnings #450 Thanks doug-a-brunner
+Fire callbacks on iOS when device is disconnecting #451 Thanks doug-a-brunner
+Fixed NSInvalidArgumentException when 'undefined' passed to plugin cmds #452 Thanks doug-a-brunner
+Better errors on Android, when trying to read or write to a non-existing service #486 Thanks ddugue
+Add autoConnect support #499 Thanks hypersolution1
 
 = 1.1.4 =
 Prevents scan from removing connecting Peripherals on Android #315 & #341 Thanks mebrunet
