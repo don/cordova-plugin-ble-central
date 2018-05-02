@@ -1,4 +1,4 @@
-= 1.1.6 =
+= 1.1.7 =
 Use same characteristic uuid with different service in iOS #349 Thanks Riccardo Degan (riccardodegan-geekcups)
 ble.read() example #346 Thanks Kelton Temby (ktemby)
 Remove pending stopNotificationCallback for iOS #355 Thanks Georges-Etienne Legendre (legege)
