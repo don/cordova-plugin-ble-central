@@ -264,13 +264,8 @@
 
 - (void)startScan:(CDVInvokedUrlCommand*)command {
     NSLog(@"startScan");
-<<<<<<< HEAD
-    discoverPeripheralCallbackId = [command.callbackId copy];
-    NSArray *serviceUUIDStrings = [command.arguments objectAtIndex:0];
-=======
     discoverPeripherialCallbackId = [command.callbackId copy];
     NSArray *serviceUUIDStrings = [command argumentAtIndex:0];
->>>>>>> d66ac0f0693ee2d2531c9da69f08de3b2e941d58
     NSMutableArray *serviceUUIDs = [NSMutableArray new];
 
     for (int i = 0; i < [serviceUUIDStrings count]; i++) {
@@ -283,13 +278,8 @@
 
 - (void)startScanWithOptions:(CDVInvokedUrlCommand*)command {
     NSLog(@"startScanWithOptions");
-<<<<<<< HEAD
-    discoverPeripheralCallbackId = [command.callbackId copy];
-    NSArray *serviceUUIDStrings = [command.arguments objectAtIndex:0];
-=======
     discoverPeripherialCallbackId = [command.callbackId copy];
     NSArray *serviceUUIDStrings = [command argumentAtIndex:0];
->>>>>>> d66ac0f0693ee2d2531c9da69f08de3b2e941d58
     NSMutableArray *serviceUUIDs = [NSMutableArray new];
     NSDictionary *options = command.arguments[1];
 
