@@ -344,7 +344,6 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     private void connect(CallbackContext callbackContext, String macAddress) {
         if (!peripherals.containsKey(macAddress) && BLECentralPlugin.this.bluetoothAdapter.checkBluetoothAddress(macAddress)) {
-            LOG.d(TAG, "Creating un-scanned peripheral entry for address: " + macAddress);
             BluetoothDevice device = BLECentralPlugin.this.bluetoothAdapter.getRemoteDevice(macAddress);
             Peripheral peripheral = new Peripheral(device);
             peripherals.put(macAddress, peripheral);
@@ -366,7 +365,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         if (peripheral == null) {
             if (BluetoothAdapter.checkBluetoothAddress(macAddress)) {
                 BluetoothDevice device = bluetoothAdapter.getRemoteDevice(macAddress);
-                peripheral = new Peripheral(device, -1 , new byte[] {});
+                peripheral = new Peripheral(device);
                 peripherals.put(device.getAddress(), peripheral);
             } else {
                 callbackContext.error(macAddress + " is not a valid MAC address.");

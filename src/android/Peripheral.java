@@ -61,6 +61,8 @@ public class Peripheral extends BluetoothGattCallback {
 
     public Peripheral(BluetoothDevice device) {
 
+        LOG.d(TAG, "Creating un-scanned peripheral entry for address: " + device.getAddress());
+
         this.device = device;
         this.advertisingRSSI = FAKE_PERIPHERAL_RSSI;
         this.advertisingData = null;
