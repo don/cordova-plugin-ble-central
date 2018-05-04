@@ -97,10 +97,10 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     public void disconnect() {
-        connectCallback = null;
         connected = false;
         connecting = false;
         queueCleanup();
+        callbackCleanup();
 
         if (gatt != null) {
             gatt.disconnect();
@@ -649,6 +649,30 @@ public class Peripheral extends BluetoothGattCallback {
         do {
             command = commandQueue.poll();
         } while (command != null);
+    }
+
+    private void callbackCleanup() {
+        if (connectCallback != null) {
+            if (autoconnect) {
+                PluginResult result = new PluginResult(PluginResult.Status.ERROR, this.asJSONObject("Peripheral Disconnected"));
+                result.setKeepCallback(true);
+                connectCallback.sendPluginResult(result);
+            }
+            else {
+                connectCallback.error(this.asJSONObject("Peripheral Disconnected"));
+                connectCallback = null;
+            }
+        }
+        if (readCallback != null) {
+            readCallback.error(this.asJSONObject("Peripheral Disconnected"));
+            readCallback = null;
+            commandCompleted();
+        }
+        if (writeCallback != null) {
+            writeCallback.error(this.asJSONObject("Peripheral Disconnected"));
+            writeCallback = null;
+            commandCompleted();
+        }
     }
 
     // add a new command to the queue
