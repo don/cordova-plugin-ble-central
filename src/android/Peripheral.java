@@ -68,6 +68,7 @@ public class Peripheral extends BluetoothGattCallback {
     private void gattConnect() {
 
         queueCleanup();
+        callbackCleanup();
         if (gatt != null) {
             gatt.disconnect();
             gatt.close();
@@ -243,11 +244,6 @@ public class Peripheral extends BluetoothGattCallback {
 
         } else {
             connected = false;
-            if (connectCallback != null) {
-                PluginResult result = new PluginResult(PluginResult.Status.ERROR, this.asJSONObject("Peripheral Disconnected"));
-                result.setKeepCallback(autoconnect);
-                connectCallback.sendPluginResult(result);
-            }
             if(autoconnect) {
                 gattConnect();
             } else {
@@ -652,7 +648,7 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     private void callbackCleanup() {
-        if (connectCallback != null) {
+        if (connectCallback != null && !connecting) {
             if (autoconnect) {
                 PluginResult result = new PluginResult(PluginResult.Status.ERROR, this.asJSONObject("Peripheral Disconnected"));
                 result.setKeepCallback(true);
