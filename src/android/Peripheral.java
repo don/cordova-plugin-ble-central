@@ -39,6 +39,8 @@ public class Peripheral extends BluetoothGattCallback {
     public final static UUID CLIENT_CHARACTERISTIC_CONFIGURATION_UUID = UUIDHelper.uuidFromString("2902");
     private static final String TAG = "Peripheral";
 
+    private static final int FAKE_PERIPHERAL_RSSI = 0x7FFFFFFF;
+
     private BluetoothDevice device;
     private byte[] advertisingData;
     private int advertisingRSSI;
@@ -56,6 +58,14 @@ public class Peripheral extends BluetoothGattCallback {
     private Activity currentActivity;
 
     private Map<String, CallbackContext> notificationCallbacks = new HashMap<String, CallbackContext>();
+
+    public Peripheral(BluetoothDevice device) {
+
+        this.device = device;
+        this.advertisingRSSI = FAKE_PERIPHERAL_RSSI;
+        this.advertisingData = null;
+
+    }
 
     public Peripheral(BluetoothDevice device, int advertisingRSSI, byte[] scanRecord) {
 
@@ -109,6 +119,10 @@ public class Peripheral extends BluetoothGattCallback {
         }
     }
 
+    public boolean isUnscanned() {
+        return advertisingData == null;
+    }
+
     public JSONObject asJSONObject()  {
 
         JSONObject json = new JSONObject();
@@ -116,9 +130,13 @@ public class Peripheral extends BluetoothGattCallback {
         try {
             json.put("name", device.getName());
             json.put("id", device.getAddress()); // mac address
-            json.put("advertising", byteArrayToJSON(advertisingData));
+            if (advertisingData != null) {
+                json.put("advertising", byteArrayToJSON(advertisingData));
+            }
             // TODO real RSSI if we have it, else
-            json.put("rssi", advertisingRSSI);
+            if (advertisingRSSI != FAKE_PERIPHERAL_RSSI) {
+                json.put("rssi", advertisingRSSI);
+            }
         } catch (JSONException e) { // this shouldn't happen
             e.printStackTrace();
         }
