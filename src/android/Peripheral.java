@@ -67,6 +67,8 @@ public class Peripheral extends BluetoothGattCallback {
 
     private void gattConnect() {
 
+        connected = false;
+        connecting = true;
         queueCleanup();
         callbackCleanup();
         if (gatt != null) {
@@ -76,7 +78,6 @@ public class Peripheral extends BluetoothGattCallback {
         }
 
         BluetoothDevice device = getDevice();
-        connecting = true;
         if (Build.VERSION.SDK_INT < 23) {
             gatt = device.connectGatt(currentActivity, autoconnect, this);
         } else {
@@ -642,9 +643,15 @@ public class Peripheral extends BluetoothGattCallback {
     private void queueCleanup() {
         bleProcessing = false;
         BLECommand command;
-        do {
+        for (;;) {
             command = commandQueue.poll();
-        } while (command != null);
+            if (command != null) {
+                command.getCallbackContext().error("Peripheral Disconnected");
+            }
+            else {
+                break;
+            }
+        }
     }
 
     private void callbackCleanup() {
