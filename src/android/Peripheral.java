@@ -67,15 +67,15 @@ public class Peripheral extends BluetoothGattCallback {
 
     private void gattConnect() {
 
-        connected = false;
-        connecting = true;
-        queueCleanup();
-        callbackCleanup();
         if (gatt != null) {
             gatt.disconnect();
             gatt.close();
             gatt = null;
         }
+        connected = false;
+        connecting = true;
+        queueCleanup();
+        callbackCleanup();
 
         BluetoothDevice device = getDevice();
         if (Build.VERSION.SDK_INT < 23) {
@@ -101,14 +101,14 @@ public class Peripheral extends BluetoothGattCallback {
     public void disconnect() {
         connected = false;
         connecting = false;
-        queueCleanup();
-        callbackCleanup();
 
         if (gatt != null) {
             gatt.disconnect();
             gatt.close();
             gatt = null;
         }
+        queueCleanup();
+        callbackCleanup();
     }
 
     public JSONObject asJSONObject()  {
