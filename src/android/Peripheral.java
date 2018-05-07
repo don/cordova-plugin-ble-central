@@ -79,15 +79,17 @@ public class Peripheral extends BluetoothGattCallback {
 
     private void gattConnect() {
 
-        queueCleanup();
         if (gatt != null) {
             gatt.disconnect();
             gatt.close();
             gatt = null;
         }
+        connected = false;
+        connecting = true;
+        queueCleanup();
+        callbackCleanup();
 
         BluetoothDevice device = getDevice();
-        connecting = true;
         if (Build.VERSION.SDK_INT < 23) {
             gatt = device.connectGatt(currentActivity, autoconnect, this);
         } else {
@@ -111,14 +113,14 @@ public class Peripheral extends BluetoothGattCallback {
     public void disconnect() {
         connected = false;
         connecting = false;
-        queueCleanup();
-        callbackCleanup();
 
         if (gatt != null) {
             gatt.disconnect();
             gatt.close();
             gatt = null;
         }
+        queueCleanup();
+        callbackCleanup();
     }
 
     public boolean isUnscanned() {
@@ -263,11 +265,6 @@ public class Peripheral extends BluetoothGattCallback {
 
         } else {
             connected = false;
-            if (connectCallback != null) {
-                PluginResult result = new PluginResult(PluginResult.Status.ERROR, this.asJSONObject("Peripheral Disconnected"));
-                result.setKeepCallback(autoconnect);
-                connectCallback.sendPluginResult(result);
-            }
             if(autoconnect) {
                 gattConnect();
             } else {
@@ -296,16 +293,16 @@ public class Peripheral extends BluetoothGattCallback {
         super.onCharacteristicRead(gatt, characteristic, status);
         LOG.d(TAG, "onCharacteristicRead " + characteristic);
 
-        if (readCallback != null) {
-
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                readCallback.success(characteristic.getValue());
-            } else {
-                readCallback.error("Error reading " + characteristic.getUuid() + " status=" + status);
+        synchronized(this) {
+            if (readCallback != null) {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    readCallback.success(characteristic.getValue());
+                } else {
+                    readCallback.error("Error reading " + characteristic.getUuid() + " status=" + status);
+                }
+    
+                readCallback = null;
             }
-
-            readCallback = null;
-
         }
 
         commandCompleted();
@@ -316,15 +313,16 @@ public class Peripheral extends BluetoothGattCallback {
         super.onCharacteristicWrite(gatt, characteristic, status);
         LOG.d(TAG, "onCharacteristicWrite " + characteristic);
 
-        if (writeCallback != null) {
-
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                writeCallback.success();
-            } else {
-                writeCallback.error(status);
+        synchronized(this) {
+            if (writeCallback != null) {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    writeCallback.success();
+                } else {
+                    writeCallback.error(status);
+                }
+    
+                writeCallback = null;
             }
-
-            writeCallback = null;
         }
 
         commandCompleted();
@@ -341,15 +339,17 @@ public class Peripheral extends BluetoothGattCallback {
     @Override
     public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
         super.onReadRemoteRssi(gatt, rssi, status);
-        if (readCallback != null) {
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                updateRssi(rssi);
-                readCallback.success(rssi);
-            } else {
-                readCallback.error("Error reading RSSI status=" + status);
+        synchronized(this) {
+            if (readCallback != null) {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    updateRssi(rssi);
+                    readCallback.success(rssi);
+                } else {
+                    readCallback.error("Error reading RSSI status=" + status);
+                }
+    
+                readCallback = null;
             }
-
-            readCallback = null;
         }
         commandCompleted();
     }
@@ -509,12 +509,14 @@ public class Peripheral extends BluetoothGattCallback {
         if (characteristic == null) {
             callbackContext.error("Characteristic " + characteristicUUID + " not found.");
         } else {
-            readCallback = callbackContext;
-            if (gatt.readCharacteristic(characteristic)) {
-                success = true;
-            } else {
-                readCallback = null;
-                callbackContext.error("Read failed");
+            synchronized(this) {
+                readCallback = callbackContext;
+                if (gatt.readCharacteristic(characteristic)) {
+                    success = true;
+                } else {
+                    readCallback = null;
+                    callbackContext.error("Read failed");
+                }
             }
         }
 
@@ -533,13 +535,15 @@ public class Peripheral extends BluetoothGattCallback {
             return;
         }
 
-        readCallback = callbackContext;
-
-        if (gatt.readRemoteRssi()) {
-            success = true;
-        } else {
-            readCallback = null;
-            callbackContext.error("Read RSSI failed");
+        synchronized(this) {
+            readCallback = callbackContext;
+    
+            if (gatt.readRemoteRssi()) {
+                success = true;
+            } else {
+                readCallback = null;
+                callbackContext.error("Read RSSI failed");
+            }
         }
 
         if (!success) {
@@ -594,13 +598,15 @@ public class Peripheral extends BluetoothGattCallback {
         } else {
             characteristic.setValue(data);
             characteristic.setWriteType(writeType);
-            writeCallback = callbackContext;
-
-            if (gatt.writeCharacteristic(characteristic)) {
-                success = true;
-            } else {
-                writeCallback = null;
-                callbackContext.error("Write failed");
+            synchronized(this) {
+                writeCallback = callbackContext;
+    
+                if (gatt.writeCharacteristic(characteristic)) {
+                    success = true;
+                } else {
+                    writeCallback = null;
+                    callbackContext.error("Write failed");
+                }
             }
         }
 
@@ -666,32 +672,40 @@ public class Peripheral extends BluetoothGattCallback {
     private void queueCleanup() {
         bleProcessing = false;
         BLECommand command;
-        do {
+        for (;;) {
             command = commandQueue.poll();
-        } while (command != null);
+            if (command != null) {
+                command.getCallbackContext().error("Peripheral Disconnected");
+            }
+            else {
+                break;
+            }
+        }
     }
 
     private void callbackCleanup() {
-        if (connectCallback != null) {
-            if (autoconnect) {
-                PluginResult result = new PluginResult(PluginResult.Status.ERROR, this.asJSONObject("Peripheral Disconnected"));
-                result.setKeepCallback(true);
-                connectCallback.sendPluginResult(result);
+        synchronized(this) {
+            if (connectCallback != null && !connecting) {
+                if (autoconnect) {
+                    PluginResult result = new PluginResult(PluginResult.Status.ERROR, this.asJSONObject("Peripheral Disconnected"));
+                    result.setKeepCallback(true);
+                    connectCallback.sendPluginResult(result);
+                }
+                else {
+                    connectCallback.error(this.asJSONObject("Peripheral Disconnected"));
+                    connectCallback = null;
+                }
             }
-            else {
-                connectCallback.error(this.asJSONObject("Peripheral Disconnected"));
-                connectCallback = null;
+            if (readCallback != null) {
+                readCallback.error(this.asJSONObject("Peripheral Disconnected"));
+                readCallback = null;
+                commandCompleted();
             }
-        }
-        if (readCallback != null) {
-            readCallback.error(this.asJSONObject("Peripheral Disconnected"));
-            readCallback = null;
-            commandCompleted();
-        }
-        if (writeCallback != null) {
-            writeCallback.error(this.asJSONObject("Peripheral Disconnected"));
-            writeCallback = null;
-            commandCompleted();
+            if (writeCallback != null) {
+                writeCallback.error(this.asJSONObject("Peripheral Disconnected"));
+                writeCallback = null;
+                commandCompleted();
+            }
         }
     }
 
