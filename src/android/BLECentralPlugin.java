@@ -83,6 +83,8 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     // key is the MAC Address
     Map<String, Peripheral> peripherals = new LinkedHashMap<String, Peripheral>();
+    // holds peripherals from the last scan, to prevent connection failures when peripheral is around but not rediscovered yet
+    Map<String, Peripheral> prevPeripherals = new LinkedHashMap<String, Peripheral>();
 
     // scan options
     boolean reportDuplicates = false;
@@ -150,6 +152,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         } else if (action.equals(STOP_SCAN)) {
 
             bluetoothAdapter.stopLeScan(this);
+            clearPrevPeripherals();
             callbackContext.success();
 
         } else if (action.equals(LIST)) {
@@ -350,6 +353,13 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         }
 
         Peripheral peripheral = peripherals.get(macAddress);
+        if(peripheral == null) {
+            peripheral = prevPeripherals.remove(macAddress);
+            if(peripheral != null) {
+                peripherals.put(macAddress, peripheral);
+            }
+        }
+
         if (peripheral != null) {
             peripheral.connect(callbackContext, cordova.getActivity(), false);
         } else {
@@ -483,6 +493,13 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     }
 
+    private void clearPrevPeripherals() {
+        for(Iterator<Map.Entry<String, Peripheral>> iterator = prevPeripherals.entrySet().iterator(); iterator.hasNext(); ) {
+            iterator.next();
+            iterator.remove();
+        }
+    }
+
     private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds) {
 
         if(!PermissionHelper.hasPermission(this, ACCESS_COARSE_LOCATION)) {
@@ -500,6 +517,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         }
 
         // clear non-connected cached peripherals
+        clearPrevPeripherals();
         for(Iterator<Map.Entry<String, Peripheral>> iterator = peripherals.entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<String, Peripheral> entry = iterator.next();
             Peripheral device = entry.getValue();
@@ -509,6 +527,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             }
             if(!entry.getValue().isConnected() && !connecting) {
                 iterator.remove();
+                prevPeripherals.put(entry.getKey(), entry.getValue());  // save it for now
             }
         }
 
@@ -527,6 +546,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
                 public void run() {
                     LOG.d(TAG, "Stopping Scan");
                     BLECentralPlugin.this.bluetoothAdapter.stopLeScan(BLECentralPlugin.this);
+                    clearPrevPeripherals();
                 }
             }, scanSeconds * 1000);
         }
