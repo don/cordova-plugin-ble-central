@@ -343,6 +343,12 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     }
 
     private void connect(CallbackContext callbackContext, String macAddress) {
+        if (!peripherals.containsKey(macAddress) && BLECentralPlugin.this.bluetoothAdapter.checkBluetoothAddress(macAddress)) {
+            BluetoothDevice device = BLECentralPlugin.this.bluetoothAdapter.getRemoteDevice(macAddress);
+            Peripheral peripheral = new Peripheral(device);
+            peripherals.put(macAddress, peripheral);
+        }
+
         Peripheral peripheral = peripherals.get(macAddress);
         if (peripheral != null) {
             peripheral.connect(callbackContext, cordova.getActivity(), false);
@@ -359,7 +365,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         if (peripheral == null) {
             if (BluetoothAdapter.checkBluetoothAddress(macAddress)) {
                 BluetoothDevice device = bluetoothAdapter.getRemoteDevice(macAddress);
-                peripheral = new Peripheral(device, -1 , new byte[] {});
+                peripheral = new Peripheral(device);
                 peripherals.put(device.getAddress(), peripheral);
             } else {
                 callbackContext.error(macAddress + " is not a valid MAC address.");
@@ -513,7 +519,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         } else {
             bluetoothAdapter.startLeScan(this);
         }
-        
+
         if (scanSeconds > 0) {
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
@@ -537,7 +543,9 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         // do we care about consistent order? will peripherals.values() be in order?
         for (Map.Entry<String, Peripheral> entry : peripherals.entrySet()) {
             Peripheral peripheral = entry.getValue();
-            json.put(peripheral.asJSONObject());
+            if (!peripheral.isUnscanned()) {
+                json.put(peripheral.asJSONObject());
+            }
         }
 
         PluginResult result = new PluginResult(PluginResult.Status.OK, json);
@@ -548,7 +556,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
 
         String address = device.getAddress();
-        boolean alreadyReported = peripherals.containsKey(address);
+        boolean alreadyReported = peripherals.containsKey(address) && !peripherals.get(address).isUnscanned();
 
         if (!alreadyReported) {
 
