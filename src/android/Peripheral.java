@@ -123,6 +123,19 @@ public class Peripheral extends BluetoothGattCallback {
         callbackCleanup();
     }
 
+    @Override
+    public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
+        LOG.d(TAG, "mtu=" + mtu + ", status=" + status);
+        super.onMtuChanged(gatt, mtu, status);
+    }
+
+    public void requestMtu(int mtuValue) {
+        if (gatt != null) {
+            LOG.d(TAG, "requestMtu mtu=" + mtuValue);
+            gatt.requestMtu(mtuValue);
+        }
+    }
+
     public boolean isUnscanned() {
         return advertisingData == null;
     }
@@ -300,7 +313,7 @@ public class Peripheral extends BluetoothGattCallback {
                 } else {
                     readCallback.error("Error reading " + characteristic.getUuid() + " status=" + status);
                 }
-    
+
                 readCallback = null;
             }
         }
@@ -320,7 +333,7 @@ public class Peripheral extends BluetoothGattCallback {
                 } else {
                     writeCallback.error(status);
                 }
-    
+
                 writeCallback = null;
             }
         }
@@ -347,7 +360,7 @@ public class Peripheral extends BluetoothGattCallback {
                 } else {
                     readCallback.error("Error reading RSSI status=" + status);
                 }
-    
+
                 readCallback = null;
             }
         }
@@ -537,7 +550,7 @@ public class Peripheral extends BluetoothGattCallback {
 
         synchronized(this) {
             readCallback = callbackContext;
-    
+
             if (gatt.readRemoteRssi()) {
                 success = true;
             } else {
@@ -600,7 +613,7 @@ public class Peripheral extends BluetoothGattCallback {
             characteristic.setWriteType(writeType);
             synchronized(this) {
                 writeCallback = callbackContext;
-    
+
                 if (gatt.writeCharacteristic(characteristic)) {
                     success = true;
                 } else {
