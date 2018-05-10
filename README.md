@@ -67,6 +67,7 @@ This can be done when the plugin is installed using the BLUETOOTH_USAGE_DESCRIPT
 - [ble.connect](#connect)
 - [ble.autoConnect](#autoconnect)
 - [ble.disconnect](#disconnect)
+- [ble.requestMtu](#requestmtu)
 - [ble.read](#read)
 - [ble.write](#write)
 - [ble.writeWithoutResponse](#writewithoutresponse)
@@ -288,6 +289,29 @@ Function `disconnect` disconnects the selected device.
 - __device_id__: UUID or MAC address of the peripheral
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
+
+## requestMtu
+
+requestMtu
+
+    ble.requestMtu(device_id, mtu, [success], [failure]);
+
+### Description
+
+When performing a write request operation (write without response), the data sent is truncated to the MTU size.
+This function may be used to request (on Android) a larger MTU size to be able to send more data at once.
+
+#### iOS
+
+`requestMtu` is not supported on iOS.
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __mtu__: MTU size
+- __success__: Success callback function that is invoked when the connection is successful. [optional]
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
 
 ## read
 

@@ -3,7 +3,7 @@ Added un-scanned Peripheral concept #560 Thanks doug-a-brunner
 Fixed failure to fire callbacks on Android when read or write in flight #561 Thanks doug-a-brunner
 Fixed dangling promises when reconnecting #562 Thanks doug-a-brunner
 Added error when starting a scan while another is running #565 Thanks doug-a-brunner
-Request MTU Size #568 Thanks Domvel
+Request MTU Size #568 Thanks Domvel and Algoritma
 
 = 1.1.9 =
 iOS error #558
