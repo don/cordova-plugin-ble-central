@@ -465,7 +465,7 @@ Reports the connection status.
 
 Function `isConnected` calls the success callback when the peripheral is connected and the failure callback when *not* connected.
 
-NOTE that for many app isConnected is unncessary. The app can track the connected state. When you call [connect](#connect), you know you're connected when the success callback is called. If the device disconnects at any point in the future, the failure callback of connect will be called.
+NOTE that for many apps isConnected is unncessary. The app can track the connected state. Ater calling [connect](#connect) the app is connected when the success callback function is called. If the device disconnects at any point in the future, the failure callback of connect will be called.
 
 ### Parameters
 
