@@ -566,10 +566,6 @@ Show the Bluetooth settings on the device.
 
 Function `showBluetoothSettings` opens the Bluetooth settings for the operating systems.
 
-#### iOS
-
-`showBluetoothSettings` is not supported on iOS.
-
 ### Parameters
 
 - __success__: Success callback function [optional]
