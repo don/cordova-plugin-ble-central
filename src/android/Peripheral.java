@@ -110,6 +110,8 @@ public class Peripheral extends BluetoothGattCallback {
         callbackContext.sendPluginResult(result);
     }
 
+    // the app requested the central disconnect from the peripheral
+    // disconnect the gatt, do not call connectCallback.error
     public void disconnect() {
         connected = false;
         connecting = false;
@@ -121,6 +123,40 @@ public class Peripheral extends BluetoothGattCallback {
         }
         queueCleanup();
         callbackCleanup();
+    }
+
+    // the peripheral disconnected
+    // always call connectCallback.error to notify the app
+    private void peripheralDisconnected() {
+        connected = false;
+        connecting = false;
+
+        // don't remove the gatt for autoconnect
+        if (!autoconnect && gatt != null) {
+            gatt.disconnect();
+            gatt.close();
+            gatt = null;
+        }
+
+        sendDisconnectMessage();
+
+        queueCleanup();
+        callbackCleanup();
+    }
+
+    // notify the phone that the peripheral disconnected
+    private void sendDisconnectMessage() {
+        if (connectCallback != null) {
+            JSONObject message = this.asJSONObject("Peripheral Disconnected");
+            if (autoconnect) {
+                PluginResult result = new PluginResult(PluginResult.Status.ERROR, message);
+                result.setKeepCallback(true);
+                connectCallback.sendPluginResult(result);
+            } else {
+                connectCallback.error(message);
+                connectCallback = null;
+            }
+        }
     }
 
     @Override
@@ -272,17 +308,16 @@ public class Peripheral extends BluetoothGattCallback {
         this.gatt = gatt;
 
         if (newState == BluetoothGatt.STATE_CONNECTED) {
+            LOG.d(TAG, "onConnectionStateChange CONNECTED");
             connected = true;
             connecting = false;
             gatt.discoverServices();
 
-        } else {
+        } else {  // Disconnected
+            LOG.d(TAG, "onConnectionStateChange DISCONNECTED");
             connected = false;
-            if(autoconnect) {
-                gattConnect();
-            } else {
-                disconnect();
-            }
+            peripheralDisconnected();
+
         }
 
     }
@@ -698,17 +733,6 @@ public class Peripheral extends BluetoothGattCallback {
 
     private void callbackCleanup() {
         synchronized(this) {
-            if (connectCallback != null && !connecting) {
-                if (autoconnect) {
-                    PluginResult result = new PluginResult(PluginResult.Status.ERROR, this.asJSONObject("Peripheral Disconnected"));
-                    result.setKeepCallback(true);
-                    connectCallback.sendPluginResult(result);
-                }
-                else {
-                    connectCallback.error(this.asJSONObject("Peripheral Disconnected"));
-                    connectCallback = null;
-                }
-            }
             if (readCallback != null) {
                 readCallback.error(this.asJSONObject("Peripheral Disconnected"));
                 readCallback = null;
