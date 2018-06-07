@@ -92,7 +92,6 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     // Android 23 requires new permissions for BluetoothLeScanner.startScan()
     private static final String ACCESS_COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private static final int REQUEST_ACCESS_COARSE_LOCATION = 2;
-    private static final int PERMISSION_DENIED_ERROR = 20;
     private CallbackContext permissionCallback;
     private UUID[] serviceUUIDs;
     private int scanSeconds;
@@ -626,13 +625,11 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     }
 
     /* @Override */
-    public void onRequestPermissionResult(int requestCode, String[] permissions,
-                                          int[] grantResults) /* throws JSONException */ {
+    public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) {
         for(int result:grantResults) {
-            if(result == PackageManager.PERMISSION_DENIED)
-            {
+            if(result == PackageManager.PERMISSION_DENIED) {
                 LOG.d(TAG, "User *rejected* Coarse Location Access");
-                this.permissionCallback.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, PERMISSION_DENIED_ERROR));
+                this.permissionCallback.error("Location permission not granted.");
                 return;
             }
         }

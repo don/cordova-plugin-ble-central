@@ -1,6 +1,7 @@
 = SNAPSHOT =
 Fix EXC_BAD_ACCESS on iOS #389 Thanks claudiovolpato
 Return error if bad device id is passed to disconnect #410
+Better error message when location permission is denied #218
 
 = 1.2.0 =
 Added un-scanned Peripheral concept on Android #560 Thanks doug-a-brunner
