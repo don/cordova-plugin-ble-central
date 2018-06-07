@@ -55,6 +55,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String DISCONNECT = "disconnect";
 
     private static final String REQUEST_MTU = "requestMtu";
+    private static final String REFRESH_DEVICE_CACHE = "refreshDeviceCache";
 
     private static final String READ = "read";
     private static final String WRITE = "write";
@@ -178,6 +179,11 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             String macAddress = args.getString(0);
             int mtuValue = args.getInt(1);
             requestMtu(callbackContext, macAddress, mtuValue);
+
+        } else if (action.equals(REFRESH_DEVICE_CACHE)) {
+
+            String macAddress = args.getString(0);
+            refreshDeviceCache(callbackContext, macAddress);
 
         } else if (action.equals(READ)) {
 
@@ -402,7 +408,14 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             peripheral.requestMtu(mtuValue);
         }
         callbackContext.success();
+    }
 
+    private void refreshDeviceCache(CallbackContext callbackContext, String macAddress) {
+        Peripheral peripheral = peripherals.get(macAddress);
+        if (peripheral != null) {
+            peripheral.refreshDeviceCache();
+        }
+        callbackContext.success();
     }
 
     private void read(CallbackContext callbackContext, String macAddress, UUID serviceUUID, UUID characteristicUUID) {
