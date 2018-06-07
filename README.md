@@ -743,7 +743,7 @@ Note that iOS uses the string value of the constants for the [Advertisement Data
         "rssi": -61
     }
 
-Some of the values such as kCBAdvDataManufacturerData are ArrayBuffers. The data won't print out, but you can convert it to bytes using new Uint8Array(peripheral.advertisting['kCBAdvDataManufacturerData']). Your application is responsbile for parsing and decoding any binary data such as kCBAdvDataManufacturerData or kCBAdvDataServiceData.
+Some of the values such as kCBAdvDataManufacturerData are ArrayBuffers. The data won't print out, but you can convert it to bytes using `new Uint8Array(peripheral.advertisting.kCBAdvDataManufacturerData)`. Your application is responsible for parsing and decoding any binary data such as kCBAdvDataManufacturerData or kCBAdvDataServiceData.
 
     function onDiscoverDevice(device) {
         // log the device as JSON
