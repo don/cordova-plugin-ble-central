@@ -88,16 +88,24 @@
     NSString *uuid = [command argumentAtIndex:0];
     CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
 
-    [connectCallbacks removeObjectForKey:uuid];
-    [self cleanupOperationCallbacks:peripheral withResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral disconnected"]];
+    if (!peripheral) {
+        NSString *message = [NSString stringWithFormat:@"Peripheral %@ not found", uuid];
+        NSLog(@"%@", message);
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:message];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 
-    if (peripheral && peripheral.state != CBPeripheralStateDisconnected) {
-        [manager cancelPeripheralConnection:peripheral];
+    } else {
+
+        [connectCallbacks removeObjectForKey:uuid];
+        [self cleanupOperationCallbacks:peripheral withResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral disconnected"]];
+
+        if (peripheral && peripheral.state != CBPeripheralStateDisconnected) {
+            [manager cancelPeripheralConnection:peripheral];
+        }
+
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
-
-    // always return OK
-    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 // read: function (device_id, service_uuid, characteristic_uuid, success, failure) {
