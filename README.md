@@ -720,32 +720,44 @@ Ideally a common format (map or array) would be returned for both platforms in f
         "rssi": -37
     }
 
-Convert the advertising info to a Uint8Array for processing. `var adData = new Uint8Array(peripheral.advertising)`
+Convert the advertising info to a Uint8Array for processing. `var adData = new Uint8Array(peripheral.advertising)`. You application is responsible for parsing all the information out of the advertising ArrayBuffer using the [GAP type constants](https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile). For example to get the service data from the advertising info, I [parse the advertising info into a map](https://github.com/don/ITP-BluetoothLE/blob/887511c375b1ab2fbef3afe210d6a6b7db44cee9/phonegap/thermometer_v2/www/js/index.js#L18-L39) and then get the service data to retrieve a [characteristic value that is being broadcast](https://github.com/don/ITP-BluetoothLE/blob/887511c375b1ab2fbef3afe210d6a6b7db44cee9/phonegap/thermometer_v2/www/js/index.js#L93-L103).
 
 ## iOS
 
 Note that iOS uses the string value of the constants for the [Advertisement Data Retrieval Keys](https://developer.apple.com/library/ios/documentation/CoreBluetooth/Reference/CBCentralManagerDelegate_Protocol/index.html#//apple_ref/doc/constant_group/Advertisement_Data_Retrieval_Keys). This will likely change in the future.
 
     {
-        "name": "demo",
-        "id": "D8479A4F-7517-BCD3-91B5-3302B2F81802",
+        "name": "demo"
+        "id": "15B4F1C5-C9C0-4441-BD9F-1A7ED8F7A365",
         "advertising": {
-            "kCBAdvDataChannel": 37,
-            "kCBAdvDataServiceData": {
-                "FED8": {
-                    "byteLength": 7 // data not shown
-                }
-            },
             "kCBAdvDataLocalName": "demo",
-            "kCBAdvDataServiceUUIDs": ["FED8"],
-            "kCBAdvDataManufacturerData": {
-                "byteLength": 7  // data not shown
+            "kCBAdvDataManufacturerData": {}, // arraybuffer data not shown
+            "kCBAdvDataServiceUUIDs": [
+                "721b"
+            ],  
+            "kCBAdvDataIsConnectable": true,
+            "kCBAdvDataServiceData": {
+                "BBB0": {}   // arraybuffer data not shown
             },
-            "kCBAdvDataTxPowerLevel": 32,
-            "kCBAdvDataIsConnectable": true
         },
-        "rssi": -53
+        "rssi": -61
     }
+
+Some of the values such as kCBAdvDataManufacturerData are ArrayBuffers. The data won't print out, but you can convert it to bytes using new Uint8Array(peripheral.advertisting['kCBAdvDataManufacturerData']). Your application is responsbile for parsing and decoding any binary data such as kCBAdvDataManufacturerData or kCBAdvDataServiceData.
+
+    function onDiscoverDevice(device) {
+        // log the device as JSON
+        console.log('Found Device', JSON.stringify(device, null, 2));
+
+        // on iOS, print the manufacturer data if it exists
+        if (device.advertising && device.advertising.kCBAdvDataManufacturerData) {
+            const mfgData = new Uint8Array(device.advertising.kCBAdvDataManufacturerData);
+            console.log('Manufacturer Data is', mfgData);
+        }
+
+    }
+
+    ble.scan([], 5, onDiscoverDevice, onError);
 
 # Typed Arrays
 
