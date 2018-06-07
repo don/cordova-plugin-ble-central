@@ -256,7 +256,7 @@ __NOTE__: the connect failure callback will be called if the peripheral disconne
 
 ## autoConnect
 
-Establish an automatic connection to a peripheral. 
+Establish an automatic connection to a peripheral.
 
     ble.autoConnect(device_id, connectSuccess, connectFailure);
 
@@ -313,6 +313,31 @@ This function may be used to request (on Android) a larger MTU size to be able t
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
+## refreshDeviceCache
+
+refreshDeviceCache
+
+    ble.refreshDeviceCache(device_id, [success], [failure]);
+
+### Description
+
+Usually not-bonded devices are not cached. But Android ignores this rule and always caches.
+If you recognize a cache issue e.g. outdated characteristics, this method can help.
+
+**NOTE** This feature is for advanced users only! Do it on your own risk.
+For more information see #587 or check the internet.
+
+#### iOS
+
+`refreshDeviceCache` is not supported on iOS.
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __success__: Success callback function that is invoked when the connection is successful. [optional]
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
+
 
 ## read
 
@@ -339,7 +364,7 @@ Raw data is passed from native code to the callback as an [ArrayBuffer](#typed-a
 Retrieves an [ArrayBuffer](#typed-arrays) when reading data.
 
     // read data from a characteristic, do something with output data
-    ble.read(device_id, service_uuid, characteristic_uuid, 
+    ble.read(device_id, service_uuid, characteristic_uuid,
         function(data){
             console.log("Hooray we have data"+JSON.stringify(data));
             alert("Successfully read data from device."+JSON.stringify(data));
@@ -348,7 +373,7 @@ Retrieves an [ArrayBuffer](#typed-arrays) when reading data.
             alert("Failed to read characteristic from device.");
         }
     );
-   
+
 ## write
 
 Writes data to a characteristic.
@@ -794,9 +819,9 @@ Add a new section to config.xml
             </array>
         </config-file>
     </platform>
-    
+
 See [ble-background](https://github.com/don/ble-background) example project for more details.
-    
+
 # Testing the Plugin
 
 Tests require the [Cordova Plugin Test Framework](https://github.com/apache/cordova-plugin-test-framework)
@@ -818,7 +843,7 @@ Change the start page in `config.xml`
 Run the app on your phone
 
     cordova run android --device
-    
+
 # Nordic DFU
 
 If you need Nordic DFU capability, Tomáš Bedřich has a [fork](https://github.com/fxe-gear/cordova-plugin-ble-central) of this plugin that adds an `updateFirmware()` method that allows users to upgrade nRF5x based chips over the air. https://github.com/fxe-gear/cordova-plugin-ble-central
