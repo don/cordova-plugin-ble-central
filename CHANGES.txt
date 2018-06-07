@@ -1,9 +1,12 @@
-= SNAPSHOT =
-Added un-scanned Peripheral concept #560 Thanks doug-a-brunner
+= 1.2.0 =
+Added un-scanned Peripheral concept on Android #560 Thanks doug-a-brunner
 Fixed failure to fire callbacks on Android when read or write in flight #561 Thanks doug-a-brunner
-Fixed dangling promises when reconnecting #562 Thanks doug-a-brunner
-Added error when starting a scan while another is running #565 Thanks doug-a-brunner
-Request MTU Size #568 Thanks Domvel and Algoritma
+Fixed dangling promises when reconnecting Android #562 Thanks doug-a-brunner
+Added error when starting a scan while another is running Android #565 Thanks doug-a-brunner
+Request MTU Size on Android #568 Thanks Domvel and Algoritma
+Don't prompt user to enable Bluetooth on iOS CBCentralManagerOptionShowPowerAlertKey #580 #174 Thanks H0rst and cairinmichie
+Implement showBluetoothSettings on iOS #591 Thanks cairinmichie
+Improve disconnect logic on Android #582
 
 = 1.1.9 =
 iOS error #558
