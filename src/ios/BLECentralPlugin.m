@@ -355,6 +355,25 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void)showBluetoothSettings:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult *pluginResult = nil;
+    NSString* urlString;
+
+	if (SYSTEM_VERSION_LESS_THAN(@"9.0")) {
+        urlString = @"App-Prefs:root=General&path=Bluetooth";
+	} else {
+        urlString = @"App-Prefs:root=Bluetooth";
+    }
+
+	if ([[UIApplication sharedApplication] openURL:[NSURL URLWithString:urlString]]) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+	} else {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+	}
+
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 - (void)onReset {
     stateCallbackId = nil;
 }
