@@ -418,12 +418,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         Peripheral peripheral = peripherals.get(macAddress);
 
         if (peripheral != null) {
-            boolean success = peripheral.refreshDeviceCache();
-            if (success) {
-                callbackContext.success();
-            } else {
-                callbackContext.error("Refresh failed");
-            }
+            peripheral.refreshDeviceCache(callbackContext);
         } else {
             String message = "Peripheral " + macAddress + " not found.";
             LOG.w(TAG, message);
