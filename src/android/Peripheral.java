@@ -29,6 +29,8 @@ import org.json.JSONObject;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import java.lang.reflect.Method;
+
 /**
  * Peripheral wraps the BluetoothDevice and provides methods to convert to JSON.
  */
@@ -169,6 +171,29 @@ public class Peripheral extends BluetoothGattCallback {
         if (gatt != null) {
             LOG.d(TAG, "requestMtu mtu=" + mtuValue);
             gatt.requestMtu(mtuValue);
+        }
+    }
+
+    /**
+     * Clears the device cache.
+     * This is sometimes necessary if the periphial changed his services / characteristics.
+     * It can help if your discovered data may outdated.
+     * NOTE This hidden refresh method is called using reflection. There is no callback on complete.
+     * This is only for advanced user. You have to know how to use this and what this do.
+     * It's a rudimentary implementation.
+     * Usually you call this method while peripheral is connected, wait a few seconds and re-connect.
+     */
+    public void refreshDeviceCache() {
+        if (gatt != null) {
+            LOG.d(TAG, "refreshDeviceCache: Invoke");
+            try {
+                final Method refresh = gatt.getClass().getMethod("refresh");
+                if (refresh != null) {
+                    refresh.invoke(gatt);
+                }
+            } catch(Exception e) {
+                LOG.d(TAG, "refreshDeviceCache: Failed");
+            }
         }
     }
 
