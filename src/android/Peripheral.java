@@ -175,26 +175,30 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     /**
-     * Clears the device cache.
-     * This is sometimes necessary if the periphial changed his services / characteristics.
-     * It can help if your discovered data may outdated.
-     * NOTE This hidden refresh method is called using reflection. There is no callback on complete.
-     * This is only for advanced user. You have to know how to use this and what this do.
-     * It's a rudimentary implementation.
-     * Usually you call this method while peripheral is connected, wait a few seconds and re-connect.
+     * Uses reflection to refresh the device cache. This *might* be helpful if a peripheral changes
+     * services or characteristics and does not correctly implement Service Changed 0x2a05
+     * on Generic Attribute Service 0x1801.
+     *
+     * Since this uses an undocumented API it's not guaranteed to work.
+     *
+     * @return success
      */
-    public void refreshDeviceCache() {
+    public boolean refreshDeviceCache() {
+        LOG.d(TAG, "refreshDeviceCache");
+        boolean success = false;
         if (gatt != null) {
-            LOG.d(TAG, "refreshDeviceCache: Invoke");
             try {
                 final Method refresh = gatt.getClass().getMethod("refresh");
                 if (refresh != null) {
-                    refresh.invoke(gatt);
+                    success = (Boolean)refresh.invoke(gatt);
+                } else {
+                    LOG.w(TAG, "Refresh method not found on gatt");
                 }
             } catch(Exception e) {
-                LOG.d(TAG, "refreshDeviceCache: Failed");
+                LOG.e(TAG, "refreshDeviceCache Failed", e);
             }
         }
+        return success;
     }
 
     public boolean isUnscanned() {

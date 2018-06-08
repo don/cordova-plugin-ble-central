@@ -326,11 +326,11 @@ refreshDeviceCache
 
 ### Description
 
-Usually not-bonded devices are not cached. But Android ignores this rule and always caches.
-If you recognize a cache issue e.g. outdated characteristics, this method can help.
+Some poorly behaved devices show old cached services and characteristics info. (Usually because they
+don't implement Service Changed 0x2a05 on Generic Attribute Service 0x1801 and the central doesn't know 
+the data needs to be refreshed.) This method might help.
 
-**NOTE** This feature is for advanced users only! Do it on your own risk.
-For more information see #587 or check the internet.
+*NOTE* Since this uses an undocumented API it's not guaranteed to work.
 
 #### iOS
 
@@ -339,10 +339,8 @@ For more information see #587 or check the internet.
 ### Parameters
 
 - __device_id__: UUID or MAC address of the peripheral
-- __success__: Success callback function that is invoked when the connection is successful. [optional]
-- __failure__: Error callback function, invoked when error occurs. [optional]
-
-
+- __success__: Success callback function that is invoked when the refresh is successful. [optional]
+- __failure__: Error callback function, invoked when an error occurs. [optional]
 
 ## read
 
