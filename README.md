@@ -102,7 +102,7 @@ Function `scan` scans for BLE devices.  The success callback is called each time
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
 
 ### Location Permission Notes
-*Note* in Android SDK >= 23 (6.0), Additional permissions are required for Bluetooth low energy scanning. The location permission [ACCESS_COARSE_LOCATION](https://developer.android.com/reference/android/Manifest.permission.html#ACCESS_COARSE_LOCATION) is required because Bluetooth beacons can be used to determine a user's location. If necessary, the plugin will prompt the user to allow the app to access to device's location. If the user denies permission, the scan failure callback will receive the error "Location permission not granted".
+With Android SDK >= 23 (6.0), additional permissions are required for Bluetooth low energy scanning. The location permission [ACCESS_COARSE_LOCATION](https://developer.android.com/reference/android/Manifest.permission.html#ACCESS_COARSE_LOCATION) is required because Bluetooth beacons can be used to determine a user's location. If necessary, the plugin will prompt the user to allow the app to access to device's location. If the user denies permission, the scan failure callback will receive the error "Location permission not granted".
 
 Location Services must be enabled for Bluetooth scanning. If location services are disabled, the failure callback will receive the error "Location services are disabled". If you want to manage location permission and screens, try the [cordova-diagonostic-plugin](https://github.com/dpa99c/cordova-diagnostic-plugin) or the Ionic Native [Diagnostic plugin](https://ionicframework.com/docs/native/diagnostic/).
 
@@ -138,7 +138,7 @@ Function `startScan` scans for BLE devices.  The success callback is called each
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
 
-*Note* See the [location permission notes](#locationpermissionnotes) above for information about Location Services in Android SDK >= 23.
+See the [location permission notes](#location-permission-notes) above for information about Location Services in Android SDK >= 23.
 
 ### Parameters
 
@@ -176,6 +176,8 @@ Function `startScanWithOptions` scans for BLE devices. It operates similarly to 
     }
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
+
+See the [location permission notes](#location-permission-notes) above for information about Location Services in Android SDK >= 23.
 
 ### Parameters
 
