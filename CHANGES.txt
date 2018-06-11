@@ -1,8 +1,12 @@
-= SNAPSHOT =
+= 1.2.1 =
 Fix EXC_BAD_ACCESS on iOS #389 Thanks claudiovolpato
 Return error if bad device id is passed to disconnect #410
 Better error message when location permission is denied Android #218
-Scan returns an error if location serivces are disabled #527
+Scan returns an error if location services are disabled Android #527
+Improve autoconnect for iOS #599
+add ble.refreshDeviceCache (Android) #587 Thanks Domvel
+add ble.bondedDevices (Android)
+add ble.connectedPeripheralsWithServices and ble.peripheralsWithIdentifiers (iOS)
 
 = 1.2.0 =
 Added un-scanned Peripheral concept on Android #560 Thanks doug-a-brunner
