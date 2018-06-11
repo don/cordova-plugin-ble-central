@@ -18,6 +18,7 @@ import android.app.Activity;
 
 import android.bluetooth.*;
 import android.os.Build;
+import android.os.Handler;
 import android.util.Base64;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.LOG;
@@ -183,7 +184,7 @@ public class Peripheral extends BluetoothGattCallback {
      * Since this uses an undocumented API it's not guaranteed to work.
      *
      */
-    public void refreshDeviceCache(CallbackContext callback) {
+    public void refreshDeviceCache(CallbackContext callback, long timeoutMillis) {
         LOG.d(TAG, "refreshDeviceCache");
 
         boolean success = false;
@@ -194,7 +195,11 @@ public class Peripheral extends BluetoothGattCallback {
                     success = (Boolean)refresh.invoke(gatt);
                     if (success) {
                         this.refreshCallback = callback;
-                        gatt.discoverServices();
+                        Handler handler = new Handler();
+                        handler.postDelayed(() -> {
+                            LOG.d(TAG, "Waiting " + timeoutMillis + " milliseconds before discovering services");
+                            gatt.discoverServices();
+                        }, timeoutMillis);
                     }
                 } else {
                     LOG.w(TAG, "Refresh method not found on gatt");

@@ -182,7 +182,9 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         } else if (action.equals(REFRESH_DEVICE_CACHE)) {
 
             String macAddress = args.getString(0);
-            refreshDeviceCache(callbackContext, macAddress);
+            long timeoutMillis = args.getLong(1);
+
+            refreshDeviceCache(callbackContext, macAddress, timeoutMillis);
 
         } else if (action.equals(READ)) {
 
@@ -413,12 +415,12 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         callbackContext.success();
     }
 
-    private void refreshDeviceCache(CallbackContext callbackContext, String macAddress) {
+    private void refreshDeviceCache(CallbackContext callbackContext, String macAddress, long timeoutMillis) {
 
         Peripheral peripheral = peripherals.get(macAddress);
 
         if (peripheral != null) {
-            peripheral.refreshDeviceCache(callbackContext);
+            peripheral.refreshDeviceCache(callbackContext, timeoutMillis);
         } else {
             String message = "Peripheral " + macAddress + " not found.";
             LOG.w(TAG, message);

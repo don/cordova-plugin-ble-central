@@ -322,7 +322,7 @@ This function may be used to request (on Android) a larger MTU size to be able t
 
 refreshDeviceCache
 
-    ble.refreshDeviceCache(device_id, [success], [failure]);
+    ble.refreshDeviceCache(deviceId, timeoutMillis,  [success], [failure]);
 
 ### Description
 
@@ -332,14 +332,15 @@ the data needs to be refreshed.) This method might help.
 
 *NOTE* Since this uses an undocumented API it's not guaranteed to work.
 
-#### iOS
+### Supported Platforms
 
-`refreshDeviceCache` is not supported on iOS.
+ * Android
 
 ### Parameters
 
-- __device_id__: UUID or MAC address of the peripheral
-- __success__: Success callback function that is invoked when the refresh is successful. [optional]
+- __deviceId__: UUID or MAC address of the peripheral
+- __timeoutMillis__: timeout in milliseconds after refresh before discovering services  
+- __success__: Success callback function invoked with the refreshed peripheral. [optional]
 - __failure__: Error callback function, invoked when an error occurs. [optional]
 
 ## read
