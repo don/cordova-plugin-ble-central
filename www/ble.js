@@ -91,9 +91,9 @@ module.exports = {
     },
 
     // Android only
-    // bondedDevice: function(success, failure) {
-    //     cordova.exec(success, failure, 'BLE', 'bondedDevice', []);
-    // },
+    bondedDevices: function(success, failure) {
+        cordova.exec(success, failure, 'BLE', 'bondedDevices', []);
+    },
 
     // this will probably be removed
     list: function (success, failure) {

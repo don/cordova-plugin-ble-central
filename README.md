@@ -83,6 +83,7 @@ This can be done when the plugin is installed using the BLUETOOTH_USAGE_DESCRIPT
 - [ble.readRSSI](#readrssi)
 - [ble.connectedPeripheralsWithServices](#connectedperipheralswithservices)
 - [ble.peripheralsWithIdentifiers](#peripheralswithidentifiers)
+- [ble.bondedDevices](#bondeddevices)
 
 ## scan
 
@@ -716,6 +717,26 @@ Sends a list of known peripherals by their identifiers to the success callback. 
 ### Supported Platforms
 
  * iOS
+
+## bondedDevices
+
+Find the bonded devices.
+
+    ble.bondedDevices(success, failure);
+
+### Description
+
+Sends a list of bonded low energy peripherals to the success callback.
+
+### Parameters
+
+- __success__: Success callback function, invoked with a list of peripheral objects
+- __failure__: Error callback function
+
+### Supported Platforms
+
+ * Android
+
 
 # Peripheral Data
 
