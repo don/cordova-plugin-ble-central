@@ -702,7 +702,7 @@ Retreives a list of the peripherals (containing any of the specified services) c
 
 Find the connected peripherals offering the listed service UUIDs.
 
-    ble.connectedPeripheralsWithServices([service], success, failure);
+    ble.peripheralsWithIdentifiers([uuids], success, failure);
 
 ### Description
 
