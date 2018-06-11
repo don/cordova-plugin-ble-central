@@ -150,8 +150,12 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'requestMtu', [device_id, mtu]);
     },
 
-    refreshDeviceCache: function(device_id, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'refreshDeviceCache', [device_id]);
+    refreshDeviceCache: function(deviceId, timeoutMillis, success, failure) {
+        var successWrapper = function(peripheral) {
+            convertToNativeJS(peripheral);
+            success(peripheral);
+        };
+        cordova.exec(successWrapper, failure, 'BLE', 'refreshDeviceCache', [deviceId, timeoutMillis]);
     },
 
     // characteristic value comes back as ArrayBuffer in the success callback
