@@ -81,6 +81,8 @@ This can be done when the plugin is installed using the BLUETOOTH_USAGE_DESCRIPT
 - [ble.showBluetoothSettings](#showbluetoothsettings)
 - [ble.enable](#enable)
 - [ble.readRSSI](#readrssi)
+- [ble.connectedPeripheralsWithServices](#connectedperipheralswithservices)
+- [ble.peripheralsWithIdentifiers](#peripheralswithidentifiers)
 
 ## scan
 
@@ -243,42 +245,49 @@ Function `stopScan` stops scanning for BLE devices.
 
 Connect to a peripheral.
 
-    ble.connect(device_id, connectSuccess, connectFailure);
+    ble.connect(device_id, connectCallback, disconnectCallback);
 
 ### Description
 
-Function `connect` connects to a BLE peripheral. The callback is long running. Success will be called when the connection is successful. Service and characteristic info will be passed to the success callback in the [peripheral object](#peripheral-data). Failure is called if the connection fails, or later if the peripheral disconnects. An peripheral object is passed to the failure callback.
+Function `connect` connects to a BLE peripheral. The callback is long running. The connect callback will be called when the connection is successful. Service and characteristic info will be passed to the connect callback in the [peripheral object](#peripheral-data). 
 
-[ble.scan](#scan) must be called before calling connect, so the plugin has a list of available peripherals.
+The disconnect callback is called if the connection fails, or later if the peripheral disconnects. When possible, a peripheral object is passed to the failure callback. The disconnect callback is only called when the peripheral initates the disconnection. The disconnect callback is not called when the application calls [ble.disconnect](#disconnect). The disconnect callback is how your app knows the peripheral inintiated a disconnect.
 
-__NOTE__: the connect failure callback will be called if the peripheral disconnects.
+### Scanning before connecting
+
+Android can connect to peripherals using MAC address without scanning. If the MAC address is not found the connection will time out.
+
+For iOS, the plugin needs to know about any device UUID before calling connect. You can do this by calling [ble.scan](#scan), [ble.startScan](#startscan), [ble.connectedPeripheralsWithServices](#connectedperipheralswithservices), or [ble.peripheralsWithIdentifiers](#peripheralswithidentifiers) so the plugin has a list of available peripherals.
 
 ### Parameters
 
 - __device_id__: UUID or MAC address of the peripheral
-- __connectSuccess__: Success callback function that is invoked when the connection is successful.
-- __connectFailure__: Error callback function, invoked when error occurs or the connection disconnects.
+- __connectCallback__: Connect callback function that is invoked when the connection is successful.
+- __disconnectCallback__: Disconnect callback function, invoked when the peripheral disconnects or an error occurs.
 
 ## autoConnect
 
 Establish an automatic connection to a peripheral.
 
-    ble.autoConnect(device_id, connectSuccess, connectFailure);
+    ble.autoConnect(device_id, connectCallback, disconnectCallback);
 
 ### Description
 
-Behaves similarly to `connect`. The difference is if the connection breaks, i.e. the peripheral is out of reach, the central will attempt a reconnection.
-Both callback could be triggered several times. `connectSuccess` will be called each time a connection is established and `connectFailure` is called if the peripheral disconnects, or if there is an error.
+Automatically connect to a device when it is in range of the phone. When the device connects, the connect callback is called with a [peripheral object](#peripheral-data). The call to autoConnect will not time out. It will wait forever until the device is in range. When the peripheral disconnects, the disconnect callback is called with a peripheral object.
 
-On ios, [background notifications on ios](#background-notifications-on-ios) must be enabled. On android, this relies on the autoConnect argument of `BluetoothDevice.connectGatt()`. Not all Android devices implements correctly (or at all) this feature.
+Calling [ble.disconnect](#disconnect) will stop the automatic reconnection.
 
-As with `connect`, [ble.scan](#scan) must be called before calling connect, so the plugin has a list of available peripherals.
+Both the connect and disconnect callbacks can be called many times as the device connects and disconnects. Do not wrap this function in a Promise or Observable. 
+
+On iOS, [background notifications on ios](#background-notifications-on-ios) must be enabled if you want to run in the background. On Android, this relies on the autoConnect argument of `BluetoothDevice.connectGatt()`. Not all Android devices implement this feature correctly.
+
+See notes about [scanning before connecting](#scanning-before-connecting)
 
 ### Parameters
 
 - __device_id__: UUID or MAC address of the peripheral
-- __connectSuccess__: Success callback function that is invoked when the connection is successful.
-- __connectFailure__: Error callback function, invoked when error occurs or the connection disconnects.
+- __connectCallback__: Connect callback function that is invoked when the connection is successful.
+- __disconnectCallback__: Disconnect callback function, invoked when the peripheral disconnects or an error occurs.
 
 ## disconnect
 
@@ -307,9 +316,9 @@ requestMtu
 When performing a write request operation (write without response), the data sent is truncated to the MTU size.
 This function may be used to request (on Android) a larger MTU size to be able to send more data at once.
 
-#### iOS
+### Supported Platforms
 
-`requestMtu` is not supported on iOS.
+ * Android
 
 ### Parameters
 
@@ -332,9 +341,9 @@ the data needs to be refreshed.) This method might help.
 
 *NOTE* Since this uses an undocumented API it's not guaranteed to work.
 
-#### iOS
+### Supported Platforms
 
-`refreshDeviceCache` is not supported on iOS.
+ * Android
 
 ### Parameters
 
@@ -666,6 +675,46 @@ Samples the RSSI value (a measure of signal strength) on the connection to a blu
         },
         function(err) { console.error('error connecting to device')}
         );
+
+## connectedPeripheralsWithServices
+
+Find the connected peripherals offering the listed service UUIDs.
+
+    ble.connectedPeripheralsWithServices([service], success, failure);
+
+### Description
+
+Retreives a list of the peripherals (containing any of the specified services) currently connected to the system. The peripheral list is sent to the success callback. This function wraps [CBCentralManager.retrieveConnectedPeripheralsWithServices:](https://developer.apple.com/documentation/corebluetooth/cbcentralmanager/1518924-retrieveconnectedperipheralswith?language=objc)
+
+### Parameters
+
+- __services__: List of services to discover
+- __success__: Success callback function, invoked with a list of peripheral objects
+- __failure__: Error callback function
+
+### Supported Platforms
+
+ * iOS
+
+## peripheralsWithIdentifiers
+
+Find the connected peripherals offering the listed service UUIDs.
+
+    ble.connectedPeripheralsWithServices([service], success, failure);
+
+### Description
+
+Sends a list of known peripherals by their identifiers to the success callback. This function wraps [CBCentralManager.retrievePeripheralsWithIdentifiers:](https://developer.apple.com/documentation/corebluetooth/cbcentralmanager/1519127-retrieveperipheralswithidentifie?language=objc)
+
+### Parameters
+
+- __identifiers__: List of peripheral UUIDs
+- __success__: Success callback function, invoked with a list of peripheral objects
+- __failure__: Error callback function
+
+### Supported Platforms
+
+ * iOS
 
 # Peripheral Data
 

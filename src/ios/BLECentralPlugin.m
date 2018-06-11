@@ -2,7 +2,7 @@
 //  BLECentralPlugin.m
 //  BLE Central Cordova Plugin
 //
-//  (c) 2104-2016 Don Coleman
+//  (c) 2104-2018 Don Coleman
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@
 
 #pragma mark - Cordova Plugin Methods
 
+// TODO add timeout
 - (void)connect:(CDVInvokedUrlCommand *)command {
     NSLog(@"connect");
     NSString *uuid = [command argumentAtIndex:0];
@@ -79,6 +80,29 @@
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
 
+}
+
+// This works different than Android. iOS needs to know about the peripheral UUID
+// If not scanning, try connectedPeripheralsWIthServices or peripheralsWithIdentifiers
+- (void)autoConnect:(CDVInvokedUrlCommand *)command {
+    NSLog(@"autoConnect");
+    NSString *uuid = [command argumentAtIndex:0];
+    
+    CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
+    
+    if (peripheral) {
+        NSLog(@"Autoconnecting to peripheral with UUID : %@", uuid);
+        
+        [connectCallbacks setObject:[command.callbackId copy] forKey:[peripheral uuidAsString]];
+        [manager connectPeripheral:peripheral options:nil];
+    } else {
+        NSString *error = [NSString stringWithFormat:@"Could not find peripheral %@.", uuid];
+        NSLog(@"%@", error);
+        CDVPluginResult *pluginResult = nil;
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    
 }
 
 // disconnect: function (device_id, success, failure) {
@@ -252,14 +276,9 @@
     NSLog(@"scan");
     discoverPeripheralCallbackId = [command.callbackId copy];
 
-    NSArray *serviceUUIDStrings = [command argumentAtIndex:0];
+    NSArray<NSString *> *serviceUUIDStrings = [command argumentAtIndex:0];
     NSNumber *timeoutSeconds = [command argumentAtIndex:1];
-    NSMutableArray *serviceUUIDs = [NSMutableArray new];
-
-    for (int i = 0; i < [serviceUUIDStrings count]; i++) {
-        CBUUID *serviceUUID =[CBUUID UUIDWithString:[serviceUUIDStrings objectAtIndex: i]];
-        [serviceUUIDs addObject:serviceUUID];
-    }
+    NSArray<CBUUID *> *serviceUUIDs = [self uuidStringsToCBUUIDs:serviceUUIDStrings];
 
     [manager scanForPeripheralsWithServices:serviceUUIDs options:nil];
 
@@ -273,13 +292,8 @@
 - (void)startScan:(CDVInvokedUrlCommand*)command {
     NSLog(@"startScan");
     discoverPeripheralCallbackId = [command.callbackId copy];
-    NSArray *serviceUUIDStrings = [command argumentAtIndex:0];
-    NSMutableArray *serviceUUIDs = [NSMutableArray new];
-
-    for (int i = 0; i < [serviceUUIDStrings count]; i++) {
-        CBUUID *serviceUUID =[CBUUID UUIDWithString:[serviceUUIDStrings objectAtIndex: i]];
-        [serviceUUIDs addObject:serviceUUID];
-    }
+    NSArray<NSString *> *serviceUUIDStrings = [command argumentAtIndex:0];
+    NSArray<CBUUID *> *serviceUUIDs = [self uuidStringsToCBUUIDs:serviceUUIDStrings];
 
     [manager scanForPeripheralsWithServices:serviceUUIDs options:nil];
 }
@@ -287,14 +301,9 @@
 - (void)startScanWithOptions:(CDVInvokedUrlCommand*)command {
     NSLog(@"startScanWithOptions");
     discoverPeripheralCallbackId = [command.callbackId copy];
-    NSArray *serviceUUIDStrings = [command argumentAtIndex:0];
-    NSMutableArray *serviceUUIDs = [NSMutableArray new];
+    NSArray<NSString *> *serviceUUIDStrings = [command argumentAtIndex:0];
+    NSArray<CBUUID *> *serviceUUIDs = [self uuidStringsToCBUUIDs:serviceUUIDStrings];
     NSDictionary *options = command.arguments[1];
-
-    for (int i = 0; i < [serviceUUIDStrings count]; i++) {
-        CBUUID *serviceUUID =[CBUUID UUIDWithString:[serviceUUIDStrings objectAtIndex: i]];
-        [serviceUUIDs addObject:serviceUUID];
-    }
 
     NSMutableDictionary *scanOptions = [NSMutableDictionary new];
     NSNumber *reportDuplicates = [options valueForKey: @"reportDuplicates"];
@@ -403,6 +412,50 @@
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
 }
+
+// Returns a list of the peripherals (containing any of the specified services) currently connected to the system.
+// https://developer.apple.com/documentation/corebluetooth/cbcentralmanager/1518924-retrieveconnectedperipheralswith?language=objc
+- (void)connectedPeripheralsWithServices:(CDVInvokedUrlCommand*)command {
+    NSLog(@"connectedPeripheralsWithServices");
+    NSArray *serviceUUIDStrings = [command argumentAtIndex:0];
+    NSArray<CBUUID *> *serviceUUIDs = [self uuidStringsToCBUUIDs:serviceUUIDStrings];
+
+    NSArray<CBPeripheral *> *connectedPeripherals = [manager retrieveConnectedPeripheralsWithServices:serviceUUIDs];
+    NSMutableArray<NSDictionary *> *connected = [NSMutableArray new];
+
+    for (CBPeripheral *peripheral in connectedPeripherals) {
+        [peripherals addObject:peripheral];
+        [connected addObject:[peripheral asDictionary]];
+    }
+
+    CDVPluginResult *pluginResult = nil;
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:connected];
+    NSLog(@"Connected peripherals with services %@ %@", serviceUUIDStrings, connected);
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+// Returns a list of known peripherals by their identifiers.
+// https://developer.apple.com/documentation/corebluetooth/cbcentralmanager/1519127-retrieveperipheralswithidentifie?language=objc
+- (void)peripheralsWithIdentifiers:(CDVInvokedUrlCommand*)command {
+    NSLog(@"peripheralsWithIdentifiers");
+    NSArray *identifierUUIDStrings = [command argumentAtIndex:0];
+    NSArray<NSUUID *> *identifiers = [self uuidStringsToNSUUIDs:identifierUUIDStrings];
+    
+    NSArray<CBPeripheral *> *foundPeripherals = [manager retrievePeripheralsWithIdentifiers:identifiers];
+    // TODO are any of these connected?
+    NSMutableArray<NSDictionary *> *found = [NSMutableArray new];
+    
+    for (CBPeripheral *peripheral in foundPeripherals) {
+        [peripherals addObject:peripheral];   // TODO do we save these?
+        [found addObject:[peripheral asDictionary]];
+    }
+    
+    CDVPluginResult *pluginResult = nil;
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:found];
+    NSLog(@"Peripherals with identifiers %@ %@", identifierUUIDStrings, found);
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 
 #pragma mark - timers
 
@@ -887,6 +940,24 @@
     }
 
     return @"Unknown state";
+}
+
+- (NSArray<CBUUID *> *) uuidStringsToCBUUIDs: (NSArray<NSString *> *)uuidStrings {
+    NSMutableArray *uuids = [NSMutableArray new];
+    for (int i = 0; i < [uuidStrings count]; i++) {
+        CBUUID *uuid = [CBUUID UUIDWithString:[uuidStrings objectAtIndex: i]];
+        [uuids addObject:uuid];
+    }
+    return uuids;
+}
+
+- (NSArray<NSUUID *> *) uuidStringsToNSUUIDs: (NSArray<NSString *> *)uuidStrings {
+    NSMutableArray *uuids = [NSMutableArray new];
+    for (int i = 0; i < [uuidStrings count]; i++) {
+        NSUUID *uuid = [[NSUUID alloc]initWithUUIDString:[uuidStrings objectAtIndex: i]];
+        [uuids addObject:uuid];
+    }
+    return uuids;
 }
 
 @end
