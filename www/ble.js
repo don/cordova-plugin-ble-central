@@ -20,7 +20,6 @@ var stringToArrayBuffer = function(str) {
     for (var i = 0; i < str.length; i++) {
         ret[i] = str.charCodeAt(i);
     }
-    // TODO would it be better to return Uint8Array?
     return ret.buffer;
 };
 
@@ -47,13 +46,8 @@ function convertToNativeJS(object) {
     });
 }
 
-function bleConnect(auto, device_id, success, failure) {
-    var successWrapper = function(peripheral) {
-        convertToNativeJS(peripheral);
-        success(peripheral);
-    };
-    cordova.exec(successWrapper, failure, 'BLE', ((auto) ? 'autoConnect' : 'connect'), [device_id]);
-}
+// set of auto-connected device ids
+var autoconnected = {};
 
 module.exports = {
 
@@ -86,30 +80,69 @@ module.exports = {
         cordova.exec(successWrapper, failure, 'BLE', 'startScanWithOptions', [services, options]);
     },
 
+    // iOS only
+    connectedPeripheralsWithServices: function(services, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'connectedPeripheralsWithServices', [services]);
+    },
+
+    // iOS only
+    peripheralsWithIdentifiers: function(identifiers, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'peripheralsWithIdentifiers', [identifiers]);
+    },
+
+    // Android only
+    // bondedDevice: function(success, failure) {
+    //     cordova.exec(success, failure, 'BLE', 'bondedDevice', []);
+    // },
+
     // this will probably be removed
     list: function (success, failure) {
         cordova.exec(success, failure, 'BLE', 'list', []);
     },
 
     connect: function (device_id, success, failure) {
-        bleConnect(false, device_id, success, failure);
+        // wrap success so nested array buffers in advertising info are handled correctly
+        var successWrapper = function(peripheral) {
+            convertToNativeJS(peripheral);
+            success(peripheral);
+        };
+        cordova.exec(successWrapper, failure, 'BLE', 'connect', [device_id]);    
     },
 
-    autoConnect: function (device_id, success, failure) {
-        if(cordova.platformId == "ios") {
-            var failureWrapper = function(err) {
-                failure(err);
-                if(err.errorMessage == "Peripheral Disconnected") {
-                    bleConnect(false, device_id, success, failureWrapper);
+    autoConnect: function (deviceId, connectCallback, disconnectCallback) {
+        var disconnectCallbackWrapper;
+        autoconnected[deviceId] = true;
+
+        // wrap connectCallback so nested array buffers in advertising info are handled correctly
+        var connectCallbackWrapper = function(peripheral) {
+            convertToNativeJS(peripheral);
+            connectCallback(peripheral);
+        };
+
+        // iOS needs to reconnect on disconnect, unless ble.disconnect was called. 
+        if (cordova.platformId === 'ios') {
+            disconnectCallbackWrapper = function(peripheral) {
+                // let the app know the peripheral disconnected
+                disconnectCallback(peripheral);
+    
+                // reconnect if we have a peripheral.id and the user didn't call disconnect
+                if (peripheral.id && autoconnected[peripheral.id]) {
+                    cordova.exec(connectCallbackWrapper, disconnectCallbackWrapper, 'BLE', 'autoConnect', [deviceId]);
                 }
-            };
-            bleConnect(false, device_id, success, failureWrapper);
-        } else {
-            bleConnect(true, device_id, success, failure);
+            };    
+        } else {  // no wrapper for Android
+            disconnectCallbackWrapper = disconnectCallback; 
         }
+
+        cordova.exec(connectCallbackWrapper, disconnectCallbackWrapper, 'BLE', 'autoConnect', [deviceId]);
     },
 
     disconnect: function (device_id, success, failure) {
+        try {
+            delete autoconnected[device_id];
+        } catch(e) {
+            // ignore error
+        }
         cordova.exec(success, failure, 'BLE', 'disconnect', [device_id]);
     },
 
