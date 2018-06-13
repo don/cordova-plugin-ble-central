@@ -1,3 +1,7 @@
+= 1.2.2 =
+Remove lambda from Peripheral.java to maintain 1.6 source compatibility #602
+Remove showBluetoothSettings for iOS #603
+
 = 1.2.1 =
 Fix EXC_BAD_ACCESS on iOS #389 Thanks claudiovolpato
 Return error if bad device id is passed to disconnect #410
