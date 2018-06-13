@@ -172,7 +172,9 @@ public class Peripheral extends BluetoothGattCallback {
     public void requestMtu(int mtuValue) {
         if (gatt != null) {
             LOG.d(TAG, "requestMtu mtu=" + mtuValue);
-            gatt.requestMtu(mtuValue);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                gatt.requestMtu(mtuValue);
+            }
         }
     }
 
@@ -184,7 +186,7 @@ public class Peripheral extends BluetoothGattCallback {
      * Since this uses an undocumented API it's not guaranteed to work.
      *
      */
-    public void refreshDeviceCache(CallbackContext callback, long timeoutMillis) {
+    public void refreshDeviceCache(CallbackContext callback, final long timeoutMillis) {
         LOG.d(TAG, "refreshDeviceCache");
 
         boolean success = false;
@@ -196,9 +198,12 @@ public class Peripheral extends BluetoothGattCallback {
                     if (success) {
                         this.refreshCallback = callback;
                         Handler handler = new Handler();
-                        handler.postDelayed(() -> {
-                            LOG.d(TAG, "Waiting " + timeoutMillis + " milliseconds before discovering services");
-                            gatt.discoverServices();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                LOG.d(TAG, "Waiting " + timeoutMillis + " milliseconds before discovering services");
+                                gatt.discoverServices();
+                            }
                         }, timeoutMillis);
                     }
                 } else {
