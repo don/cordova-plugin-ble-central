@@ -605,9 +605,11 @@ Show the Bluetooth settings on the device.
 
 Function `showBluetoothSettings` opens the Bluetooth settings for the operating systems.
 
-#### iOS
+`showBluetoothSettings` is not available on iOS. Plugins like [cordova-diagonostic-plugin](https://github.com/dpa99c/cordova-diagnostic-plugin) and the Ionic Native [Diagnostic plugin](https://ionicframework.com/docs/native/diagnostic/) have APIs to open Bluetooth and other settings, but will often get apps rejected by Apple.
 
-`showBluetoothSettings` is not supported on iOS.
+### Supported Platforms
+
+ * Android
 
 ### Parameters
 
