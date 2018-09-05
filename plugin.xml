@@ -3,7 +3,7 @@
     xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-plugin-ble-central"
-    version="1.2.2">
+    version="10">
 
     <name>BLE</name>
     <description>Bluetooth Low Energy (BLE) Central Plugin</description>
@@ -56,6 +56,12 @@
             <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
             <uses-permission android:name="android.permission.BLUETOOTH"/>
             <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+
+            <service
+                android:name="com.megster.cordova.ble.central.BLEService"
+                android:enabled="true"
+                android:exported="true"
+                android:permission="android.permission.BIND_JOB_SERVICE" />
         </config-file>
 
         <source-file src="src/android/BLECentralPlugin.java"
