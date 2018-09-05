@@ -16,11 +16,14 @@ package com.megster.cordova.ble.central;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -29,6 +32,8 @@ import android.os.Handler;
 import android.os.Build;
 
 import android.provider.Settings;
+import android.util.Log;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaPlugin;
@@ -111,7 +116,32 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     }};
 
     public void onDestroy() {
+        Log.d("NATURAL", "BLE central plugin on destroy");
+        cordova.getActivity().stopService(new Intent(cordova.getActivity(), BLEService.class));
         removeStateListener();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onResume(boolean multitasking) {
+        cordova.getActivity().startService(new Intent(cordova.getActivity(), BLEService.class));
+
+        IntentFilter filter = new IntentFilter("com.megster.cordova.ble.central.BLERestart");
+        BroadcastReceiver mReceiver = new BLEBroadcastReceiver();
+        cordova.getActivity().registerReceiver(mReceiver, filter);
+
+
+        JobInfo.Builder builder = new JobInfo.Builder(new Random().nextInt(), new ComponentName(cordova.getActivity(), BLEService.class));
+        builder.setMinimumLatency(5000);
+//        builder.setOverrideDeadline(5 * 60 * 1000);
+        builder.setPeriodic(10 * 60 * 1000);
+
+        Log.d("NATURAL", "Scheduling job");
+        JobScheduler tm = (JobScheduler) cordova.getActivity().getSystemService(Context.JOB_SCHEDULER_SERVICE);
+        tm.schedule(builder.build());
+
+
+        super.onResume(multitasking);
     }
 
     public void onReset() {
@@ -121,17 +151,18 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
         LOG.d(TAG, "action = " + action);
+        LOG.d(TAG, "NATURAL action = " + action);
 
         if (bluetoothAdapter == null) {
             Activity activity = cordova.getActivity();
             boolean hardwareSupportsBLE = activity.getApplicationContext()
-                                            .getPackageManager()
-                                            .hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) &&
-                                            Build.VERSION.SDK_INT >= 18;
+                    .getPackageManager()
+                    .hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) &&
+                    Build.VERSION.SDK_INT >= 18;
             if (!hardwareSupportsBLE) {
-              LOG.w(TAG, "This hardware does not support Bluetooth Low Energy.");
-              callbackContext.error("This hardware does not support Bluetooth Low Energy.");
-              return false;
+                LOG.w(TAG, "This hardware does not support Bluetooth Low Energy.");
+                callbackContext.error("This hardware does not support Bluetooth Low Energy.");
+                return false;
             }
             BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
             bluetoothAdapter = bluetoothManager.getAdapter();
@@ -154,6 +185,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
         } else if (action.equals(STOP_SCAN)) {
 
+//            TODO: try to replace with bluetoothAdapter.getBluetoothLeScanner().stopScan();
             bluetoothAdapter.stopLeScan(this);
             callbackContext.success();
 
@@ -588,8 +620,10 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         discoverCallback = callbackContext;
 
         if (serviceUUIDs != null && serviceUUIDs.length > 0) {
+//            TODO: try to replace with bluetoothAdapter.getBluetoothLeScanner().startScan();
             bluetoothAdapter.startLeScan(serviceUUIDs, this);
         } else {
+//            TODO: try to replace with bluetoothAdapter.getBluetoothLeScanner().startScan();
             bluetoothAdapter.startLeScan(this);
         }
 
@@ -599,6 +633,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
                 @Override
                 public void run() {
                     LOG.d(TAG, "Stopping Scan");
+//            TODO: try to replace with bluetoothAdapter.getBluetoothLeScanner().stopScan();
                     BLECentralPlugin.this.bluetoothAdapter.stopLeScan(BLECentralPlugin.this);
                 }
             }, scanSeconds * 1000);
