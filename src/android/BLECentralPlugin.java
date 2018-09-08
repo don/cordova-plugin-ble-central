@@ -70,6 +70,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String STOP_NOTIFICATION = "stopNotification"; // remove characteristic notification
 
     private static final String IS_ENABLED = "isEnabled";
+    private static final String IS_LOCATION_ENABLED = "isLocationEnabled";
     private static final String IS_CONNECTED  = "isConnected";
 
     private static final String SETTINGS = "showBluetoothSettings";
@@ -239,6 +240,14 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
                 callbackContext.success();
             } else {
                 callbackContext.error("Bluetooth is disabled.");
+            }
+
+        } else if (action.equals(IS_LOCATION_ENABLED)) {
+
+            if (locationServicesEnabled()) {
+                callbackContext.success();
+            } else {
+                callbackContext.error("Location services disabled.");
             }
 
         } else if (action.equals(IS_CONNECTED)) {
