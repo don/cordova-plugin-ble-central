@@ -172,7 +172,7 @@ public class Peripheral extends BluetoothGattCallback {
     public void requestMtu(int mtuValue) {
         if (gatt != null) {
             LOG.d(TAG, "requestMtu mtu=" + mtuValue);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (Build && Build.VERSION && Build.VERSION.SDK_INT && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 gatt.requestMtu(mtuValue);
             }
         }
