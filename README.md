@@ -1,5 +1,8 @@
 # Bluetooth Low Energy (BLE) Central Plugin for Apache Cordova
 
+> This is a temporary fork of `plugin-ble-central` to fix some notification ordering issues
+> on Android.
+
 This plugin enables communication between a phone and Bluetooth Low Energy (BLE) peripherals.
 
 The plugin provides a simple [JavaScript API](#api) for iOS and Android.
