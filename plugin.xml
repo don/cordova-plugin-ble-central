@@ -2,7 +2,7 @@
 <plugin
     xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    id="cordova-plugin-ble-central-iotile-fork"
+    id="cordova-plugin-ble-central"
     version="1.2.2">
 
     <name>BLE</name>
@@ -10,7 +10,7 @@
     <license>Apache 2.0</license>
     <keywords>bluetooth, BLE, bluetooth low energy, bluetooth smart</keywords>
 
-    <repo>https://github.com/iotile/cordova-plugin-ble-central.git</repo>
+    <repo>https://github.com/don/cordova-plugin-ble-central.git</repo>
     <issue>https://github.com/don/cordova-plugin-ble-central/issues</issue>
 
     <dependency id="cordova-plugin-compat" version="^1.2.0" />

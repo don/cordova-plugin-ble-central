@@ -1,9 +1,9 @@
 {
   "name": "cordova-plugin-ble-central-iotile-fork",
   "version": "1.2.2",
-  "description": "Bluetooth Low Energy (BLE) Central Plugin [IOTile Fork]",
+  "description": "Bluetooth Low Energy (BLE) Central Plugin",
   "cordova": {
-    "id": "cordova-plugin-ble-central-iotile-fork",
+    "id": "cordova-plugin-ble-central",
     "platforms": [
       "ios",
       "android",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iotile/cordova-plugin-ble-central.git"
+    "url": "git+https://github.com/don/cordova-plugin-ble-central.git"
   },
   "keywords": [
     "cordova",
@@ -26,10 +26,10 @@
     "cordova-ios",
     "cordova-android"
   ],
-  "author": "Tim Burke <tim@archsys.io>",
+  "author": "Don Coleman <don.coleman@gmail.com>",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/don/cordova-plugin-ble-central/issues"
   },
-  "homepage": "https://github.com/iotile/cordova-plugin-ble-central#readme"
+  "homepage": "https://github.com/don/cordova-plugin-ble-central#readme"
 }
