@@ -809,8 +809,33 @@ public class Peripheral extends BluetoothGattCallback {
     // add a new command to the queue
     private void queueCommand(BLECommand command) {
         LOG.d(TAG,"Queuing Command " + command);
-        commandQueue.add(command);
+//        int number_of_packets = command.getDataLength() % 20 ? (command.getDataLength() / 20) + 1;
 
+        int commandLenght = command.getDataLength();
+        int numPackets = commandLenght / 20;
+        if(commandLenght % 20 != 0) {
+            numPackets++;
+        }
+        for(int i = 0; i < numPackets - 1; i++ ) {
+            try{
+                BLECommand commandCopy = (BLECommand) command.clone();
+                commandCopy.setData(Arrays.copyOfRange(command.getData(), 20*i, 20* (i+1)));
+                commandQueue.add(commandCopy);
+                // LOG.d(TAG, "Adding Data");
+                // LOG.d(TAG, commandCopy.getData().toString());
+            }catch (Exception err){
+                // Do nothing
+            }
+        }
+        try {
+            BLECommand commandCopy = (BLECommand) command.clone();
+            commandCopy.setData(Arrays.copyOfRange(command.getData(), 20 * (numPackets - 1), commandLenght));
+            commandQueue.add(commandCopy);
+            LOG.d(TAG, "Adding Data");
+            LOG.d(TAG, commandCopy.getData().toString());
+        }catch(Exception err){
+                // do nothing.
+        }
         PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
         result.setKeepCallback(true);
         command.getCallbackContext().sendPluginResult(result);

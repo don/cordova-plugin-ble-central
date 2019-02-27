@@ -38,6 +38,11 @@ class BLECommand {
         this.data = data;
         this.type = type;
     }
+    public Object clone() throws CloneNotSupportedException
+    {
+        BLECommand c = new BLECommand(this.callbackContext, this.serviceUUID, this.characteristicUUID, this.type);
+        return c;
+    }
 
     public int getType() {
         return type;
@@ -58,4 +63,8 @@ class BLECommand {
     public byte[] getData() {
         return data;
     }
+
+    public void setData(byte[] data) { this.data = data;}
+
+    public int getDataLength() { return data.length; }
 }
