@@ -80,7 +80,7 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     public void disconnect() {
-      disconnect(5);
+      disconnect(3);
     }
 
     public void disconnect(int max_delay) {
