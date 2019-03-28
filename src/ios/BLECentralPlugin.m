@@ -171,7 +171,21 @@
             [writeCallbacks setObject:[command.callbackId copy] forKey:key];
 
             // TODO need to check the max length
-            [peripheral writeValue:message forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
+
+			NSUInteger length = [message length];
+			NSUInteger chunkSize = [peripheral maximumWriteValueLengthForType:(CBCharacteristicWriteWithResponse)];
+			NSUInteger offset = 0;
+			do {
+				NSUInteger thisChunkSize = length - offset > chunkSize ? chunkSize : length - offset;
+				NSData* chunk = [NSData dataWithBytesNoCopy:(char *)[message bytes] + offset
+													 length:thisChunkSize
+											   freeWhenDone:NO];
+
+				[peripheral writeValue:chunk forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
+				offset += thisChunkSize;
+				// do something with chunk
+			} while (offset < length);
+
 
             // response is sent from didWriteValueForCharacteristic
         } else {
@@ -631,7 +645,10 @@
 
     CDVPluginResult *pluginResult = nil;
 
-    if (!characteristic.isNotifying && stopNotificationCallbackId) {
+    // we always call the stopNotificationCallbackId if we have a callback
+    // we only call the notificationCallbackId on errors and if there is no stopNotificationCallbackId
+
+    if (stopNotificationCallbackId) {
         if (error) {
             NSLog(@"%@", error);
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
@@ -644,7 +661,7 @@
         NSAssert(![startNotificationCallbacks objectForKey:key], @"%@ existed in both start and stop notification callback dicts!", key);
     }
     
-    if (characteristic.isNotifying && startNotificationCallbackId) {
+    if (startNotificationCallbackId) {
         if (error) {
             NSLog(@"%@", error);
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
