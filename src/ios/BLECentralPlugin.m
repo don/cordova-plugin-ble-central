@@ -893,7 +893,14 @@
             NSLog(@"Cleared stop notification callback %@ for key %@", callbackId, key);
         }
     }
-    [notificationCallbacks removeAllObjects];
+    for(id key in noticiationCallbacks.allKeys) {
+        if([BLECentralPlugin isKey:key forPeripheral:peripheral]) {
+            NSString *callbackId = [notificationCallbacks valueForKey:key];
+            [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+            [notificaitonCallbacks removeObjectForKey:key]
+            NSLog(@"Cleared stop notification callback %@ for key %@", callbackId, key);
+        }
+    }
 }
 
 #pragma mark - util
