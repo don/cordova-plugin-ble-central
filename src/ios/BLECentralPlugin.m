@@ -897,7 +897,7 @@
         if([BLECentralPlugin isKey:key forPeripheral:peripheral]) {
             NSString *callbackId = [notificationCallbacks valueForKey:key];
             [self.commandDelegate sendPluginResult:result callbackId:callbackId];
-            [notificationCallbacks removeObjectForKey:key]
+            [notificationCallbacks removeObjectForKey:key];
             NSLog(@"Cleared notification callback %@ for key %@", callbackId, key);
         }
     }
