@@ -66,5 +66,5 @@ class BLECommand {
 
     public void setData(byte[] data) { this.data = data;}
 
-    public int getDataLength() { return data.length; }
+    public int getDataLength() { if(this.data != null  ) return data.length; else return 0; }
 }
