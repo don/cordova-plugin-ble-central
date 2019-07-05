@@ -821,18 +821,20 @@ public class Peripheral extends BluetoothGattCallback {
                 BLECommand commandCopy = (BLECommand) command.clone();
                 commandCopy.setData(Arrays.copyOfRange(command.getData(), 20*i, 20* (i+1)));
                 commandQueue.add(commandCopy);
-                // LOG.d(TAG, "Adding Data");
-                // LOG.d(TAG, commandCopy.getData().toString());
+                 LOG.d("CUSTOMTHING", "Adding Data");
+                 LOG.d("CUSTOMTHING", commandCopy.getData().toString());
             }catch (Exception err){
                 // Do nothing
             }
         }
         try {
             BLECommand commandCopy = (BLECommand) command.clone();
-            commandCopy.setData(Arrays.copyOfRange(command.getData(), 20 * (numPackets - 1), commandLenght));
+            if(command.getData() != null){
+                commandCopy.setData(Arrays.copyOfRange(command.getData(), 20 * (numPackets - 1), commandLenght));
+            }
             commandQueue.add(commandCopy);
-            LOG.d(TAG, "Adding Data");
-            LOG.d(TAG, commandCopy.getData().toString());
+            LOG.d("CUSTOMTHING", "Adding Data");
+            LOG.d("CUSTOMTHING", commandCopy.getData().toString());
         }catch(Exception err){
                 // do nothing.
         }
