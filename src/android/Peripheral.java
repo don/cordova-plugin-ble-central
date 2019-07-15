@@ -777,7 +777,7 @@ public class Peripheral extends BluetoothGattCallback {
         queueCommand(command);
     }
 
-    private void queueCleanup() {
+    public void queueCleanup() {
         bleProcessing = false;
         BLECommand command;
         for (;;) {
