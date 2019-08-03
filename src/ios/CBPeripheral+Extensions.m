@@ -149,6 +149,21 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
         [result setObject:solicitiedServiceUUIDStrings forKey:CBAdvertisementDataSolicitedServiceUUIDsKey];
     }
 
+    NSString *localName = [dict objectForKey:CBAdvertisementDataLocalNameKey];
+    if (localName) {
+        [result setObject:localName forKey:CBAdvertisementDataLocalNameKey];
+    }
+
+    NSNumber *txPowerLevel = [dict objectForKey:CBAdvertisementDataTxPowerLevelKey];
+    if (txPowerLevel) {
+        [result setObject:txPowerLevel forKey:CBAdvertisementDataTxPowerLevelKey];
+    }
+
+    NSNumber *isConnectable = [dict objectForKey:CBAdvertisementDataIsConnectable];
+    if (isConnectable) {
+        [result setObject:isConnectable forKey:CBAdvertisementDataIsConnectable];
+    }
+
     // Convert the manufacturer data
     NSData *mfgData = [dict objectForKey:CBAdvertisementDataManufacturerDataKey];
     if (mfgData) {
