@@ -104,6 +104,27 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
     NSMutableDictionary *dict = [advertisementData mutableCopy];
     NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
 
+    NSString *localName = [dict objectForKey:CBAdvertisementDataLocalNameKey];
+    if (localName) {
+        [result setObject:localName forKey:CBAdvertisementDataLocalNameKey];
+    }
+
+    NSNumber *txPowerLevel = [dict objectForKey:CBAdvertisementDataTxPowerLevelKey];
+    if (txPowerLevel) {
+        [result setObject:txPowerLevel forKey:CBAdvertisementDataTxPowerLevelKey];
+    }
+
+    NSNumber *isConnectable = [dict objectForKey:CBAdvertisementDataIsConnectable];
+    if (isConnectable) {
+        [result setObject:isConnectable forKey:CBAdvertisementDataIsConnectable];
+    }
+
+    // Convert the manufacturer data
+    NSData *mfgData = [dict objectForKey:CBAdvertisementDataManufacturerDataKey];
+    if (mfgData) {
+        [result setObject:dataToArrayBuffer([dict objectForKey:CBAdvertisementDataManufacturerDataKey]) forKey:CBAdvertisementDataManufacturerDataKey];
+    }
+
     // Service Data is a dictionary of CBUUID and NSData
     // Convert to String keys with Array Buffer values
     NSMutableDictionary *serviceData = [dict objectForKey:CBAdvertisementDataServiceDataKey];
@@ -129,7 +150,6 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
         }
 
         // replace the UUID list with list of strings
-        [dict removeObjectForKey:CBAdvertisementDataServiceUUIDsKey];
         [result setObject:serviceUUIDStrings forKey:CBAdvertisementDataServiceUUIDsKey];
     }
 
@@ -145,29 +165,7 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
         }
 
         // replace the UUID list with list of strings
-        [dict removeObjectForKey:CBAdvertisementDataSolicitedServiceUUIDsKey];
         [result setObject:solicitiedServiceUUIDStrings forKey:CBAdvertisementDataSolicitedServiceUUIDsKey];
-    }
-
-    NSString *localName = [dict objectForKey:CBAdvertisementDataLocalNameKey];
-    if (localName) {
-        [result setObject:localName forKey:CBAdvertisementDataLocalNameKey];
-    }
-
-    NSNumber *txPowerLevel = [dict objectForKey:CBAdvertisementDataTxPowerLevelKey];
-    if (txPowerLevel) {
-        [result setObject:txPowerLevel forKey:CBAdvertisementDataTxPowerLevelKey];
-    }
-
-    NSNumber *isConnectable = [dict objectForKey:CBAdvertisementDataIsConnectable];
-    if (isConnectable) {
-        [result setObject:isConnectable forKey:CBAdvertisementDataIsConnectable];
-    }
-
-    // Convert the manufacturer data
-    NSData *mfgData = [dict objectForKey:CBAdvertisementDataManufacturerDataKey];
-    if (mfgData) {
-        [result setObject:dataToArrayBuffer([dict objectForKey:CBAdvertisementDataManufacturerDataKey]) forKey:CBAdvertisementDataManufacturerDataKey];
     }
 
     return result;
