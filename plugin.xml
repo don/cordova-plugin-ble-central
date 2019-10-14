@@ -46,7 +46,7 @@
         <config-file target="*-Info.plist" parent="NSBluetoothAlwaysUsageDescription">
             <string>$BLUETOOTH_USAGE_DESCRIPTION</string>
         </config-file>
-        <config-file target="*-Info.plist" parent="NSLocationAlwaysUsageDescription">
+        <config-file target="*-Info.plist" parent="NSLocationWhenInUseUsageDescription">
             <string>$LOCATION_USAGE_DESCRIPTION</string>
         </config-file>               
     </platform>
