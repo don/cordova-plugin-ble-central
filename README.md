@@ -49,9 +49,9 @@ This plugin is included in iOS and Android versions of the [PhoneGap Developer A
 
 Note that this plugin's id changed from `com.megster.cordova.ble` to `cordova-plugin-ble-central` as part of the migration from the [Cordova plugin repo](http://plugins.cordova.io/) to [npm](https://www.npmjs.com/).
 
-### iOS 10
+### iOS 13
 
-For iOS 13+, apps will crash unless they include usage description keys for the types of data they access. For Bluetooth, [NSBluetoothAlwaysUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/protected_resources) AND [NSLocationWhenInUseUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/protected_resources) must be defined.
+For iOS 13, apps will crash unless they include usage description keys for the types of data they access. For Bluetooth, [NSBluetoothAlwaysUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/protected_resources) AND [NSLocationWhenInUseUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/protected_resources) must be defined.
 
 This can be done when the plugin is installed using the BLUETOOTH_USAGE_DESCRIPTION variable.
 
