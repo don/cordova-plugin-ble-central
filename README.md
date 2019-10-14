@@ -51,7 +51,7 @@ Note that this plugin's id changed from `com.megster.cordova.ble` to `cordova-pl
 
 ### iOS 10
 
-For iOS 10, apps will crash unless they include usage description keys for the types of data they access. For Bluetooth, [NSBluetoothPeripheralUsageDescription](https://developer.apple.com/library/prerelease/content/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html#//apple_ref/doc/uid/TP40009251-SW20) must be defined.
+For iOS 13+, apps will crash unless they include usage description keys for the types of data they access. For Bluetooth, [NSBluetoothAlwaysUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/protected_resources) AND [NSLocationUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/protected_resources) must be defined.
 
 This can be done when the plugin is installed using the BLUETOOTH_USAGE_DESCRIPTION variable.
 
