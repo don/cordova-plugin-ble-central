@@ -78,6 +78,7 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
 // Translates the Advertisement Data from didDiscoverPeripheral into a structure that can be serialized as JSON
 //
 // This version keeps the iOS constants for keys, future versions could create more friendly keys
+// https://developer.apple.com/documentation/corebluetooth/cbcentralmanagerdelegate/advertisement_data_retrieval_keys?language=objc
 //
 // Advertisement Data from a Peripheral could look something like
 //
@@ -101,33 +102,32 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
 //     kCBAdvDataTxPowerLevel = 32;
 //};
 - (NSDictionary *) serializableAdvertisementData: (NSDictionary *) advertisementData {
-    NSMutableDictionary *dict = [advertisementData mutableCopy];
-    NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *result = [NSMutableDictionary dictionary];
 
-    NSString *localName = [dict objectForKey:CBAdvertisementDataLocalNameKey];
+    NSString *localName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
     if (localName) {
         [result setObject:localName forKey:CBAdvertisementDataLocalNameKey];
     }
 
-    NSNumber *txPowerLevel = [dict objectForKey:CBAdvertisementDataTxPowerLevelKey];
+    NSNumber *txPowerLevel = [advertisementData objectForKey:CBAdvertisementDataTxPowerLevelKey];
     if (txPowerLevel) {
         [result setObject:txPowerLevel forKey:CBAdvertisementDataTxPowerLevelKey];
     }
 
-    NSNumber *isConnectable = [dict objectForKey:CBAdvertisementDataIsConnectable];
+    NSNumber *isConnectable = [advertisementData objectForKey:CBAdvertisementDataIsConnectable];
     if (isConnectable) {
         [result setObject:isConnectable forKey:CBAdvertisementDataIsConnectable];
     }
 
     // Convert the manufacturer data
-    NSData *mfgData = [dict objectForKey:CBAdvertisementDataManufacturerDataKey];
+    NSData *mfgData = [advertisementData objectForKey:CBAdvertisementDataManufacturerDataKey];
     if (mfgData) {
-        [result setObject:dataToArrayBuffer([dict objectForKey:CBAdvertisementDataManufacturerDataKey]) forKey:CBAdvertisementDataManufacturerDataKey];
+        [result setObject:dataToArrayBuffer([advertisementData objectForKey:CBAdvertisementDataManufacturerDataKey]) forKey:CBAdvertisementDataManufacturerDataKey];
     }
 
     // Service Data is a dictionary of CBUUID and NSData
     // Convert to String keys with Array Buffer values
-    NSMutableDictionary *serviceData = [dict objectForKey:CBAdvertisementDataServiceDataKey];
+    NSMutableDictionary *serviceData = [advertisementData objectForKey:CBAdvertisementDataServiceDataKey];
     if (serviceData) {
         NSLog(@"%@", serviceData);
 
@@ -140,7 +140,7 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
     }
 
     // Create a new list of Service UUIDs as Strings instead of CBUUIDs
-    NSMutableArray *serviceUUIDs = [dict objectForKey:CBAdvertisementDataServiceUUIDsKey];
+    NSMutableArray *serviceUUIDs = [advertisementData objectForKey:CBAdvertisementDataServiceUUIDsKey];
     NSMutableArray *serviceUUIDStrings;
     if (serviceUUIDs) {
         serviceUUIDStrings = [[NSMutableArray alloc] initWithCapacity:serviceUUIDs.count];
@@ -154,7 +154,7 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
     }
 
     // Solicited Services UUIDs is an array of CBUUIDs, convert into Strings
-    NSMutableArray *solicitiedServiceUUIDs = [dict objectForKey:CBAdvertisementDataSolicitedServiceUUIDsKey];
+    NSMutableArray *solicitiedServiceUUIDs = [advertisementData objectForKey:CBAdvertisementDataSolicitedServiceUUIDsKey];
     NSMutableArray *solicitiedServiceUUIDStrings;
     if (solicitiedServiceUUIDs) {
         // NSLog(@"%@", solicitiedServiceUUIDs);
@@ -166,6 +166,13 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
 
         // replace the UUID list with list of strings
         [result setObject:solicitiedServiceUUIDStrings forKey:CBAdvertisementDataSolicitedServiceUUIDsKey];
+    }
+    
+    // Undocumented kCBAdvDataLeBluetoothDeviceAddress which contains MAC address see
+    // 0x1B «LE Bluetooth Device Address» Core Specification Supplement, Part A, section 1.16
+    NSData *bluetoothDeviceAddress = [advertisementData objectForKey:@"kCBAdvDataLeBluetoothDeviceAddress"];
+    if (bluetoothDeviceAddress) {
+        [result setObject:dataToArrayBuffer(bluetoothDeviceAddress) forKey:@"kCBAdvDataLeBluetoothDeviceAddress"];
     }
 
     return result;
