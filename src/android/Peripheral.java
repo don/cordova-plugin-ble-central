@@ -65,7 +65,7 @@ public class Peripheral extends BluetoothGattCallback {
 
     public Peripheral(BluetoothDevice device) {
 
-        LOG.d(TAG, "Creating un-scanned peripheral entry for address: " + device.getAddress());
+        LOG.d(TAG, "Creating un-scanned peripheral entry for address: %s", device.getAddress());
 
         this.device = device;
         this.advertisingRSSI = FAKE_PERIPHERAL_RSSI;
@@ -165,13 +165,13 @@ public class Peripheral extends BluetoothGattCallback {
 
     @Override
     public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
-        LOG.d(TAG, "mtu=" + mtu + ", status=" + status);
+        LOG.d(TAG, "mtu=%d, status=%d", mtu, status);
         super.onMtuChanged(gatt, mtu, status);
     }
 
     public void requestMtu(int mtuValue) {
         if (gatt != null) {
-            LOG.d(TAG, "requestMtu mtu=" + mtuValue);
+            LOG.d(TAG, "requestMtu mtu=%d", mtuValue);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 gatt.requestMtu(mtuValue);
             }
@@ -351,7 +351,7 @@ public class Peripheral extends BluetoothGattCallback {
                 connectCallback.sendPluginResult(result);
             }
         } else {
-            LOG.e(TAG, "Service discovery failed. status = " + status);
+            LOG.e(TAG, "Service discovery failed. status = %d", status);
             if (refreshCallback != null) {
                 refreshCallback.error(this.asJSONObject("Service discovery failed"));
                 refreshCallback = null;
@@ -385,7 +385,7 @@ public class Peripheral extends BluetoothGattCallback {
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
         super.onCharacteristicChanged(gatt, characteristic);
-        LOG.d(TAG, "onCharacteristicChanged " + characteristic);
+        LOG.d(TAG, "onCharacteristicChanged %s", characteristic);
 
         SequentialCallbackContext callback = notificationCallbacks.get(generateHashKey(characteristic));
 
@@ -397,7 +397,7 @@ public class Peripheral extends BluetoothGattCallback {
     @Override
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         super.onCharacteristicRead(gatt, characteristic, status);
-        LOG.d(TAG, "onCharacteristicRead " + characteristic);
+        LOG.d(TAG, "onCharacteristicRead %s", characteristic);
 
         synchronized(this) {
             if (readCallback != null) {
@@ -417,7 +417,7 @@ public class Peripheral extends BluetoothGattCallback {
     @Override
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         super.onCharacteristicWrite(gatt, characteristic, status);
-        LOG.d(TAG, "onCharacteristicWrite " + characteristic);
+        LOG.d(TAG, "onCharacteristicWrite %s", characteristic);
 
         synchronized(this) {
             if (writeCallback != null) {
@@ -437,7 +437,7 @@ public class Peripheral extends BluetoothGattCallback {
     @Override
     public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
         super.onDescriptorWrite(gatt, descriptor, status);
-        LOG.d(TAG, "onDescriptorWrite " + descriptor);
+        LOG.d(TAG, "onDescriptorWrite %s", descriptor);
         commandCompleted();
     }
 
@@ -500,7 +500,7 @@ public class Peripheral extends BluetoothGattCallback {
                     } else if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) {
                         descriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
                     } else {
-                        LOG.w(TAG, "Characteristic " + characteristicUUID + " does not have NOTIFY or INDICATE property set");
+                        LOG.w(TAG, "Characteristic %s does not have NOTIFY or INDICATE property set", characteristicUUID);
                     }
 
                     if (gatt.writeDescriptor(descriptor)) {
@@ -777,15 +777,8 @@ public class Peripheral extends BluetoothGattCallback {
 
     private void queueCleanup() {
         bleProcessing = false;
-        BLECommand command;
-        for (;;) {
-            command = commandQueue.poll();
-            if (command != null) {
-                command.getCallbackContext().error("Peripheral Disconnected");
-            }
-            else {
-                break;
-            }
+        for (BLECommand command = commandQueue.poll(); command != null; command = commandQueue.poll()) {
+            command.getCallbackContext().error("Peripheral Disconnected");
         }
     }
 
@@ -806,7 +799,7 @@ public class Peripheral extends BluetoothGattCallback {
 
     // add a new command to the queue
     private void queueCommand(BLECommand command) {
-        LOG.d(TAG,"Queuing Command " + command);
+        LOG.d(TAG,"Queuing Command %s", command);
         commandQueue.add(command);
 
         PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
@@ -834,23 +827,23 @@ public class Peripheral extends BluetoothGattCallback {
         BLECommand command = commandQueue.poll();
         if (command != null) {
             if (command.getType() == BLECommand.READ) {
-                LOG.d(TAG,"Read " + command.getCharacteristicUUID());
+                LOG.d(TAG,"Read %s", command.getCharacteristicUUID());
                 bleProcessing = true;
                 readCharacteristic(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID());
             } else if (command.getType() == BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) {
-                LOG.d(TAG,"Write " + command.getCharacteristicUUID());
+                LOG.d(TAG,"Write %s", command.getCharacteristicUUID());
                 bleProcessing = true;
                 writeCharacteristic(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID(), command.getData(), command.getType());
             } else if (command.getType() == BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE) {
-                LOG.d(TAG,"Write No Response " + command.getCharacteristicUUID());
+                LOG.d(TAG,"Write No Response %s", command.getCharacteristicUUID());
                 bleProcessing = true;
                 writeCharacteristic(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID(), command.getData(), command.getType());
             } else if (command.getType() == BLECommand.REGISTER_NOTIFY) {
-                LOG.d(TAG,"Register Notify " + command.getCharacteristicUUID());
+                LOG.d(TAG,"Register Notify %s", command.getCharacteristicUUID());
                 bleProcessing = true;
                 registerNotifyCallback(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID());
             } else if (command.getType() == BLECommand.REMOVE_NOTIFY) {
-                LOG.d(TAG,"Remove Notify " + command.getCharacteristicUUID());
+                LOG.d(TAG,"Remove Notify %s", command.getCharacteristicUUID());
                 bleProcessing = true;
                 removeNotifyCallback(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID());
             } else if (command.getType() == BLECommand.READ_RSSI) {
@@ -872,7 +865,7 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     private String generateHashKey(UUID serviceUUID, BluetoothGattCharacteristic characteristic) {
-        return String.valueOf(serviceUUID) + "|" + characteristic.getUuid() + "|" + characteristic.getInstanceId();
+        return serviceUUID + "|" + characteristic.getUuid() + "|" + characteristic.getInstanceId();
     }
 
 }
