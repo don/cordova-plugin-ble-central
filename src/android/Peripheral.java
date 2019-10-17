@@ -775,7 +775,7 @@ public class Peripheral extends BluetoothGattCallback {
         queueCommand(command);
     }
 
-    private void queueCleanup() {
+    public void queueCleanup() {
         bleProcessing = false;
         for (BLECommand command = commandQueue.poll(); command != null; command = commandQueue.poll()) {
             command.getCallbackContext().error("Peripheral Disconnected");
