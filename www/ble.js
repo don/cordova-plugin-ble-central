@@ -208,6 +208,11 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'isEnabled', []);
     },
 
+    // Android only
+    isLocationEnabled: function (success, failure) {
+        cordova.exec(success, failure, 'BLE', 'isLocationEnabled', []);
+    },
+
     enable: function (success, failure) {
         cordova.exec(success, failure, "BLE", "enable", []);
     },

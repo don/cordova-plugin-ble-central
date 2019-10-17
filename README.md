@@ -75,6 +75,7 @@ See Apple's documentation about [Protected Resources](https://developer.apple.co
 - [ble.startNotification](#startnotification)
 - [ble.stopNotification](#stopnotification)
 - [ble.isEnabled](#isenabled)
+- [ble.isLocationEnabled](#islocationenabled)
 - [ble.isConnected](#isconnected)
 - [ble.startStateNotifications](#startstatenotifications)
 - [ble.stopStateNotifications](#stopstatenotifications)
@@ -548,6 +549,37 @@ Function `isEnabled` calls the success callback when Bluetooth is enabled and th
         },
         function() {
             console.log("Bluetooth is *not* enabled");
+        }
+    );
+
+
+## isLocationEnabled
+
+Reports if location services are enabled.
+
+    ble.isLocationEnabled(success, failure);
+
+### Description
+
+Function `isLocationEnabled` calls the success callback when location services are enabled and the failure callback when location services are *not* enabled. On some devices, location services must be enabled in order to scan for peripherals.
+
+### Supported Platforms
+
+ * Android
+
+### Parameters
+
+- __success__: Success callback function, invoked when location services are enabled.
+- __failure__: Error callback function, invoked when location services are disabled.
+
+### Quick Example
+
+    ble.isEnabled(
+        function() {
+            console.log("location services are enabled");
+        },
+        function() {
+            console.log("location services are *not* enabled");
         }
     );
 
