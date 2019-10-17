@@ -1,3 +1,8 @@
+= 1.2.3 =
+Fix iOS crash when advertising data contains kCBAdvDataLeBluetoothDeviceAddress #685 #697 Thanks jospete
+Fix problem with multiple devices and notifications when one device disconnected #674 Thanks mandrade-digmap
+Add NSBluetoothAlwaysUsageDescription for iOS13 #704 #700 Thanks favnec5
+
 = 1.2.2 =
 Remove lambda from Peripheral.java to maintain 1.6 source compatibility #602
 Remove showBluetoothSettings for iOS #603
