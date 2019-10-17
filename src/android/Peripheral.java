@@ -61,7 +61,7 @@ public class Peripheral extends BluetoothGattCallback {
     private CallbackContext writeCallback;
     private Activity currentActivity;
 
-    private Map<String, CallbackContext> notificationCallbacks = new HashMap<String, CallbackContext>();
+    private Map<String, SequentialCallbackContext> notificationCallbacks = new HashMap<String, SequentialCallbackContext>();
 
     public Peripheral(BluetoothDevice device) {
 
@@ -387,12 +387,10 @@ public class Peripheral extends BluetoothGattCallback {
         super.onCharacteristicChanged(gatt, characteristic);
         LOG.d(TAG, "onCharacteristicChanged " + characteristic);
 
-        CallbackContext callback = notificationCallbacks.get(generateHashKey(characteristic));
+        SequentialCallbackContext callback = notificationCallbacks.get(generateHashKey(characteristic));
 
         if (callback != null) {
-            PluginResult result = new PluginResult(PluginResult.Status.OK, characteristic.getValue());
-            result.setKeepCallback(true);
-            callback.sendPluginResult(result);
+            callback.sendSequentialResult(characteristic.getValue());
         }
     }
 
@@ -488,7 +486,7 @@ public class Peripheral extends BluetoothGattCallback {
 
         if (characteristic != null) {
 
-            notificationCallbacks.put(key, callbackContext);
+            notificationCallbacks.put(key, new SequentialCallbackContext(callbackContext));
 
             if (gatt.setCharacteristicNotification(characteristic, true)) {
 
