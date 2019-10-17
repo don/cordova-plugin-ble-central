@@ -102,6 +102,28 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
 //};
 - (NSDictionary *) serializableAdvertisementData: (NSDictionary *) advertisementData {
     NSMutableDictionary *dict = [advertisementData mutableCopy];
+    NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+
+    NSString *localName = [dict objectForKey:CBAdvertisementDataLocalNameKey];
+    if (localName) {
+        [result setObject:localName forKey:CBAdvertisementDataLocalNameKey];
+    }
+
+    NSNumber *txPowerLevel = [dict objectForKey:CBAdvertisementDataTxPowerLevelKey];
+    if (txPowerLevel) {
+        [result setObject:txPowerLevel forKey:CBAdvertisementDataTxPowerLevelKey];
+    }
+
+    NSNumber *isConnectable = [dict objectForKey:CBAdvertisementDataIsConnectable];
+    if (isConnectable) {
+        [result setObject:isConnectable forKey:CBAdvertisementDataIsConnectable];
+    }
+
+    // Convert the manufacturer data
+    NSData *mfgData = [dict objectForKey:CBAdvertisementDataManufacturerDataKey];
+    if (mfgData) {
+        [result setObject:dataToArrayBuffer([dict objectForKey:CBAdvertisementDataManufacturerDataKey]) forKey:CBAdvertisementDataManufacturerDataKey];
+    }
 
     // Service Data is a dictionary of CBUUID and NSData
     // Convert to String keys with Array Buffer values
@@ -113,6 +135,8 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
             [serviceData setObject:dataToArrayBuffer([serviceData objectForKey:key]) forKey:[key UUIDString]];
             [serviceData removeObjectForKey:key];
         }
+
+        [result setObject:serviceData forKey:CBAdvertisementDataServiceDataKey];
     }
 
     // Create a new list of Service UUIDs as Strings instead of CBUUIDs
@@ -126,9 +150,7 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
         }
 
         // replace the UUID list with list of strings
-        [dict removeObjectForKey:CBAdvertisementDataServiceUUIDsKey];
-        [dict setObject:serviceUUIDStrings forKey:CBAdvertisementDataServiceUUIDsKey];
-
+        [result setObject:serviceUUIDStrings forKey:CBAdvertisementDataServiceUUIDsKey];
     }
 
     // Solicited Services UUIDs is an array of CBUUIDs, convert into Strings
@@ -143,17 +165,10 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
         }
 
         // replace the UUID list with list of strings
-        [dict removeObjectForKey:CBAdvertisementDataSolicitedServiceUUIDsKey];
-        [dict setObject:solicitiedServiceUUIDStrings forKey:CBAdvertisementDataSolicitedServiceUUIDsKey];
+        [result setObject:solicitiedServiceUUIDStrings forKey:CBAdvertisementDataSolicitedServiceUUIDsKey];
     }
 
-    // Convert the manufacturer data
-    NSData *mfgData = [dict objectForKey:CBAdvertisementDataManufacturerDataKey];
-    if (mfgData) {
-        [dict setObject:dataToArrayBuffer([dict objectForKey:CBAdvertisementDataManufacturerDataKey]) forKey:CBAdvertisementDataManufacturerDataKey];
-    }
-
-    return dict;
+    return result;
 }
 
 // Put the service, characteristic, and descriptor data in a format that will serialize through JSON
