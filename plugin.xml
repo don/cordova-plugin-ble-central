@@ -39,6 +39,7 @@
         <!-- frameworks -->
         <framework src="CoreBluetooth.framework" />
 
+        <!-- iOS SPermissions -->
         <preference name="BLUETOOTH_USAGE_DESCRIPTION" default=" " />
         <config-file target="*-Info.plist" parent="NSBluetoothPeripheralUsageDescription">
             <string>$BLUETOOTH_USAGE_DESCRIPTION</string>
@@ -46,10 +47,6 @@
         <config-file target="*-Info.plist" parent="NSBluetoothAlwaysUsageDescription">
             <string>$BLUETOOTH_USAGE_DESCRIPTION</string>
         </config-file>
-        <preference name="LOCATION_USAGE_DESCRIPTION" default=" " />
-        <config-file target="*-Info.plist" parent="NSLocationAlwaysAndWhenInUseUsageDescription">
-            <string>$LOCATION_USAGE_DESCRIPTION</string>
-        </config-file>               
     </platform>
 
     <platform name="android">
