@@ -13,8 +13,6 @@
     <repo>https://github.com/don/cordova-plugin-ble-central.git</repo>
     <issue>https://github.com/don/cordova-plugin-ble-central/issues</issue>
 
-    <dependency id="cordova-plugin-compat" version="^1.2.0" />
-
     <js-module src="www/ble.js" name="ble">
         <clobbers target="ble" />
     </js-module>
