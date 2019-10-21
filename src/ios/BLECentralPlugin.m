@@ -200,8 +200,15 @@
             }
             CBCharacteristic *characteristic = [context characteristic];
 
-            // TODO need to check the max length
-            [peripheral writeValue:message forCharacteristic:characteristic type:CBCharacteristicWriteWithoutResponse];
+            int count = 0;
+            int dataLen = (int) message.length;
+            if(dataLen>20){
+                do{
+                    [peripheral writeValue:[message subdataWithRange:NSMakeRange(count, dataLen-count<20?dataLen-count:20)] forCharacteristic:characteristic type:CBCharacteristicWriteWithoutResponse];
+                    [NSThread sleepForTimeInterval:0.005];
+                    count+=20;
+                }while(count<=dataLen);
+            }
 
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         } else {
