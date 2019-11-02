@@ -150,6 +150,10 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'queueCleanup', [device_id]);
     },
 
+    requestConnectionPriority: function (device_id, connectionPriority,  success, failure) {
+        cordova.exec(success, failure, 'BLE', 'requestConnectionPriority', [device_id, connectionPriority]);
+    },
+
     requestMtu: function (device_id, mtu,  success, failure) {
         cordova.exec(success, failure, 'BLE', 'requestMtu', [device_id, mtu]);
     },

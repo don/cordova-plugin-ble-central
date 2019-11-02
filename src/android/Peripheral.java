@@ -169,6 +169,16 @@ public class Peripheral extends BluetoothGattCallback {
         super.onMtuChanged(gatt, mtu, status);
     }
 
+    public boolean requestConnectionPriority(int connectionPriority) {
+        if (gatt != null) {
+            LOG.d(TAG, "requestConnectionPriority connectionPriority=%d", connectionPriority);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                return gatt.requestConnectionPriority(connectionPriority);
+            }
+        }
+        return false;
+    }
+
     public void requestMtu(int mtuValue) {
         if (gatt != null) {
             LOG.d(TAG, "requestMtu mtu=%d", mtuValue);

@@ -59,6 +59,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     private static final String QUEUE_CLEANUP = "queueCleanup";
 
+    private static final String REQUEST_CONNECTION_PRIORITY = "requestConnectionPriority";
     private static final String REQUEST_MTU = "requestMtu";
     private static final String REFRESH_DEVICE_CACHE = "refreshDeviceCache";
 
@@ -181,11 +182,21 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
         } else if (action.equals(QUEUE_CLEANUP)) {
 
-        String macAddress = args.getString(0);
-        queueCleanup(callbackContext, macAddress);
+            String macAddress = args.getString(0);
+            queueCleanup(callbackContext, macAddress);
 
-        }
-        else if (action.equals(REQUEST_MTU)) {
+        } else if (action.equals(REQUEST_CONNECTION_PRIORITY)) {
+
+            String macAddress = args.getString(0);
+            int connectionPriority = args.getInt(1);
+
+            if (requestConnectionPriority(callbackContext, macAddress, connectionPriority)) {
+                callbackContext.success();
+            } else {
+                callbackContext.error("Error requesting connection priority.");
+            }
+
+        } else if (action.equals(REQUEST_MTU)) {
 
             String macAddress = args.getString(0);
             int mtuValue = args.getInt(1);
@@ -455,6 +466,14 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         }
         callbackContext.success();
     }    
+
+    private boolean requestConnectionPriority(CallbackContext callbackContext, String macAddress, int connectionPriority) {
+        Peripheral peripheral = peripherals.get(macAddress);
+        if (peripheral != null) {
+            return peripheral.requestConnectionPriority(connectionPriority);
+        }
+        return false;
+    }
 
     private void requestMtu(CallbackContext callbackContext, String macAddress, int mtuValue) {
 
