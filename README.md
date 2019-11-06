@@ -315,8 +315,9 @@ requestMtu
 
 ### Description
 
-When performing a write request operation (write without response), the data sent is truncated to the MTU size.
 This function may be used to request (on Android) a larger MTU size to be able to send more data at once.
+This can be useful when performing a write request operation (write without response), the data sent is truncated to the MTU size.
+The resulting MTU size is sent to the success callback. The requested and resulting MTU sizes are not necessarily equal.
 
 ### Supported Platforms
 
@@ -326,8 +327,19 @@ This function may be used to request (on Android) a larger MTU size to be able t
 
 - __device_id__: UUID or MAC address of the peripheral
 - __mtu__: MTU size
-- __success__: Success callback function that is invoked when the connection is successful. [optional]
+- __success__: Success callback function that is invoked when the MTU size request is successful. The resulting MTU size is passed as an integer.
 - __failure__: Error callback function, invoked when error occurs. [optional]
+
+### Quick Example
+
+    ble.requestMtu(device_id, new_mtu,
+        function(mtu){
+            alert("MTU set to: " + mtu);
+        },
+        function(failure){
+            alert("Failed to request MTU.");
+        }
+    );
 
 ## refreshDeviceCache
 
