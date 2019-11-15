@@ -58,6 +58,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String DISCONNECT = "disconnect";
 
     private static final String QUEUE_CLEANUP = "queueCleanup";
+    private static final String SET_PIN = "setPin";
 
     private static final String REQUEST_MTU = "requestMtu";
     private static final String REFRESH_DEVICE_CACHE = "refreshDeviceCache";
@@ -183,6 +184,11 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
             String macAddress = args.getString(0);
             queueCleanup(callbackContext, macAddress);
+
+        } else if (action.equals(SET_PIN)) {
+
+            String pin = args.getString(0);
+            setPin(callbackContext, pin);
 
         } else if (action.equals(REQUEST_MTU)) {
 
@@ -453,7 +459,42 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             peripheral.queueCleanup();
         }
         callbackContext.success();
-    }    
+    }
+
+    BroadcastReceiver broadCastReceiver;
+    private void setPin(CallbackContext callbackContext, final String pin) {
+        try {
+            if (broadCastReceiver != null) {
+                webView.getContext().unregisterReceiver(broadCastReceiver);
+            }
+
+            broadCastReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    String action = intent.getAction();
+
+                    if (BluetoothDevice.ACTION_PAIRING_REQUEST.equals(action)) {
+                        BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        int type = intent.getIntExtra(BluetoothDevice.EXTRA_PAIRING_VARIANT, BluetoothDevice.ERROR);
+
+                        if (type == BluetoothDevice.PAIRING_VARIANT_PIN) {
+                            bluetoothDevice.setPin(pin.getBytes());
+                            abortBroadcast();
+                        }
+                    }
+                }
+            };
+
+            IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_PAIRING_REQUEST);
+            intentFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
+            webView.getContext().registerReceiver(broadCastReceiver, intentFilter);
+
+            callbackContext.success("OK");
+        } catch (Exception e) {
+            callbackContext.error("Error: " + e.getMessage());
+            return;
+        }
+    }
 
     private void requestMtu(CallbackContext callbackContext, String macAddress, int mtuValue) {
 
