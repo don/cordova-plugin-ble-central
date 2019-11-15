@@ -181,11 +181,10 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
         } else if (action.equals(QUEUE_CLEANUP)) {
 
-        String macAddress = args.getString(0);
-        queueCleanup(callbackContext, macAddress);
+            String macAddress = args.getString(0);
+            queueCleanup(callbackContext, macAddress);
 
-        }
-        else if (action.equals(REQUEST_MTU)) {
+        } else if (action.equals(REQUEST_MTU)) {
 
             String macAddress = args.getString(0);
             int mtuValue = args.getInt(1);
