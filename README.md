@@ -65,6 +65,7 @@ See Apple's documentation about [Protected Resources](https://developer.apple.co
 - [ble.startScan](#startscan)
 - [ble.startScanWithOptions](#startscanwithoptions)
 - [ble.stopScan](#stopscan)
+- [ble.stopScan](#setpin)
 - [ble.connect](#connect)
 - [ble.autoConnect](#autoconnect)
 - [ble.disconnect](#disconnect)
@@ -242,6 +243,22 @@ Function `stopScan` stops scanning for BLE devices.
         );
     }, 5000);
     */
+
+## setPin
+
+Set device pin
+
+    ble.setPin(pin, [success], [failure]);
+
+### Description
+
+Function `setPin` sets the pin when device requires it.
+
+### Parameters
+
+- __pin__: Pin of the device as a string
+- __success__: Success callback function that is invoked when the function is invoked. [optional]
+- __failure__: Error callback function, invoked when error occurs. [optional]
 
 ## connect
 
