@@ -25,7 +25,7 @@
 @interface CBPeripheral(com_megster_ble_extension)
 
 @property (nonatomic, retain) NSDictionary *advertising;
-@property (nonatomic, retain) NSNumber *advertisementRSSI;
+@property (nonatomic, retain) NSNumber *savedRSSI;
 
 -(void)setAdvertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber*)rssi;
 -(NSDictionary *)asDictionary;
