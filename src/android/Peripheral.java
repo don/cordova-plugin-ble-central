@@ -914,17 +914,17 @@ public class Peripheral extends BluetoothGattCallback {
 
         // set the ZIP and start the process
         starter.setZip(uri);
-        starter.start(activity, DfuService.class);
+        starter.start(currentActivity, DfuService.class);
 
         PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
         result.setKeepCallback(true);
         callbackContext.sendPluginResult(result);
 
-        DfuServiceListenerHelper.registerProgressListener(activity, progressListener);
+        DfuServiceListenerHelper.registerProgressListener(currentActivity, progressListener);
     }
 
     private void unregisterDfuProgressListener() {
-        DfuServiceListenerHelper.unregisterProgressListener(activity, progressListener);
+        DfuServiceListenerHelper.unregisterProgressListener(currentActivity, progressListener);
         dfuCallback = null;
     }
 
