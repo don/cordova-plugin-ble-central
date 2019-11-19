@@ -22,7 +22,7 @@ For using this plugin on iOS, there are some additional requirements:
 
 # Installing
 
-    $ cordova plugin add https://github.com/fxe-gear/cordova-plugin-ble-central.git
+    $ cordova plugin add https://github.com/flemmingdjensen/cordova-plugin-ble-central.git
 
 # Extended API
 
