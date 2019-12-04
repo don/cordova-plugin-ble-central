@@ -20,7 +20,6 @@ var stringToArrayBuffer = function(str) {
     for (var i = 0; i < str.length; i++) {
         ret[i] = str.charCodeAt(i);
     }
-    // TODO would it be better to return Uint8Array?
     return ret.buffer;
 };
 
@@ -46,6 +45,9 @@ function convertToNativeJS(object) {
         }
     });
 }
+
+// set of auto-connected device ids
+var autoconnected = {};
 
 module.exports = {
 
@@ -78,21 +80,86 @@ module.exports = {
         cordova.exec(successWrapper, failure, 'BLE', 'startScanWithOptions', [services, options]);
     },
 
+    // iOS only
+    connectedPeripheralsWithServices: function(services, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'connectedPeripheralsWithServices', [services]);
+    },
+
+    // iOS only
+    peripheralsWithIdentifiers: function(identifiers, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'peripheralsWithIdentifiers', [identifiers]);
+    },
+
+    // Android only
+    bondedDevices: function(success, failure) {
+        cordova.exec(success, failure, 'BLE', 'bondedDevices', []);
+    },
+
     // this will probably be removed
     list: function (success, failure) {
         cordova.exec(success, failure, 'BLE', 'list', []);
     },
 
     connect: function (device_id, success, failure) {
+        // wrap success so nested array buffers in advertising info are handled correctly
         var successWrapper = function(peripheral) {
             convertToNativeJS(peripheral);
             success(peripheral);
         };
-        cordova.exec(successWrapper, failure, 'BLE', 'connect', [device_id]);
+        cordova.exec(successWrapper, failure, 'BLE', 'connect', [device_id]);    
+    },
+
+    autoConnect: function (deviceId, connectCallback, disconnectCallback) {
+        var disconnectCallbackWrapper;
+        autoconnected[deviceId] = true;
+
+        // wrap connectCallback so nested array buffers in advertising info are handled correctly
+        var connectCallbackWrapper = function(peripheral) {
+            convertToNativeJS(peripheral);
+            connectCallback(peripheral);
+        };
+
+        // iOS needs to reconnect on disconnect, unless ble.disconnect was called. 
+        if (cordova.platformId === 'ios') {
+            disconnectCallbackWrapper = function(peripheral) {
+                // let the app know the peripheral disconnected
+                disconnectCallback(peripheral);
+    
+                // reconnect if we have a peripheral.id and the user didn't call disconnect
+                if (peripheral.id && autoconnected[peripheral.id]) {
+                    cordova.exec(connectCallbackWrapper, disconnectCallbackWrapper, 'BLE', 'autoConnect', [deviceId]);
+                }
+            };    
+        } else {  // no wrapper for Android
+            disconnectCallbackWrapper = disconnectCallback; 
+        }
+
+        cordova.exec(connectCallbackWrapper, disconnectCallbackWrapper, 'BLE', 'autoConnect', [deviceId]);
     },
 
     disconnect: function (device_id, success, failure) {
+        try {
+            delete autoconnected[device_id];
+        } catch(e) {
+            // ignore error
+        }
         cordova.exec(success, failure, 'BLE', 'disconnect', [device_id]);
+    },
+
+    queueCleanup: function (device_id,  success, failure) {
+        cordova.exec(success, failure, 'BLE', 'queueCleanup', [device_id]);
+    },
+
+    requestMtu: function (device_id, mtu,  success, failure) {
+        cordova.exec(success, failure, 'BLE', 'requestMtu', [device_id, mtu]);
+    },
+
+    refreshDeviceCache: function(deviceId, timeoutMillis, success, failure) {
+        var successWrapper = function(peripheral) {
+            convertToNativeJS(peripheral);
+            success(peripheral);
+        };
+        cordova.exec(successWrapper, failure, 'BLE', 'refreshDeviceCache', [deviceId, timeoutMillis]);
     },
 
     // characteristic value comes back as ArrayBuffer in the success callback
@@ -145,6 +212,11 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'isEnabled', []);
     },
 
+    // Android only
+    isLocationEnabled: function (success, failure) {
+        cordova.exec(success, failure, 'BLE', 'isLocationEnabled', []);
+    },
+
     enable: function (success, failure) {
         cordova.exec(success, failure, "BLE", "enable", []);
     },
@@ -187,6 +259,12 @@ module.exports.withPromises = {
         });
     },
 
+    queueCleanup: function(device_id) {
+        return new Promise(function(resolve, reject) {
+            module.exports.queueCleanup(device_id, resolve, reject);
+        });
+    },
+
     read: function(device_id, service_uuid, characteristic_uuid) {
         return new Promise(function(resolve, reject) {
             module.exports.read(device_id, service_uuid, characteristic_uuid, resolve, reject);
@@ -213,7 +291,7 @@ module.exports.withPromises = {
 
     isConnected: function (device_id) {
         return new Promise(function(resolve, reject) {
-            module.exports.isConnected(device_id);
+            module.exports.isConnected(device_id, resolve, reject);
         });
     },
 
@@ -243,7 +321,7 @@ module.exports.withPromises = {
 
     readRSSI: function(device_id) {
         return new Promise(function(resolve, reject) {
-            module.exports.readRSSI(device_id);
+            module.exports.readRSSI(device_id, resolve, reject);
         });
     },
 
@@ -252,4 +330,4 @@ module.exports.withPromises = {
             module.exports.write(device_id, url, resolve, reject);
         });
     }
-}
+};
