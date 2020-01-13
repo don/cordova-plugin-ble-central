@@ -3,7 +3,7 @@
     xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-plugin-ble-central"
-    version="1.1.1">
+    version="1.1.4">
 
     <name>BLE</name>
     <description>Bluetooth Low Energy (BLE) Central Plugin</description>
@@ -39,6 +39,10 @@
         <!-- frameworks -->
         <framework src="CoreBluetooth.framework" />
 
+        <preference name="BLUETOOTH_USAGE_DESCRIPTION" default=" " />
+        <config-file target="*-Info.plist" parent="NSBluetoothPeripheralUsageDescription">
+            <string>$BLUETOOTH_USAGE_DESCRIPTION</string>
+        </config-file>
     </platform>
 
     <platform name="android">
