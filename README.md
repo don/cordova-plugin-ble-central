@@ -16,6 +16,9 @@ All access is via service and characteristic UUIDs. The plugin manages handles i
 
 Simultaneous connections to multiple peripherals are supported.
 
+_This plugin isn't intended for scanning beacons._ Try [cordova-plugin-ibeacon](https://github.com/petermetz/cordova-plugin-ibeacon) for iBeacons.<br/>
+If you want to create Bluetooth devices, try [cordova-plugin-ble-peripheral](https://github.com/don/cordova-plugin-ble-peripheral).
+
 See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master/examples) for ideas on how this plugin can be used.
 
 ## Supported Platforms
@@ -46,13 +49,13 @@ This plugin is included in iOS and Android versions of the [PhoneGap Developer A
 
 Note that this plugin's id changed from `com.megster.cordova.ble` to `cordova-plugin-ble-central` as part of the migration from the [Cordova plugin repo](http://plugins.cordova.io/) to [npm](https://www.npmjs.com/).
 
-### iOS 10
+### iOS
 
-For iOS 10, apps will crash unless they include usage description keys for the types of data they access. For Bluetooth, [NSBluetoothPeripheralUsageDescription](https://developer.apple.com/library/prerelease/content/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html#//apple_ref/doc/uid/TP40009251-SW20) must be defined.
-
-This can be done when the plugin is installed using the BLUETOOTH_USAGE_DESCRIPTION variable.
+For iOS, apps will crash unless they include usage description keys for the types of data they access. Applications targeting iOS 13 and later, define [NSBluetoothAlwaysUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/nsbluetoothalwaysusagedescription?language=objc) to tell the user why the application needs Bluetooth. For apps with a deployment target earlier than iOS 13, add [NSBluetoothPeripheralUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/nsbluetoothperipheralusagedescription?language=objc). Both of these keys can be set when installing the plugin by passing the BLUETOOTH_USAGE_DESCRIPTION variable.
 
     $ cordova plugin add cordova-plugin-ble-central --variable BLUETOOTH_USAGE_DESCRIPTION="Your description here"
+
+See Apple's documentation about [Protected Resources](https://developer.apple.com/documentation/bundleresources/information_property_list/protected_resources) for more details. If your app needs other permissions like location, try the [cordova-custom-config plugin](https://github.com/don/cordova-plugin-ble-central/issues/700#issuecomment-538312656).
 
 # API
 
@@ -63,19 +66,25 @@ This can be done when the plugin is installed using the BLUETOOTH_USAGE_DESCRIPT
 - [ble.startScanWithOptions](#startscanwithoptions)
 - [ble.stopScan](#stopscan)
 - [ble.connect](#connect)
+- [ble.autoConnect](#autoconnect)
 - [ble.disconnect](#disconnect)
+- [ble.requestMtu](#requestmtu)
 - [ble.read](#read)
 - [ble.write](#write)
 - [ble.writeWithoutResponse](#writewithoutresponse)
 - [ble.startNotification](#startnotification)
 - [ble.stopNotification](#stopnotification)
 - [ble.isEnabled](#isenabled)
+- [ble.isLocationEnabled](#islocationenabled)
 - [ble.isConnected](#isconnected)
 - [ble.startStateNotifications](#startstatenotifications)
 - [ble.stopStateNotifications](#stopstatenotifications)
 - [ble.showBluetoothSettings](#showbluetoothsettings)
 - [ble.enable](#enable)
 - [ble.readRSSI](#readrssi)
+- [ble.connectedPeripheralsWithServices](#connectedperipheralswithservices)
+- [ble.peripheralsWithIdentifiers](#peripheralswithidentifiers)
+- [ble.bondedDevices](#bondeddevices)
 
 ## scan
 
@@ -96,7 +105,10 @@ Function `scan` scans for BLE devices.  The success callback is called each time
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
 
-*Note* in Android SDK >= 23, Location Services must be enabled. If it has not been enabled, the scan method will return no results even when BLE devices are in proximity.
+### Location Permission Notes
+With Android SDK >= 23 (6.0), additional permissions are required for Bluetooth low energy scanning. The location permission [ACCESS_COARSE_LOCATION](https://developer.android.com/reference/android/Manifest.permission.html#ACCESS_COARSE_LOCATION) is required because Bluetooth beacons can be used to determine a user's location. If necessary, the plugin will prompt the user to allow the app to access to device's location. If the user denies permission, the scan failure callback will receive the error "Location permission not granted".
+
+Location Services must be enabled for Bluetooth scanning. If location services are disabled, the failure callback will receive the error "Location services are disabled". If you want to manage location permission and screens, try the [cordova-diagonostic-plugin](https://github.com/dpa99c/cordova-diagnostic-plugin) or the Ionic Native [Diagnostic plugin](https://ionicframework.com/docs/native/diagnostic/).
 
 ### Parameters
 
@@ -130,7 +142,7 @@ Function `startScan` scans for BLE devices.  The success callback is called each
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
 
-*Note* cf. note above about Location Services in Android SDK >= 23.
+See the [location permission notes](#location-permission-notes) above for information about Location Services in Android SDK >= 23.
 
 ### Parameters
 
@@ -169,6 +181,8 @@ Function `startScanWithOptions` scans for BLE devices. It operates similarly to 
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
 
+See the [location permission notes](#location-permission-notes) above for information about Location Services in Android SDK >= 23.
+
 ### Parameters
 
 - __services__: List of services to discover, or [] to find all devices
@@ -179,7 +193,7 @@ Advertising information format varies depending on your platform. See [Advertisi
 
 ### Quick Example
 
-    ble.startScan([],
+    ble.startScanWithOptions([],
         { reportDuplicates: true }
         function(device) {
             console.log(JSON.stringify(device));
@@ -233,21 +247,49 @@ Function `stopScan` stops scanning for BLE devices.
 
 Connect to a peripheral.
 
-    ble.connect(device_id, connectSuccess, connectFailure);
+    ble.connect(device_id, connectCallback, disconnectCallback);
 
 ### Description
 
-Function `connect` connects to a BLE peripheral. The callback is long running. Success will be called when the connection is successful. Service and characteristic info will be passed to the success callback in the [peripheral object](#peripheral-data). Failure is called if the connection fails, or later if the peripheral disconnects. An peripheral object is passed to the failure callback.
+Function `connect` connects to a BLE peripheral. The callback is long running. The connect callback will be called when the connection is successful. Service and characteristic info will be passed to the connect callback in the [peripheral object](#peripheral-data). 
 
-[ble.scan](#scan) must be called before calling connect, so the plugin has a list of avaiable peripherals.
+The disconnect callback is called if the connection fails, or later if the peripheral disconnects. When possible, a peripheral object is passed to the failure callback. The disconnect callback is only called when the peripheral initates the disconnection. The disconnect callback is not called when the application calls [ble.disconnect](#disconnect). The disconnect callback is how your app knows the peripheral inintiated a disconnect.
 
-__NOTE__: the connect failure callback will be called if the peripheral disconnects.
+### Scanning before connecting
+
+Android can connect to peripherals using MAC address without scanning. If the MAC address is not found the connection will time out.
+
+For iOS, the plugin needs to know about any device UUID before calling connect. You can do this by calling [ble.scan](#scan), [ble.startScan](#startscan), [ble.connectedPeripheralsWithServices](#connectedperipheralswithservices), or [ble.peripheralsWithIdentifiers](#peripheralswithidentifiers) so the plugin has a list of available peripherals.
 
 ### Parameters
 
 - __device_id__: UUID or MAC address of the peripheral
-- __connectSuccess__: Success callback function that is invoked when the connection is successful.
-- __connectFailure__: Error callback function, invoked when error occurs or the connection disconnects.
+- __connectCallback__: Connect callback function that is invoked when the connection is successful.
+- __disconnectCallback__: Disconnect callback function, invoked when the peripheral disconnects or an error occurs.
+
+## autoConnect
+
+Establish an automatic connection to a peripheral.
+
+    ble.autoConnect(device_id, connectCallback, disconnectCallback);
+
+### Description
+
+Automatically connect to a device when it is in range of the phone. When the device connects, the connect callback is called with a [peripheral object](#peripheral-data). The call to autoConnect will not time out. It will wait forever until the device is in range. When the peripheral disconnects, the disconnect callback is called with a peripheral object.
+
+Calling [ble.disconnect](#disconnect) will stop the automatic reconnection.
+
+Both the connect and disconnect callbacks can be called many times as the device connects and disconnects. Do not wrap this function in a Promise or Observable. 
+
+On iOS, [background notifications on ios](#background-notifications-on-ios) must be enabled if you want to run in the background. On Android, this relies on the autoConnect argument of `BluetoothDevice.connectGatt()`. Not all Android devices implement this feature correctly.
+
+See notes about [scanning before connecting](#scanning-before-connecting)
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __connectCallback__: Connect callback function that is invoked when the connection is successful.
+- __disconnectCallback__: Disconnect callback function, invoked when the peripheral disconnects or an error occurs.
 
 ## disconnect
 
@@ -264,6 +306,53 @@ Function `disconnect` disconnects the selected device.
 - __device_id__: UUID or MAC address of the peripheral
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
+
+## requestMtu
+
+requestMtu
+
+    ble.requestMtu(device_id, mtu, [success], [failure]);
+
+### Description
+
+When performing a write request operation (write without response), the data sent is truncated to the MTU size.
+This function may be used to request (on Android) a larger MTU size to be able to send more data at once.
+
+### Supported Platforms
+
+ * Android
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __mtu__: MTU size
+- __success__: Success callback function that is invoked when the connection is successful. [optional]
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
+## refreshDeviceCache
+
+refreshDeviceCache
+
+    ble.refreshDeviceCache(deviceId, timeoutMillis,  [success], [failure]);
+
+### Description
+
+Some poorly behaved devices show old cached services and characteristics info. (Usually because they
+don't implement Service Changed 0x2a05 on Generic Attribute Service 0x1801 and the central doesn't know 
+the data needs to be refreshed.) This method might help.
+
+*NOTE* Since this uses an undocumented API it's not guaranteed to work.
+
+### Supported Platforms
+
+ * Android
+
+### Parameters
+
+- __deviceId__: UUID or MAC address of the peripheral
+- __timeoutMillis__: timeout in milliseconds after refresh before discovering services  
+- __success__: Success callback function invoked with the refreshed peripheral. [optional]
+- __failure__: Error callback function, invoked when an error occurs. [optional]
 
 ## read
 
@@ -284,6 +373,21 @@ Raw data is passed from native code to the callback as an [ArrayBuffer](#typed-a
 - __characteristic_uuid__: UUID of the BLE characteristic
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
+
+### Quick Example
+
+Retrieves an [ArrayBuffer](#typed-arrays) when reading data.
+
+    // read data from a characteristic, do something with output data
+    ble.read(device_id, service_uuid, characteristic_uuid,
+        function(data){
+            console.log("Hooray we have data"+JSON.stringify(data));
+            alert("Successfully read data from device."+JSON.stringify(data));
+        },
+        function(failure){
+            alert("Failed to read characteristic from device.");
+        }
+    );
 
 ## write
 
@@ -402,6 +506,8 @@ Reports the connection status.
 
 Function `isConnected` calls the success callback when the peripheral is connected and the failure callback when *not* connected.
 
+NOTE that for many apps isConnected is unncessary. The app can track the connected state. Ater calling [connect](#connect) the app is connected when the success callback function is called. If the device disconnects at any point in the future, the failure callback of connect will be called.
+
 ### Parameters
 
 - __device_id__: UUID or MAC address of the peripheral
@@ -443,6 +549,37 @@ Function `isEnabled` calls the success callback when Bluetooth is enabled and th
         },
         function() {
             console.log("Bluetooth is *not* enabled");
+        }
+    );
+
+
+## isLocationEnabled
+
+Reports if location services are enabled.
+
+    ble.isLocationEnabled(success, failure);
+
+### Description
+
+Function `isLocationEnabled` calls the success callback when location services are enabled and the failure callback when location services are *not* enabled. On some devices, location services must be enabled in order to scan for peripherals.
+
+### Supported Platforms
+
+ * Android
+
+### Parameters
+
+- __success__: Success callback function, invoked when location services are enabled.
+- __failure__: Error callback function, invoked when location services are disabled.
+
+### Quick Example
+
+    ble.isEnabled(
+        function() {
+            console.log("location services are enabled");
+        },
+        function() {
+            console.log("location services are *not* enabled");
         }
     );
 
@@ -500,9 +637,11 @@ Show the Bluetooth settings on the device.
 
 Function `showBluetoothSettings` opens the Bluetooth settings for the operating systems.
 
-#### iOS
+`showBluetoothSettings` is not available on iOS. Plugins like [cordova-diagonostic-plugin](https://github.com/dpa99c/cordova-diagnostic-plugin) and the Ionic Native [Diagnostic plugin](https://ionicframework.com/docs/native/diagnostic/) have APIs to open Bluetooth and other settings, but will often get apps rejected by Apple.
 
-`showBluetoothSettings` is not supported on iOS.
+### Supported Platforms
+
+ * Android
 
 ### Parameters
 
@@ -577,6 +716,66 @@ Samples the RSSI value (a measure of signal strength) on the connection to a blu
         function(err) { console.error('error connecting to device')}
         );
 
+## connectedPeripheralsWithServices
+
+Find the connected peripherals offering the listed service UUIDs.
+
+    ble.connectedPeripheralsWithServices([service], success, failure);
+
+### Description
+
+Retreives a list of the peripherals (containing any of the specified services) currently connected to the system. The peripheral list is sent to the success callback. This function wraps [CBCentralManager.retrieveConnectedPeripheralsWithServices:](https://developer.apple.com/documentation/corebluetooth/cbcentralmanager/1518924-retrieveconnectedperipheralswith?language=objc)
+
+### Parameters
+
+- __services__: List of services to discover
+- __success__: Success callback function, invoked with a list of peripheral objects
+- __failure__: Error callback function
+
+### Supported Platforms
+
+ * iOS
+
+## peripheralsWithIdentifiers
+
+Find the connected peripherals offering the listed service UUIDs.
+
+    ble.peripheralsWithIdentifiers([uuids], success, failure);
+
+### Description
+
+Sends a list of known peripherals by their identifiers to the success callback. This function wraps [CBCentralManager.retrievePeripheralsWithIdentifiers:](https://developer.apple.com/documentation/corebluetooth/cbcentralmanager/1519127-retrieveperipheralswithidentifie?language=objc)
+
+### Parameters
+
+- __identifiers__: List of peripheral UUIDs
+- __success__: Success callback function, invoked with a list of peripheral objects
+- __failure__: Error callback function
+
+### Supported Platforms
+
+ * iOS
+
+## bondedDevices
+
+Find the bonded devices.
+
+    ble.bondedDevices(success, failure);
+
+### Description
+
+Sends a list of bonded low energy peripherals to the success callback.
+
+### Parameters
+
+- __success__: Success callback function, invoked with a list of peripheral objects
+- __failure__: Error callback function
+
+### Supported Platforms
+
+ * Android
+
+
 # Peripheral Data
 
 Peripheral Data is passed to the success callback when scanning and connecting. Limited data is passed when scanning.
@@ -643,7 +842,7 @@ After connecting, the peripheral object also includes service, characteristic an
 
 # Advertising Data
 
-Bluetooth advertising data is returned in when scanning for devices. The format format varies depending on your platform. On Android advertising data will be the raw advertising bytes. iOS does not allow access to raw advertising data, so a dictionary of data is returned.
+Bluetooth advertising data is returned in when scanning for devices. The format varies depending on your platform. On Android advertising data will be the raw advertising bytes. iOS does not allow access to raw advertising data, so a dictionary of data is returned.
 
 The advertising information for both Android and iOS appears to be a combination of advertising data and scan response data.
 
@@ -658,32 +857,44 @@ Ideally a common format (map or array) would be returned for both platforms in f
         "rssi": -37
     }
 
-Convert the advertising info to a Uint8Array for processing. `var adData = new Uint8Array(peripheral.advertising)`
+Convert the advertising info to a Uint8Array for processing. `var adData = new Uint8Array(peripheral.advertising)`. You application is responsible for parsing all the information out of the advertising ArrayBuffer using the [GAP type constants](https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile). For example to get the service data from the advertising info, I [parse the advertising info into a map](https://github.com/don/ITP-BluetoothLE/blob/887511c375b1ab2fbef3afe210d6a6b7db44cee9/phonegap/thermometer_v2/www/js/index.js#L18-L39) and then get the service data to retrieve a [characteristic value that is being broadcast](https://github.com/don/ITP-BluetoothLE/blob/887511c375b1ab2fbef3afe210d6a6b7db44cee9/phonegap/thermometer_v2/www/js/index.js#L93-L103).
 
 ## iOS
 
 Note that iOS uses the string value of the constants for the [Advertisement Data Retrieval Keys](https://developer.apple.com/library/ios/documentation/CoreBluetooth/Reference/CBCentralManagerDelegate_Protocol/index.html#//apple_ref/doc/constant_group/Advertisement_Data_Retrieval_Keys). This will likely change in the future.
 
     {
-        "name": "demo",
-        "id": "D8479A4F-7517-BCD3-91B5-3302B2F81802",
+        "name": "demo"
+        "id": "15B4F1C5-C9C0-4441-BD9F-1A7ED8F7A365",
         "advertising": {
-            "kCBAdvDataChannel": 37,
-            "kCBAdvDataServiceData": {
-                "FED8": {
-                    "byteLength": 7 // data not shown
-                }
-            },
             "kCBAdvDataLocalName": "demo",
-            "kCBAdvDataServiceUUIDs": ["FED8"],
-            "kCBAdvDataManufacturerData": {
-                "byteLength": 7  // data not shown
+            "kCBAdvDataManufacturerData": {}, // arraybuffer data not shown
+            "kCBAdvDataServiceUUIDs": [
+                "721b"
+            ],  
+            "kCBAdvDataIsConnectable": true,
+            "kCBAdvDataServiceData": {
+                "BBB0": {}   // arraybuffer data not shown
             },
-            "kCBAdvDataTxPowerLevel": 32,
-            "kCBAdvDataIsConnectable": true
         },
-        "rssi": -53
+        "rssi": -61
     }
+
+Some of the values such as kCBAdvDataManufacturerData are ArrayBuffers. The data won't print out, but you can convert it to bytes using `new Uint8Array(peripheral.advertisting.kCBAdvDataManufacturerData)`. Your application is responsible for parsing and decoding any binary data such as kCBAdvDataManufacturerData or kCBAdvDataServiceData.
+
+    function onDiscoverDevice(device) {
+        // log the device as JSON
+        console.log('Found Device', JSON.stringify(device, null, 2));
+
+        // on iOS, print the manufacturer data if it exists
+        if (device.advertising && device.advertising.kCBAdvDataManufacturerData) {
+            const mfgData = new Uint8Array(device.advertising.kCBAdvDataManufacturerData);
+            console.log('Manufacturer Data is', mfgData);
+        }
+
+    }
+
+    ble.scan([], 5, onDiscoverDevice, onError);
 
 # Typed Arrays
 
@@ -712,6 +923,7 @@ You can read more about typed arrays in these articles on [MDN](https://develope
 UUIDs are always strings and not numbers. Some 16-bit UUIDs, such as '2220' look like integers, but they're not. (The integer 2220 is 0x8AC in hex.) This isn't a problem with 128 bit UUIDs since they look like strings 82b9e6e1-593a-456f-be9b-9215160ebcac. All 16-bit UUIDs should also be passed to methods as strings.
 
 <a name="background-notifications-on-ios">
+
 # Background Scanning and Notifications on iOS
 
 Android applications will continue to receive notification while the application is in the background.
@@ -731,9 +943,9 @@ Add a new section to config.xml
             </array>
         </config-file>
     </platform>
-    
+
 See [ble-background](https://github.com/don/ble-background) example project for more details.
-    
+
 # Testing the Plugin
 
 Tests require the [Cordova Plugin Test Framework](https://github.com/apache/cordova-plugin-test-framework)
@@ -756,6 +968,10 @@ Run the app on your phone
 
     cordova run android --device
 
+# Nordic DFU
+
+If you need Nordic DFU capability, Tomáš Bedřich has a [fork](https://github.com/fxe-gear/cordova-plugin-ble-central) of this plugin that adds an `updateFirmware()` method that allows users to upgrade nRF5x based chips over the air. https://github.com/fxe-gear/cordova-plugin-ble-central
+
 # License
 
 Apache 2.0
@@ -766,6 +982,7 @@ Try the code. If you find an problem or missing feature, file an issue or create
 
 # Other Bluetooth Plugins
 
+ * [cordova-plugin-ble-peripheral](https://github.com/don/cordova-plugin-ble-peripheral) - Create and publish Bluetooth LE services on iOS and Android using Javascript.
  * [BluetoothSerial](https://github.com/don/BluetoothSerial) - Connect to Arduino and other devices. Bluetooth Classic on Android, BLE on iOS.
  * [RFduino](https://github.com/don/cordova-plugin-rfduino) - RFduino specific plugin for iOS and Android.
  * [BluetoothLE](https://github.com/randdusing/BluetoothLE) - Rand Dusing's BLE plugin for Cordova

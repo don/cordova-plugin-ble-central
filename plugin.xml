@@ -3,7 +3,7 @@
     xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-plugin-ble-central"
-    version="1.1.4">
+    version="1.2.4">
 
     <name>BLE</name>
     <description>Bluetooth Low Energy (BLE) Central Plugin</description>
@@ -12,8 +12,6 @@
 
     <repo>https://github.com/don/cordova-plugin-ble-central.git</repo>
     <issue>https://github.com/don/cordova-plugin-ble-central/issues</issue>
-
-    <dependency id="cordova-plugin-compat" version="^1.0.0" />
 
     <js-module src="www/ble.js" name="ble">
         <clobbers target="ble" />
@@ -39,8 +37,12 @@
         <!-- frameworks -->
         <framework src="CoreBluetooth.framework" />
 
+        <!-- iOS SPermissions -->
         <preference name="BLUETOOTH_USAGE_DESCRIPTION" default=" " />
         <config-file target="*-Info.plist" parent="NSBluetoothPeripheralUsageDescription">
+            <string>$BLUETOOTH_USAGE_DESCRIPTION</string>
+        </config-file>
+        <config-file target="*-Info.plist" parent="NSBluetoothAlwaysUsageDescription">
             <string>$BLUETOOTH_USAGE_DESCRIPTION</string>
         </config-file>
     </platform>
@@ -59,6 +61,8 @@
         </config-file>
 
         <source-file src="src/android/BLECentralPlugin.java"
+            target-dir="src/com/megster/cordova/ble/central"/>
+        <source-file src="src/android/SequentialCallbackContext.java"
             target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/BLECommand.java"
             target-dir="src/com/megster/cordova/ble/central"/>
