@@ -1,3 +1,16 @@
+= 1.2.4 =
+Add sequence numbers to notifications on Android to handle out of order notifications. Android #625 #656 Thanks timburke
+Location services is now a warning on Android. Add isLocationEnabled() #607 #633 Thanks doug-a-brunner
+Use printf of cordova for LOG, reuse pattern, improve loop #647 Thanks ChristianLutz
+Add queueCleanup method to API #695 Thanks untilbit
+Fix null pointer in onLeScan #500 Thanks fjms
+Remove cordova-plugin-compat #705 #617
+
+= 1.2.3 =
+Fix iOS crash when advertising data contains kCBAdvDataLeBluetoothDeviceAddress #685 #697 Thanks jospete
+Fix problem with multiple devices and notifications when one device disconnected #674 Thanks mandrade-digmap
+Add NSBluetoothAlwaysUsageDescription for iOS13 #704 #700 Thanks favnec5
+
 = 1.2.2 =
 Remove lambda from Peripheral.java to maintain 1.6 source compatibility #602
 Remove showBluetoothSettings for iOS #603
