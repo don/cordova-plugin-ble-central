@@ -69,6 +69,7 @@ See Apple's documentation about [Protected Resources](https://developer.apple.co
 - [ble.autoConnect](#autoconnect)
 - [ble.disconnect](#disconnect)
 - [ble.requestMtu](#requestmtu)
+- [ble.requestConnectionPriority](#requestconnectionpriority)
 - [ble.read](#read)
 - [ble.write](#write)
 - [ble.writeWithoutResponse](#writewithoutresponse)
@@ -340,6 +341,27 @@ The resulting MTU size is sent to the success callback. The requested and result
             alert("Failed to request MTU.");
         }
     );
+
+## requestConnectionPriority
+
+requestConnectionPriority
+
+    ble.requestConnectionPriority(device_id, priority, [success], [failure]);
+
+### Description
+
+When Connecting to a peripheral android can request for the connection priority for better communication.
+
+### Supported Platforms
+
+ * Android
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __priority__: high or balanced or low
+- __success__: Success callback function that is invoked when the connection is successful. [optional]
+- __failure__: Error callback function, invoked when error occurs. [optional]
 
 ## refreshDeviceCache
 
