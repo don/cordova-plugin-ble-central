@@ -154,6 +154,10 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'requestMtu', [device_id, mtu]);
     },
 
+    requestConnectionPriority: function (device_id, connectionPriority, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'requestConnectionPriority', [device_id, connectionPriority])
+    },
+
     refreshDeviceCache: function(deviceId, timeoutMillis, success, failure) {
         var successWrapper = function(peripheral) {
             convertToNativeJS(peripheral);

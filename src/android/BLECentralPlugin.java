@@ -18,6 +18,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
@@ -60,6 +61,10 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String QUEUE_CLEANUP = "queueCleanup";
 
     private static final String REQUEST_MTU = "requestMtu";
+    private static final String REQUEST_CONNECTION_PRIORITY = "requestConnectionPriority";
+    private final String CONNECTION_PRIORITY_HIGH = "high";
+    private final String CONNECTION_PRIORITY_LOW = "low";
+    private final String CONNECTION_PRIORITY_BALANCED = "balanced";
     private static final String REFRESH_DEVICE_CACHE = "refreshDeviceCache";
 
     private static final String READ = "read";
@@ -190,6 +195,13 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             String macAddress = args.getString(0);
             int mtuValue = args.getInt(1);
             requestMtu(callbackContext, macAddress, mtuValue);
+
+        } else if (action.equals(REQUEST_CONNECTION_PRIORITY)) {
+
+            String macAddress = args.getString(0);
+            String priority = args.getString(1);
+
+            requestConnectionPriority(callbackContext, macAddress, priority);
 
         } else if (action.equals(REFRESH_DEVICE_CACHE)) {
 
@@ -462,6 +474,31 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         if (peripheral != null) {
             peripheral.requestMtu(mtuValue);
         }
+        callbackContext.success();
+    }
+	
+	private void requestConnectionPriority(CallbackContext callbackContext, String macAddress, String priority) {
+        Peripheral peripheral = peripherals.get(macAddress);
+
+        if (peripheral == null) {
+            callbackContext.error("Peripheral " + macAddress + " not found.");
+            return;
+        }
+
+        if (!peripheral.isConnected()) {
+            callbackContext.error("Peripheral " + macAddress + " is not connected.");
+            return;
+        }
+
+        int androidPriority = BluetoothGatt.CONNECTION_PRIORITY_BALANCED;
+        if (priority.equals(CONNECTION_PRIORITY_LOW)) {
+            androidPriority = BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER;
+        } else if (priority.equals(CONNECTION_PRIORITY_BALANCED)) {
+            androidPriority = BluetoothGatt.CONNECTION_PRIORITY_BALANCED;
+        } else if (priority.equals(CONNECTION_PRIORITY_HIGH)) {
+            androidPriority = BluetoothGatt.CONNECTION_PRIORITY_HIGH;
+        }
+        peripheral.requestConnectionPriority(androidPriority);
         callbackContext.success();
     }
 
