@@ -59,19 +59,46 @@
 
 #pragma mark - Cordova Plugin Methods
 
--(CBCentralManager *)manager
-{
-    if (!_manager) {
-        _manager = [[CBCentralManager alloc]
-                                 initWithDelegate:self
-                                 queue:dispatch_get_main_queue()
-                                 options:@{CBCentralManagerOptionShowPowerAlertKey: @(NO)}];
-        [self centralManagerDidUpdateState:_manager]; // Send initial state
+- (BOOL)managerHasValidState {
+    int managerState = [[self manager] state];
+    return managerState != CBCentralManagerStateUnknown;
+}
+
+- (void)waitForValidManagerState {
+
+    int maxBlockingCycles = 10;
+    double sleepDelta = 0.05;
+    int counter;
+
+    // Blocks this thread until either:
+    // A) the central manager's state becomes valid, or
+    // B) 0.5 ("loop count" * "sleep interval") seconds have passed
+    // ** Option B is a last resort to prevent infinite blocking, but ideally we always reach option A
+
+    for(counter = 0; ![self managerHasValidState] && counter < maxBlockingCycles; counter++)
+    {
+        sleep(sleepDelta);
     }
+}
+
+- (CBCentralManager *)manager
+{
+    if (_manager) {
+        return _manager;
+    }
+    
+    _manager = [[CBCentralManager alloc]
+                             initWithDelegate:self
+                             queue:dispatch_get_main_queue()
+                             options:@{CBCentralManagerOptionShowPowerAlertKey: @(NO)}];
+
+    [self centralManagerDidUpdateState:_manager]; // Send initial state
+    [self waitForValidManagerState];
+
     return _manager;
 }
 
--(void)setManager:(CBCentralManager *)managerRef
+- (void)setManager:(CBCentralManager *)managerRef
 {
     _manager = managerRef;
 }
