@@ -150,6 +150,10 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'queueCleanup', [device_id]);
     },
 
+    setPin: function (pin, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'setPin', [pin]);
+    },
+
     requestMtu: function (device_id, mtu,  success, failure) {
         cordova.exec(success, failure, 'BLE', 'requestMtu', [device_id, mtu]);
     },
@@ -262,6 +266,12 @@ module.exports.withPromises = {
     queueCleanup: function(device_id) {
         return new Promise(function(resolve, reject) {
             module.exports.queueCleanup(device_id, resolve, reject);
+        });
+    },
+
+    setPin: function (pin) {
+        return new Promise(function (resolve, reject) {
+            module.exports.setPin(pin, resolve, reject);
         });
     },
 
