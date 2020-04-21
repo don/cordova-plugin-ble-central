@@ -21,6 +21,7 @@
 
 @interface BLECentralPlugin() {
     NSDictionary *bluetoothStates;
+    BOOL didInitializeManager;
 }
 - (CBPeripheral *)findPeripheralByUUID:(NSString *)uuid;
 - (void)stopScanTimer:(NSTimer *)timer;
@@ -36,6 +37,7 @@
     NSLog(@"(c)2014-2016 Don Coleman");
 
     [super pluginInitialize];
+    didInitializeManager = FALSE;
 
     peripherals = [NSMutableSet new];
 
@@ -59,23 +61,18 @@
 
 #pragma mark - Cordova Plugin Methods
 
-- (BOOL)managerHasValidState {
-    int managerState = [[self manager] state];
-    return managerState != CBCentralManagerStateUnknown;
-}
-
 - (void)waitForValidManagerState {
 
-    int maxBlockingCycles = 10;
+    int maxBlockingCycles = 50;
     double sleepDelta = 0.05;
     int counter;
 
     // Blocks this thread until either:
-    // A) the central manager's state becomes valid, or
-    // B) 0.5 ("loop count" * "sleep interval") seconds have passed
+    // A) the central manager got properly initialized, or
+    // B) the max allowed blocking time has passed (maxBlockingCycles * sleepDelta)
     // ** Option B is a last resort to prevent infinite blocking, but ideally we always reach option A
 
-    for(counter = 0; ![self managerHasValidState] && counter < maxBlockingCycles; counter++)
+    for(counter = 0; !didInitializeManager && counter < maxBlockingCycles; counter++)
     {
         sleep(sleepDelta);
     }
@@ -83,17 +80,19 @@
 
 - (CBCentralManager *)manager
 {
-    if (_manager) {
-        return _manager;
-    }
-    
-    _manager = [[CBCentralManager alloc]
-                             initWithDelegate:self
-                             queue:dispatch_get_main_queue()
-                             options:@{CBCentralManagerOptionShowPowerAlertKey: @(NO)}];
 
-    [self centralManagerDidUpdateState:_manager]; // Send initial state
-    [self waitForValidManagerState];
+    if (!_manager) {
+        _manager = [[CBCentralManager alloc]
+                                 initWithDelegate:self
+                                 queue:dispatch_get_main_queue()
+                                 options:@{CBCentralManagerOptionShowPowerAlertKey: @(NO)}];
+    }
+
+    // Block the caller until the manager becomes initialized
+    if (!didInitializeManager)
+    {
+        [self waitForValidManagerState];
+    }
 
     return _manager;
 }
@@ -534,6 +533,12 @@
         if (peripheral.state == CBPeripheralStateDisconnected) {
             [self centralManager:central didDisconnectPeripheral:peripheral error:nil];
         }
+    }
+
+    // When we haven't raised this flag yet, raise it if the manager state is known
+    if (!didInitializeManager)
+    {
+        didInitializeManager = (central.state != CBCentralManagerStateUnknown);
     }
 }
 
