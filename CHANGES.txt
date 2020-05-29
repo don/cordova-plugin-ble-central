@@ -1,3 +1,8 @@
+= 1.2.5 =
+Add setPin method for Android #718 Thanks untilbit
+Give the user feedback after an MTU size request #715 Thanks agren
+Add requestConnectionPriority for Android #714 #713 Thanks agren vamshik113 
+
 = 1.2.4 =
 Add sequence numbers to notifications on Android to handle out of order notifications. Android #625 #656 Thanks timburke
 Location services is now a warning on Android. Add isLocationEnabled() #607 #633 Thanks doug-a-brunner

@@ -65,10 +65,12 @@ See Apple's documentation about [Protected Resources](https://developer.apple.co
 - [ble.startScan](#startscan)
 - [ble.startScanWithOptions](#startscanwithoptions)
 - [ble.stopScan](#stopscan)
+- [ble.stopScan](#setpin)
 - [ble.connect](#connect)
 - [ble.autoConnect](#autoconnect)
 - [ble.disconnect](#disconnect)
 - [ble.requestMtu](#requestmtu)
+- [ble.requestConnectionPriority](#requestconnectionpriority)
 - [ble.read](#read)
 - [ble.write](#write)
 - [ble.writeWithoutResponse](#writewithoutresponse)
@@ -243,6 +245,22 @@ Function `stopScan` stops scanning for BLE devices.
     }, 5000);
     */
 
+## setPin
+
+Set device pin
+
+    ble.setPin(pin, [success], [failure]);
+
+### Description
+
+Function `setPin` sets the pin when device requires it.
+
+### Parameters
+
+- __pin__: Pin of the device as a string
+- __success__: Success callback function that is invoked when the function is invoked. [optional]
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
 ## connect
 
 Connect to a peripheral.
@@ -315,8 +333,9 @@ requestMtu
 
 ### Description
 
-When performing a write request operation (write without response), the data sent is truncated to the MTU size.
 This function may be used to request (on Android) a larger MTU size to be able to send more data at once.
+This can be useful when performing a write request operation (write without response), the data sent is truncated to the MTU size.
+The resulting MTU size is sent to the success callback. The requested and resulting MTU sizes are not necessarily equal.
 
 ### Supported Platforms
 
@@ -326,6 +345,38 @@ This function may be used to request (on Android) a larger MTU size to be able t
 
 - __device_id__: UUID or MAC address of the peripheral
 - __mtu__: MTU size
+- __success__: Success callback function that is invoked when the MTU size request is successful. The resulting MTU size is passed as an integer.
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
+### Quick Example
+
+    ble.requestMtu(device_id, new_mtu,
+        function(mtu){
+            alert("MTU set to: " + mtu);
+        },
+        function(failure){
+            alert("Failed to request MTU.");
+        }
+    );
+
+## requestConnectionPriority
+
+requestConnectionPriority
+
+    ble.requestConnectionPriority(device_id, priority, [success], [failure]);
+
+### Description
+
+When Connecting to a peripheral android can request for the connection priority for better communication.
+
+### Supported Platforms
+
+ * Android
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __priority__: high or balanced or low
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
 

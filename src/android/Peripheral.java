@@ -59,6 +59,7 @@ public class Peripheral extends BluetoothGattCallback {
     private CallbackContext refreshCallback;
     private CallbackContext readCallback;
     private CallbackContext writeCallback;
+    private CallbackContext requestMtuCallback;
     private Activity currentActivity;
 
     private Map<String, SequentialCallbackContext> notificationCallbacks = new HashMap<String, SequentialCallbackContext>();
@@ -165,15 +166,40 @@ public class Peripheral extends BluetoothGattCallback {
 
     @Override
     public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
-        LOG.d(TAG, "mtu=%d, status=%d", mtu, status);
         super.onMtuChanged(gatt, mtu, status);
+        LOG.d(TAG, "mtu=%d, status=%d", mtu, status);
+
+        if (status == BluetoothGatt.GATT_SUCCESS) {
+            requestMtuCallback.success(mtu);
+        } else {
+            requestMtuCallback.error("MTU request failed");
+        }
+        requestMtuCallback = null;
     }
 
-    public void requestMtu(int mtuValue) {
+    public void requestMtu(CallbackContext callback, int mtuValue) {
+        LOG.d(TAG, "requestMtu mtu=%d", mtuValue);
+        if (gatt == null) {
+            callback.error("No GATT");
+            return;
+        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            callback.error("Android version does not support requestMtu");
+            return;
+        }
+
+        if (gatt.requestMtu(mtuValue)) {
+            requestMtuCallback = callback;
+        } else {
+            callback.error("Could not initiate MTU request");
+        }
+    }
+
+    public void requestConnectionPriority(int priority) {
         if (gatt != null) {
-            LOG.d(TAG, "requestMtu mtu=%d", mtuValue);
+            LOG.d(TAG, "requestConnectionPriority priority=" + priority);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                gatt.requestMtu(mtuValue);
+                gatt.requestConnectionPriority(priority);
             }
         }
     }
