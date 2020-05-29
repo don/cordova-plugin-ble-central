@@ -19,9 +19,10 @@
 
     <platform name="ios">
 
+        <preference name="IOS_INIT_ON_LOAD" default="false" />
         <config-file target="config.xml" parent="/widget">
             <feature name="BLE">
-                <param name="ios-package" value="BLECentralPlugin" onload="true"/>
+                <param name="ios-package" value="BLECentralPlugin" onload="$IOS_INIT_ON_LOAD"/>
             </feature>
         </config-file>
 
