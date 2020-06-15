@@ -146,8 +146,20 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'disconnect', [device_id]);
     },
 
+    queueCleanup: function (device_id,  success, failure) {
+        cordova.exec(success, failure, 'BLE', 'queueCleanup', [device_id]);
+    },
+
+    setPin: function (pin, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'setPin', [pin]);
+    },
+
     requestMtu: function (device_id, mtu,  success, failure) {
         cordova.exec(success, failure, 'BLE', 'requestMtu', [device_id, mtu]);
+    },
+
+    requestConnectionPriority: function (device_id, connectionPriority, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'requestConnectionPriority', [device_id, connectionPriority])
     },
 
     refreshDeviceCache: function(deviceId, timeoutMillis, success, failure) {
@@ -208,6 +220,11 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'isEnabled', []);
     },
 
+    // Android only
+    isLocationEnabled: function (success, failure) {
+        cordova.exec(success, failure, 'BLE', 'isLocationEnabled', []);
+    },
+
     enable: function (success, failure) {
         cordova.exec(success, failure, "BLE", "enable", []);
     },
@@ -243,6 +260,18 @@ module.exports.withPromises = {
     disconnect: function(device_id) {
         return new Promise(function(resolve, reject) {
             module.exports.disconnect(device_id, resolve, reject);
+        });
+    },
+
+    queueCleanup: function(device_id) {
+        return new Promise(function(resolve, reject) {
+            module.exports.queueCleanup(device_id, resolve, reject);
+        });
+    },
+
+    setPin: function (pin) {
+        return new Promise(function (resolve, reject) {
+            module.exports.setPin(pin, resolve, reject);
         });
     },
 

@@ -49,13 +49,13 @@ This plugin is included in iOS and Android versions of the [PhoneGap Developer A
 
 Note that this plugin's id changed from `com.megster.cordova.ble` to `cordova-plugin-ble-central` as part of the migration from the [Cordova plugin repo](http://plugins.cordova.io/) to [npm](https://www.npmjs.com/).
 
-### iOS 10
+### iOS
 
-For iOS 10, apps will crash unless they include usage description keys for the types of data they access. For Bluetooth, [NSBluetoothPeripheralUsageDescription](https://developer.apple.com/library/prerelease/content/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html#//apple_ref/doc/uid/TP40009251-SW20) must be defined.
-
-This can be done when the plugin is installed using the BLUETOOTH_USAGE_DESCRIPTION variable.
+For iOS, apps will crash unless they include usage description keys for the types of data they access. Applications targeting iOS 13 and later, define [NSBluetoothAlwaysUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/nsbluetoothalwaysusagedescription?language=objc) to tell the user why the application needs Bluetooth. For apps with a deployment target earlier than iOS 13, add [NSBluetoothPeripheralUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/nsbluetoothperipheralusagedescription?language=objc). Both of these keys can be set when installing the plugin by passing the BLUETOOTH_USAGE_DESCRIPTION variable.
 
     $ cordova plugin add cordova-plugin-ble-central --variable BLUETOOTH_USAGE_DESCRIPTION="Your description here"
+
+See Apple's documentation about [Protected Resources](https://developer.apple.com/documentation/bundleresources/information_property_list/protected_resources) for more details. If your app needs other permissions like location, try the [cordova-custom-config plugin](https://github.com/don/cordova-plugin-ble-central/issues/700#issuecomment-538312656).
 
 # API
 
@@ -65,16 +65,19 @@ This can be done when the plugin is installed using the BLUETOOTH_USAGE_DESCRIPT
 - [ble.startScan](#startscan)
 - [ble.startScanWithOptions](#startscanwithoptions)
 - [ble.stopScan](#stopscan)
+- [ble.stopScan](#setpin)
 - [ble.connect](#connect)
 - [ble.autoConnect](#autoconnect)
 - [ble.disconnect](#disconnect)
 - [ble.requestMtu](#requestmtu)
+- [ble.requestConnectionPriority](#requestconnectionpriority)
 - [ble.read](#read)
 - [ble.write](#write)
 - [ble.writeWithoutResponse](#writewithoutresponse)
 - [ble.startNotification](#startnotification)
 - [ble.stopNotification](#stopnotification)
 - [ble.isEnabled](#isenabled)
+- [ble.isLocationEnabled](#islocationenabled)
 - [ble.isConnected](#isconnected)
 - [ble.startStateNotifications](#startstatenotifications)
 - [ble.stopStateNotifications](#stopstatenotifications)
@@ -242,6 +245,22 @@ Function `stopScan` stops scanning for BLE devices.
     }, 5000);
     */
 
+## setPin
+
+Set device pin
+
+    ble.setPin(pin, [success], [failure]);
+
+### Description
+
+Function `setPin` sets the pin when device requires it.
+
+### Parameters
+
+- __pin__: Pin of the device as a string
+- __success__: Success callback function that is invoked when the function is invoked. [optional]
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
 ## connect
 
 Connect to a peripheral.
@@ -314,8 +333,9 @@ requestMtu
 
 ### Description
 
-When performing a write request operation (write without response), the data sent is truncated to the MTU size.
 This function may be used to request (on Android) a larger MTU size to be able to send more data at once.
+This can be useful when performing a write request operation (write without response), the data sent is truncated to the MTU size.
+The resulting MTU size is sent to the success callback. The requested and resulting MTU sizes are not necessarily equal.
 
 ### Supported Platforms
 
@@ -325,6 +345,38 @@ This function may be used to request (on Android) a larger MTU size to be able t
 
 - __device_id__: UUID or MAC address of the peripheral
 - __mtu__: MTU size
+- __success__: Success callback function that is invoked when the MTU size request is successful. The resulting MTU size is passed as an integer.
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
+### Quick Example
+
+    ble.requestMtu(device_id, new_mtu,
+        function(mtu){
+            alert("MTU set to: " + mtu);
+        },
+        function(failure){
+            alert("Failed to request MTU.");
+        }
+    );
+
+## requestConnectionPriority
+
+requestConnectionPriority
+
+    ble.requestConnectionPriority(device_id, priority, [success], [failure]);
+
+### Description
+
+When Connecting to a peripheral android can request for the connection priority for better communication.
+
+### Supported Platforms
+
+ * Android
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __priority__: high or balanced or low
 - __success__: Success callback function that is invoked when the connection is successful. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
@@ -548,6 +600,37 @@ Function `isEnabled` calls the success callback when Bluetooth is enabled and th
         },
         function() {
             console.log("Bluetooth is *not* enabled");
+        }
+    );
+
+
+## isLocationEnabled
+
+Reports if location services are enabled.
+
+    ble.isLocationEnabled(success, failure);
+
+### Description
+
+Function `isLocationEnabled` calls the success callback when location services are enabled and the failure callback when location services are *not* enabled. On some devices, location services must be enabled in order to scan for peripherals.
+
+### Supported Platforms
+
+ * Android
+
+### Parameters
+
+- __success__: Success callback function, invoked when location services are enabled.
+- __failure__: Error callback function, invoked when location services are disabled.
+
+### Quick Example
+
+    ble.isEnabled(
+        function() {
+            console.log("location services are enabled");
+        },
+        function() {
+            console.log("location services are *not* enabled");
         }
     );
 
