@@ -87,6 +87,7 @@ See Apple's documentation about [Protected Resources](https://developer.apple.co
 - [ble.connectedPeripheralsWithServices](#connectedperipheralswithservices)
 - [ble.peripheralsWithIdentifiers](#peripheralswithidentifiers)
 - [ble.bondedDevices](#bondeddevices)
+- [ble.queueCleanup](#queueCleanup)
 
 ## scan
 
@@ -820,6 +821,25 @@ Sends a list of bonded low energy peripherals to the success callback.
 ### Parameters
 
 - __success__: Success callback function, invoked with a list of peripheral objects
+- __failure__: Error callback function
+
+### Supported Platforms
+
+ * Android
+
+## queueCleanup
+
+Removes all queued up commands for android.
+
+    ble.queueCleanup(success, failure);
+
+### Description
+
+Flushes the queue of all commands (write, read, readRSSI, register notification callback, ...) to be sent.
+
+### Parameters
+
+- __success__: Success callback function
 - __failure__: Error callback function
 
 ### Supported Platforms
