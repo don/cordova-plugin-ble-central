@@ -104,7 +104,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     // Android 23 requires new permissions for BluetoothLeScanner.startScan()
     private static final String ACCESS_COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
-    private static final int REQUEST_ACCESS_COARSE_LOCATION = 2;
+    private static final int REQUEST_ACCESS_LOCATION = 2;
     private CallbackContext permissionCallback;
     private UUID[] serviceUUIDs;
     private int scanSeconds;
@@ -660,15 +660,30 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             LOG.w(TAG, "Location Services are disabled");
         }
 
-        if(!PermissionHelper.hasPermission(this, ACCESS_COARSE_LOCATION)) {
-            // save info so we can call this method again after permissions are granted
-            permissionCallback = callbackContext;
-            this.serviceUUIDs = serviceUUIDs;
-            this.scanSeconds = scanSeconds;
-            PermissionHelper.requestPermission(this, REQUEST_ACCESS_COARSE_LOCATION, ACCESS_COARSE_LOCATION);
-            return;
-        }
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (!PermissionHelper.hasPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                permissionCallback = callbackContext;
+                this.serviceUUIDs = serviceUUIDs;
+                this.scanSeconds = scanSeconds;
 
+                String[] permissions = {
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                };
+
+                PermissionHelper.requestPermissions(this, REQUEST_ACCESS_LOCATION, permissions);
+            }
+        } else {
+            if(!PermissionHelper.hasPermission(this, ACCESS_COARSE_LOCATION)) {
+                // save info so we can call this method again after permissions are granted
+                permissionCallback = callbackContext;
+                this.serviceUUIDs = serviceUUIDs;
+                this.scanSeconds = scanSeconds;
+                PermissionHelper.requestPermission(this, REQUEST_ACCESS_LOCATION, ACCESS_COARSE_LOCATION);
+                return;
+            }
+	}
+	
         // return error if already scanning
         if (bluetoothAdapter.isDiscovering()) {
             LOG.w(TAG, "Tried to start scan while already running.");
@@ -801,7 +816,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         }
 
         switch(requestCode) {
-            case REQUEST_ACCESS_COARSE_LOCATION:
+            case REQUEST_ACCESS_LOCATION:
                 LOG.d(TAG, "User granted Coarse Location Access");
                 findLowEnergyDevices(permissionCallback, serviceUUIDs, scanSeconds);
                 this.permissionCallback = null;
