@@ -18,6 +18,7 @@
 
 #import "BLECentralPlugin.h"
 #import <Cordova/CDV.h>
+#import <iOSDFULibrary/iOSDFULibrary-Swift.h>
 
 @interface BLECentralPlugin() {
     NSDictionary *bluetoothStates;
@@ -370,6 +371,167 @@
 
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+// upgradeFirmware: function (device_id, uri, success, failure) {
+- (void)upgradeFirmware:(CDVInvokedUrlCommand *)command {
+    NSLog(@"upgradeFirmware");
+
+    // start DFU in background thread
+    [self.commandDelegate runInBackground:^{
+
+        CDVPluginResult *pluginResult = nil;
+
+        // fail if dfuCallback is already registred
+        if (dfuCallbackId != nil) {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Firmware upgrade in progress"];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            return;
+        }
+
+        // parse arguments
+        NSString *deviceUUIDString = [command.arguments objectAtIndex:0];
+        NSString *urlString = [command.arguments objectAtIndex:1];
+        CBPeripheral *peripheral = [self findPeripheralByUUID:deviceUUIDString];
+        NSURL *url = [NSURL URLWithString:urlString];
+
+        // fail in case of invalid params
+        if (peripheral == nil) {
+            NSString *errorMessage = [NSString stringWithFormat:@"Could not find peripherial with UUID %@", deviceUUIDString];
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            return;
+        }
+        if (url == nil) {
+            NSString *errorMessage = [NSString stringWithFormat:@"Invalid firmware URL %@", urlString];
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            return;
+        }
+
+        // save callback for future use
+        dfuCallbackId = [command.callbackId copy];
+
+        // create firmware object from URL
+        DFUFirmware *firmware = [[DFUFirmware alloc] initWithUrlToZipFile:url];
+
+        // fail in case of invalid firmware
+        if (firmware == nil || !firmware.valid) {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid firmware"];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            return;
+        }
+
+        // configure DFUServiceInitiator
+        DFUServiceInitiator *initiator = [[DFUServiceInitiator alloc] initWithCentralManager:manager target:peripheral];
+        [initiator withFirmware:firmware];
+        initiator.enableUnsafeExperimentalButtonlessServiceInSecureDfu = true;
+        initiator.packetReceiptNotificationParameter = 10;
+        initiator.forceDfu = false;
+
+        // bind self as a delegate for everything
+        // initiator.logger = self;
+        initiator.delegate = self;
+        initiator.progressDelegate = self;
+
+        // start DFU
+        dfuController = [initiator start];
+
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
+        [pluginResult setKeepCallbackAsBool:TRUE];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
+}
+
+#pragma mark - DFU Service delegate methods
+
+// -(void)logWith:(enum LogLevel)level message:(NSString *)message {
+//     if (level == LogLevelError) {
+//         NSLog(@"ERROR: %@", message);
+//     } else if (level == LogLevelWarning) {
+//         NSLog(@"WARNING: %@", message);
+//     } else if (level == LogLevelApplication) {
+//         NSLog(@"%@", message);
+//     }
+//     // ignore other levels
+// }
+
+// handle main DFU stages (starting, validating, rebooting, ...)
+- (void)dfuStateDidChangeTo:(enum DFUState)state {
+    NSString *stateStr = nil;
+
+    // convert DFUState enum to string (mostly) matching with Android states
+    switch (state) {
+        case DFUStateConnecting: stateStr = @"deviceConnecting"; break;
+        case DFUStateStarting: stateStr = @"dfuProcessStarting"; break;
+        case DFUStateEnablingDfuMode: stateStr = @"enablingDfuMode"; break;
+        case DFUStateUploading: stateStr = @"firmwareUploading"; break;
+        case DFUStateValidating: stateStr = @"firmwareValidating"; break;
+        case DFUStateDisconnecting: stateStr = @"deviceDisconnecting"; break;
+        case DFUStateCompleted: stateStr = @"dfuCompleted"; break;
+        case DFUStateAborted: stateStr = @"dfuAborted"; break;
+    }
+    NSLog(@"DFU: %@", stateStr);
+
+    // assembe JSON data: {"status": "deviceDoesSomethig"}
+    NSMutableDictionary *json = [NSMutableDictionary dictionary];
+    [json setObject:stateStr forKey:@"status"];
+
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:json];
+    [pluginResult setKeepCallbackAsBool:TRUE];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:dfuCallbackId];
+
+    // clear handlers if this is the last state state update
+    if (state == DFUStateAborted || state == DFUStateCompleted) {
+      [self clearDfuHandlers];
+    }
+}
+
+// handle DFU upload progress
+- (void)dfuProgressDidChangeFor:(NSInteger)part outOf:(NSInteger)totalParts to:(NSInteger)percent currentSpeedBytesPerSecond:(double)speed avgSpeedBytesPerSecond:(double)avgSpeed {
+    NSLog(@"DFU progress: %ld%% (part %ld/%ld), speed: %f bps, avg speed: %f bps",
+          (long) percent, (long) part, (long) totalParts, speed, avgSpeed);
+
+    NSMutableDictionary *json = [NSMutableDictionary dictionary];
+
+    NSDictionary *progress = [NSDictionary dictionaryWithObjectsAndKeys:
+                             [NSNumber numberWithLong:percent], @"percent",
+                             [NSNumber numberWithDouble:speed], @"speed",
+                             [NSNumber numberWithDouble:avgSpeed], @"avgSpeed",
+                             [NSNumber numberWithLong:part], @"currentPart",
+                             [NSNumber numberWithLong:totalParts], @"partsTotal",
+                             nil];
+
+    // assembe JSON data: {"status": "progressChanged", "progress": ...}
+    [json setObject:@"progressChanged" forKey:@"status"];
+    [json setObject:progress forKey:@"progress"];
+
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:json];
+    [pluginResult setKeepCallbackAsBool:TRUE];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:dfuCallbackId];
+}
+
+// handle errors
+- (void)dfuError:(enum DFUError)error didOccurWithMessage:(NSString *)message {
+    NSLog(@"DFU ERROR %ld: %@", (long) error, message);
+
+    // assembe JSON data: {"errorMessage": "something bad happened"}
+    NSMutableDictionary *json = [NSMutableDictionary dictionary];
+    [json setObject:message forKey:@"errorMessage"];
+
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:json];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:dfuCallbackId];
+
+    // always clear handler (DFU is interrupted)
+    [self clearDfuHandlers];
+}
+
+- (void)clearDfuHandlers {
+    dfuCallbackId = nil;
+    dfuController = nil;
+
+    // Reinitialize
+    [self pluginInitialize];
 }
 
 - (void)onReset {

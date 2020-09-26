@@ -37,6 +37,9 @@
 
         <!-- frameworks -->
         <framework src="CoreBluetooth.framework" />
+        <framework src="iOSDFULibrary" type="podspec" spec="~> 4.1.2"/>
+
+        <hook type="before_plugin_install" src="hooks/ios_pod_extra_settings.js" />
 
         <!-- iOS SPermissions -->
         <preference name="BLUETOOTH_USAGE_DESCRIPTION" default=" " />
@@ -63,6 +66,13 @@
             <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
         </config-file>
 
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <activity android:name="com.megster.cordova.ble.central.NotificationActivity" />
+            <service android:name="com.megster.cordova.ble.central.DfuService" />
+        </config-file>
+
+        <framework src="no.nordicsemi.android:dfu:1.1.1"/>
+
         <source-file src="src/android/BLECentralPlugin.java"
             target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/SequentialCallbackContext.java"
@@ -74,6 +84,10 @@
         <source-file src="src/android/Helper.java"
             target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/UUIDHelper.java"
+            target-dir="src/com/megster/cordova/ble/central"/>
+        <source-file src="src/android/DfuService.java"
+            target-dir="src/com/megster/cordova/ble/central"/>
+        <source-file src="src/android/NotificationActivity.java"
             target-dir="src/com/megster/cordova/ble/central"/>
 
     </platform>
@@ -98,4 +112,11 @@
          <source-file src="src/wp/BLECentralPlugin.cs" />
 
     </platform>
+
+    <!-- because of <framework type="podspec"> for iOS -->
+    <engines>
+        <engine name="cordova" version=">=6.4.0"/>
+        <engine name="cordova-ios" version=">=4.3.0"/>
+    </engines>
+
 </plugin>

@@ -239,6 +239,10 @@ module.exports = {
 
     stopStateNotifications: function (success, failure) {
         cordova.exec(success, failure, "BLE", "stopStateNotifications", []);
+    },
+
+    upgradeFirmware: function (device_id, url, success, failure) {
+        cordova.exec(success, failure, "BLE", "upgradeFirmware", [device_id, url]);
     }
 
 };
@@ -332,6 +336,12 @@ module.exports.withPromises = {
     readRSSI: function(device_id) {
         return new Promise(function(resolve, reject) {
             module.exports.readRSSI(device_id, resolve, reject);
+        });
+    },
+
+    upgradeFirmware: function(device_id, url) {
+        return new Promise(function(resolve, reject) {
+            module.exports.write(device_id, url, resolve, reject);
         });
     }
 };

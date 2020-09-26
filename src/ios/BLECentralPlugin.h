@@ -21,12 +21,14 @@
 
 #import <Cordova/CDV.h>
 #import <CoreBluetooth/CoreBluetooth.h>
+#import <iOSDFULibrary/iOSDFULibrary-Swift.h>
 #import "BLECommandContext.h"
 #import "CBPeripheral+Extensions.h"
 
-@interface BLECentralPlugin : CDVPlugin <CBCentralManagerDelegate, CBPeripheralDelegate> {
+@interface BLECentralPlugin : CDVPlugin <CBCentralManagerDelegate, CBPeripheralDelegate, DFUServiceDelegate, DFUProgressDelegate> {
     NSString* discoverPeripheralCallbackId;
     NSString* stateCallbackId;
+    NSString *dfuCallbackId;
     NSMutableDictionary* connectCallbacks;
     NSMutableDictionary *readCallbacks;
     NSMutableDictionary *writeCallbacks;
@@ -35,6 +37,7 @@
     NSMutableDictionary *stopNotificationCallbacks;
     NSMutableDictionary *connectCallbackLatches;
     NSMutableDictionary *readRSSICallbacks;
+    DFUServiceController *dfuController;
 }
 
 @property (strong, nonatomic) NSMutableSet *peripherals;
@@ -63,6 +66,9 @@
 
 - (void)startStateNotifications:(CDVInvokedUrlCommand *)command;
 - (void)stopStateNotifications:(CDVInvokedUrlCommand *)command;
+
+- (void)upgradeFirmware:(CDVInvokedUrlCommand *)command;
+- (void)clearDfuHandlers;
 
 - (void)onReset;
 
