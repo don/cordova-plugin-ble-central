@@ -368,3 +368,49 @@ module.exports.withPromises = {
         });
     },
 };
+
+module.exports.l2cap = {
+  close(device_id, psm, success, failure) {
+      cordova.exec(success, failure, 'BLE', 'closeL2Cap', [device_id, psm]);
+  },
+
+  open(device_id, psm, connectCallback, disconnectCallback) {
+      cordova.exec(connectCallback, disconnectCallback, 'BLE', 'openL2Cap', [device_id, psm]);
+  },
+
+  receiveData(device_id, psm, receive) {
+    cordova.exec(receive, function(){}, 'BLE', 'receiveDataL2Cap', [device_id, psm]);
+  },
+
+  write(device_id, psm, data, success, failure) {
+      cordova.exec(success, failure, 'BLE', 'writeL2Cap', [device_id, psm, data]);
+  },
+};
+
+module.exports.withPromises.l2cap = {
+    close(device_id, psm) {
+        return new Promise(function(resolve, reject) {
+            module.exports.l2cap.close(device_id, psm, resolve, reject);
+        });
+    },
+
+    open(device_id, psm, disconnectCallback) {
+        return new Promise(function(resolve, reject) {
+          var rejected = false;
+            module.exports.l2cap.open(device_id, psm, resolve, function(e) {
+              if (!rejected) {
+                rejected = true;
+                reject(e);
+              } else {
+                disconnectCallback(e);
+              }
+            });
+        });
+    },
+
+    write(device_id, psm, data) {
+        return new Promise(function(resolve, reject) {
+            module.exports.l2cap.write(device_id, psm, data, resolve, reject);
+        });
+    },
+};
