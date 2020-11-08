@@ -1,3 +1,6 @@
+= 1.3.0 =
+Add new location permssions Android 10 (API29) #771 Thanks tiagoblackcode, subratpalhar92, & QuentinFarizon
+
 = 1.2.5 =
 Add setPin method for Android #718 Thanks untilbit
 Give the user feedback after an MTU size request #715 Thanks agren
