@@ -65,7 +65,7 @@ See Apple's documentation about [Protected Resources](https://developer.apple.co
 - [ble.startScan](#startscan)
 - [ble.startScanWithOptions](#startscanwithoptions)
 - [ble.stopScan](#stopscan)
-- [ble.stopScan](#setpin)
+- [ble.setPin](#setpin)
 - [ble.connect](#connect)
 - [ble.autoConnect](#autoconnect)
 - [ble.disconnect](#disconnect)
