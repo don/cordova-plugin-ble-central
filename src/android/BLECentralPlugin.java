@@ -658,7 +658,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             LOG.w(TAG, "Location Services are disabled");
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT >= 29) {                                  // (API 29) Build.VERSION_CODES.Q
             if (!PermissionHelper.hasPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 permissionCallback = callbackContext;
                 this.serviceUUIDs = serviceUUIDs;
@@ -666,7 +666,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
                 String[] permissions = {
                         Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                        "android.permission.ACCESS_BACKGROUND_LOCATION"     // (API 29) Manifest.permission.ACCESS_BACKGROUND_LOCATION
                 };
 
                 PermissionHelper.requestPermissions(this, REQUEST_ACCESS_LOCATION, permissions);
