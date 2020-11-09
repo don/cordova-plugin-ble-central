@@ -57,6 +57,10 @@ For iOS, apps will crash unless they include usage description keys for the type
 
 See Apple's documentation about [Protected Resources](https://developer.apple.com/documentation/bundleresources/information_property_list/protected_resources) for more details. If your app needs other permissions like location, try the [cordova-custom-config plugin](https://github.com/don/cordova-plugin-ble-central/issues/700#issuecomment-538312656).
 
+It is possible to delay the initialization of the plugin on iOS. Normally the Bluetooth permission dialog is shown when the app loads for the first time. Delaying the initialization of the plugin shows the permission dialog the first time the Bluetooth API is called. Set `IOS_INIT_ON_LOAD` to false when installing.
+
+    --variable IOS_INIT_ON_LOAD=false
+
 # API
 
 ## Methods
