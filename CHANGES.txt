@@ -1,3 +1,8 @@
+= 1.3.1 =
+Android updated to BluetoothLeScanner removing deprecated LeScanCallback #796 Thanks pentabarf
+Android updated to work with android-cordova@8 and android-cordova@9 #819
+iOS has new plugin variable IOS_INIT_ON_LOAD to delay plugin initialization. Defaults to false. #739 #769 Thanks josoete
+
 = 1.3.0 =
 Add new location permssions Android 10 (API29) #771 Thanks tiagoblackcode, subratpalhar92, & QuentinFarizon
 
