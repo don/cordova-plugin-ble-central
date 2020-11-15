@@ -173,7 +173,11 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         } else if (action.equals(CONNECT)) {
 
             String macAddress = args.getString(0);
-            connect(callbackContext, macAddress);
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+                    connect(callbackContext, macAddress);
+                }
+            });
 
         } else if (action.equals(AUTOCONNECT)) {
 
@@ -183,7 +187,11 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         } else if (action.equals(DISCONNECT)) {
 
             String macAddress = args.getString(0);
-            disconnect(callbackContext, macAddress);
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+                    disconnect(callbackContext, macAddress);
+                }
+            });
 
         } else if (action.equals(QUEUE_CLEANUP)) {
 
