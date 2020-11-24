@@ -396,15 +396,10 @@ module.exports.withPromises.l2cap = {
 
     open(device_id, psm, disconnectCallback) {
         return new Promise(function(resolve, reject) {
-          var rejected = false;
-            module.exports.l2cap.open(device_id, psm, resolve, function(e) {
-              if (!rejected) {
-                rejected = true;
-                reject(e);
-              } else {
-                disconnectCallback(e);
-              }
-            });
+          module.exports.l2cap.open(device_id, psm, resolve, function(e) {
+            disconnectCallback(e);
+            reject(e);
+          });
         });
     },
 
