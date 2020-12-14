@@ -208,6 +208,8 @@
                     [NSThread sleepForTimeInterval:0.005];
                     count+=20;
                 }while(count<=dataLen);
+            }else{
+                [peripheral writeValue:message forCharacteristic:characteristic type:CBCharacteristicWriteWithoutResponse];
             }
 
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
