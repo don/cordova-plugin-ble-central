@@ -374,8 +374,14 @@ module.exports.l2cap = {
       cordova.exec(success, failure, 'BLE', 'closeL2Cap', [device_id, psm]);
   },
 
-  open(device_id, psm, connectCallback, disconnectCallback) {
-      cordova.exec(connectCallback, disconnectCallback, 'BLE', 'openL2Cap', [device_id, psm]);
+  open(device_id, psmOrOptions, connectCallback, disconnectCallback) {
+      var psm = psmOrOptions;
+      var settings = {};
+      if (psmOrOptions != undefined && "psm" in psmOrOptions) {
+        psm = psmOrOptions.psm;
+        settings = psmOrOptions;
+      }
+      cordova.exec(connectCallback, disconnectCallback, 'BLE', 'openL2Cap', [device_id, psm, JSON.stringify(settings)]);
   },
 
   receiveData(device_id, psm, receive) {
@@ -394,9 +400,9 @@ module.exports.withPromises.l2cap = {
         });
     },
 
-    open(device_id, psm, disconnectCallback) {
+    open(device_id, psmOrOptions, disconnectCallback) {
         return new Promise(function(resolve, reject) {
-          module.exports.l2cap.open(device_id, psm, resolve, function(e) {
+          module.exports.l2cap.open(device_id, psmOrOptions, resolve, function(e) {
             disconnectCallback(e);
             reject(e);
           });

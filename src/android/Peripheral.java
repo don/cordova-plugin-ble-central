@@ -52,6 +52,7 @@ public class Peripheral extends BluetoothGattCallback {
     private boolean connected = false;
     private boolean connecting = false;
     private ConcurrentLinkedQueue<BLECommand> commandQueue = new ConcurrentLinkedQueue<BLECommand>();
+    private final Map<Integer, L2CAPContext> l2capContexts = new HashMap<Integer, L2CAPContext>();
     private final AtomicBoolean bleProcessing = new AtomicBoolean();
 
     BluetoothGatt gatt;
@@ -774,6 +775,11 @@ public class Peripheral extends BluetoothGattCallback {
 
     }
 
+    private void writeL2CapChannel(CallbackContext callbackContext, int psm, byte[] data) {
+        getOrAddL2CAPContext(psm).writeL2CapChannel(callbackContext, data);
+        commandCompleted();
+    }
+
     // Some peripherals re-use UUIDs for multiple characteristics so we need to check the properties
     // and UUID of all characteristics instead of using service.getCharacteristic(characteristicUUID)
     private BluetoothGattCharacteristic findWritableCharacteristic(BluetoothGattService service, UUID characteristicUUID, int writeType) {
@@ -833,6 +839,19 @@ public class Peripheral extends BluetoothGattCallback {
             command.getCallbackContext().error("Peripheral Disconnected");
         }
         bleProcessing.set(false); // Now re-allow processing
+
+        Collection<L2CAPContext> contexts;
+        synchronized (l2capContexts) {
+            contexts = new ArrayList<>(l2capContexts.values());
+        }
+        for(L2CAPContext context : contexts) {
+            context.disconnectL2Cap();
+        }
+    }
+
+    public void queueL2CapWrite(CallbackContext callbackContext, int psm, byte[] data) {
+        BLECommand command = new BLECommand(callbackContext, psm, data, BLECommand.L2CAP_WRITE);
+        queueCommand(command);
     }
 
     private void callbackCleanup() {
@@ -895,6 +914,10 @@ public class Peripheral extends BluetoothGattCallback {
             } else if (command.getType() == BLECommand.READ_RSSI) {
                 LOG.d(TAG,"Read RSSI");
                 readRSSI(command.getCallbackContext());
+            } else if (command.getType() == BLECommand.L2CAP_WRITE) {
+                LOG.d(TAG,"L2CAP Write %s", command.getPSM());
+                bleProcessing = true;
+                writeL2CapChannel(command.getCallbackContext(), command.getPSM(), command.getData());
             } else {
                 // this shouldn't happen
                 bleProcessing.set(false);
@@ -915,4 +938,37 @@ public class Peripheral extends BluetoothGattCallback {
         return serviceUUID + "|" + characteristic.getUuid() + "|" + characteristic.getInstanceId();
     }
 
+    public void connectL2cap(CallbackContext callbackContext, int psm, boolean secureChannel) {
+        getOrAddL2CAPContext(psm).connectL2cap(callbackContext, secureChannel);
+    }
+
+    public void disconnectL2Cap(CallbackContext callbackContext, int psm) {
+        L2CAPContext context;
+        synchronized (l2capContexts) {
+            context = l2capContexts.get(psm);
+        };
+        if (context != null) {
+            context.disconnectL2Cap();
+        }
+        callbackContext.success();
+    }
+
+    public boolean isL2capConnected(int psm) {
+        return getOrAddL2CAPContext(psm).isConnected();
+    }
+
+    public void registerL2CapReceiver(CallbackContext callbackContext, int psm) {
+        getOrAddL2CAPContext(psm).registerL2CapReceiver(callbackContext);
+    }
+
+    private L2CAPContext getOrAddL2CAPContext(int psm) {
+        synchronized (l2capContexts) {
+            L2CAPContext context = l2capContexts.get(psm);
+            if (context == null) {
+                context = new L2CAPContext(this.device, psm);
+                l2capContexts.put(psm, context);
+            }
+            return context;
+        }
+    }
 }
