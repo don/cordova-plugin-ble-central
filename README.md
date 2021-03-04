@@ -840,6 +840,12 @@ Using await with promises
 
     await ble.withPromises.l2cap.open(device_id, psm, disconnectCallback);
 
+Android supports additional arguments in the psm flag to select whether the L2CAP channel is insecure or secure (iOS does this automatically):
+
+  ble.l2cap.open(device_id, { psm: psm, secureChannel: true }, connectCallback, disconnectCallback);
+  // or with promises
+  await ble.withPromises.l2cap.open(device_id, { psm: psm, secureChannel: true }, disconnectCallback);
+
 ### Description
 
 An L2CAP channel is a duplex byte stream interface (similar to a network socket) that can be used for much more efficient binary data transfer. This is used in some streaming applications, such as the Bluetooth Object Transfer Service.
@@ -849,13 +855,14 @@ The PSM (protocol/service multiplexer) is specified by the peripheral when it op
 ### Parameters
 
 - __device_id__: UUID or MAC address of the peripheral
-- __psm__: Protocol/service multiplexer, specified by the peripheral when the channel was opened
+- __psm__ or __options__: Protocol/service multiplexer, specified by the peripheral when the channel was opened. Can be an object which includes a `psm` key, with an optional `secureChannel` boolean setting to control whether the channel is encrypted or not (Android-only)
 - __connectCallback__: Connect callback function, invoked when an L2CAP connection is successfully opened
 - __disconnectCallback__: Disconnect callback function, invoked when the L2CAP stream closes or an error occurs.
 
 ### Supported Platforms
 
  * iOS
+ * Android (>= 10)
 
 ## l2cap.close
 
@@ -881,6 +888,7 @@ Closes an open L2CAP channel with the selected device. All pending reads and wri
 ### Supported Platforms
 
  * iOS
+ * Android (>= 10)
 
 ## l2cap.receiveData
 
@@ -901,6 +909,7 @@ Sets the function to be called whenever bytes are received on the L2CAP channel.
 ### Supported Platforms
 
  * iOS
+ * Android (>= 10)
 
 ## l2cap.write
 
@@ -927,6 +936,7 @@ Writes all data to an open L2CAP channel. If the data exceeds the available spac
 ### Supported Platforms
 
  * iOS
+ * Android (>= 10)
 
 # Peripheral Data
 
