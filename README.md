@@ -1,5 +1,7 @@
 # Bluetooth Low Energy (BLE) Central Plugin for Apache Cordova
 
+## Forked to fix ACCESS_BACKGROUND_LOCATION for Android
+
 This plugin enables communication between a phone and Bluetooth Low Energy (BLE) peripherals.
 
 The plugin provides a simple [JavaScript API](#api) for iOS and Android.
