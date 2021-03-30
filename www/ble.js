@@ -348,7 +348,7 @@ module.exports.l2cap = {
         psm = psmOrOptions.psm;
         settings = psmOrOptions;
       }
-      cordova.exec(connectCallback, disconnectCallback, 'BLE', 'openL2Cap', [device_id, psm, JSON.stringify(settings)]);
+      cordova.exec(connectCallback, disconnectCallback, 'BLE', 'openL2Cap', [device_id, psm, settings]);
   },
 
   receiveData(device_id, psm, receive) {
