@@ -265,6 +265,61 @@ Function `setPin` sets the pin when device requires it.
 - __success__: Success callback function that is invoked when the function is invoked. [optional]
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
+## createBond
+
+Initiate a bond with the specified device (must already be connected)
+
+    ble.createBond(device_id, [success], [failure]);
+
+Using await with promises
+
+    await ble.withPromises.createBond(device_id);
+
+### Description
+
+Function `createBond` initialises a bond with the connected BLE peripheral. The success callback will be called when the
+bonding is complete. The bonding process may prompt the user to confirm the pairing process.
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __success__: Success callback function that is invoked when the bonding succeeds. [optional]
+- __failure__: Error callback function, invoked when the bonding fails. [optional]
+
+### Supported Platforms
+
+ * Android
+
+## getBondState
+
+Get the bond state of a device
+
+    ble.getBondState(device_id, [success], [failure]);
+
+Using await with promises
+
+    await ble.withPromises.getBondState(device_id);
+
+### Description
+
+Function `getBondState` retrieves the current bond state of the device.
+
+__States__
+
+- "none"
+- "bonding"
+- "bonded"
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __success__: Success callback function that is invoked with the current bond state. [optional]
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
+### Supported Platforms
+
+ * Android
+
 ## connect
 
 Connect to a peripheral.
