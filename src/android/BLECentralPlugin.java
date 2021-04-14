@@ -718,12 +718,15 @@ public class BLECentralPlugin extends CordovaPlugin {
                 this.serviceUUIDs = serviceUUIDs;
                 this.scanSeconds = scanSeconds;
 
-                String[] permissions = {
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        "android.permission.ACCESS_BACKGROUND_LOCATION"     // (API 29) Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                };
-
-                PermissionHelper.requestPermissions(this, REQUEST_ACCESS_LOCATION, permissions);
+                List<String> permissionsList = new ArrayList<String>();
+                permissionsList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+                String accessBackgroundLocation = this.preferences.getString("accessBackgroundLocation", "false");
+                if(accessBackgroundLocation == "true") {
+                    LOG.w(TAG, "ACCESS_BACKGROUND_LOCATION is being requested");
+                    permissionsList.add("android.permission.ACCESS_BACKGROUND_LOCATION"); // (API 29) Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                }
+                String[] permissionsArray = new String[permissionsList.size()];
+                PermissionHelper.requestPermissions(this, REQUEST_ACCESS_LOCATION, permissionsList.toArray(permissionsArray));
                 return;
             }
         } else {

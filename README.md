@@ -61,6 +61,12 @@ It is possible to delay the initialization of the plugin on iOS. Normally the Bl
 
     --variable IOS_INIT_ON_LOAD=false
 
+### Android
+
+If your app targets Android 10 (API level 29) or higher, you have also the option of requesting the ACCESS_BACKGROUND_LOCATION permission. If your app has a feature that requires it, set `ACCESS_BACKGROUND_LOCATION ` to true when installing.
+
+    --variable ACCESS_BACKGROUND_LOCATION=true
+
 # API
 
 ## Methods
