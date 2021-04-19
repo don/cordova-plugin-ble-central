@@ -749,11 +749,6 @@ public class Peripheral extends BluetoothGattCallback {
 
     }
 
-    private void writeL2CapChannel(CallbackContext callbackContext, int psm, byte[] data) {
-        getOrAddL2CAPContext(psm).writeL2CapChannel(callbackContext, data);
-        commandCompleted();
-    }
-
     // Some peripherals re-use UUIDs for multiple characteristics so we need to check the properties
     // and UUID of all characteristics instead of using service.getCharacteristic(characteristicUUID)
     private BluetoothGattCharacteristic findWritableCharacteristic(BluetoothGattService service, UUID characteristicUUID, int writeType) {
@@ -822,9 +817,9 @@ public class Peripheral extends BluetoothGattCallback {
         }
     }
 
-    public void queueL2CapWrite(CallbackContext callbackContext, int psm, byte[] data) {
-        BLECommand command = new BLECommand(callbackContext, psm, data, BLECommand.L2CAP_WRITE);
-        queueCommand(command);
+    public void writeL2CapChannel(CallbackContext callbackContext, int psm, byte[] data) {
+        LOG.d(TAG,"L2CAP Write %s", psm);
+        getOrAddL2CAPContext(psm).writeL2CapChannel(callbackContext, data);
     }
 
     private void callbackCleanup() {
@@ -895,10 +890,6 @@ public class Peripheral extends BluetoothGattCallback {
                 LOG.d(TAG,"Read RSSI");
                 bleProcessing = true;
                 readRSSI(command.getCallbackContext());
-            } else if (command.getType() == BLECommand.L2CAP_WRITE) {
-                LOG.d(TAG,"L2CAP Write %s", command.getPSM());
-                bleProcessing = true;
-                writeL2CapChannel(command.getCallbackContext(), command.getPSM(), command.getData());
             } else {
                 // this shouldn't happen
                 throw new RuntimeException("Unexpected BLE Command type " + command.getType());
