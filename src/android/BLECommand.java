@@ -14,7 +14,6 @@ class BLECommand {
     public static int REGISTER_NOTIFY = 10001;
     public static int REMOVE_NOTIFY = 10002;
     public static int READ_RSSI = 10003;
-    public static int L2CAP_WRITE = 10005;
     // BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
     // BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
 

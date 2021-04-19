@@ -897,7 +897,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             return;
         }
 
-        peripheral.queueL2CapWrite(callbackContext, psm, data);
+        cordova.getThreadPool().execute(() -> peripheral.writeL2CapChannel(callbackContext, psm, data));
 
     }
 
