@@ -26,6 +26,7 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanSettings;
+import android.location.LocationManager;
 import android.os.ParcelUuid;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -93,6 +94,9 @@ public class BLECentralPlugin extends CordovaPlugin {
     private static final String START_STATE_NOTIFICATIONS = "startStateNotifications";
     private static final String STOP_STATE_NOTIFICATIONS = "stopStateNotifications";
 
+    private static final String START_LOCATION_STATE_NOTIFICATIONS = "startLocationStateNotifications";
+    private static final String STOP_LOCATION_STATE_NOTIFICATIONS = "stopLocationStateNotifications";
+
     // callbacks
     CallbackContext discoverCallback;
     private CallbackContext enableBluetoothCallback;
@@ -123,6 +127,9 @@ public class BLECentralPlugin extends CordovaPlugin {
         put(BluetoothAdapter.STATE_ON, "on");
         put(BluetoothAdapter.STATE_TURNING_ON, "turningOn");
     }};
+
+    CallbackContext locationStateCallback;
+    BroadcastReceiver locationStateReceiver;
 
     public void onDestroy() {
         removeStateListener();
@@ -325,6 +332,28 @@ public class BLECentralPlugin extends CordovaPlugin {
             removeStateListener();
             callbackContext.success();
 
+        } else if (action.equals(START_LOCATION_STATE_NOTIFICATIONS)) {
+
+            if (this.locationStateCallback != null) {
+                callbackContext.error("Location state callback already registered.");
+            } else {
+                this.locationStateCallback = callbackContext;
+                addLocationStateListener();
+                sendLocationStateChange();
+            }
+
+        } else if (action.equals(STOP_LOCATION_STATE_NOTIFICATIONS)) {
+
+            if (this.locationStateCallback != null) {
+                // Clear callback in JavaScript without actually calling it
+                PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
+                result.setKeepCallback(false);
+                this.locationStateCallback.sendPluginResult(result);
+                this.locationStateCallback = null;
+            }
+            removeLocationStateListener();
+            callbackContext.success();
+
         } else if (action.equals(START_SCAN_WITH_OPTIONS)) {
             UUID[] serviceUUIDs = parseServiceUUIDList(args.getJSONArray(0));
             JSONObject options = args.getJSONObject(1);
@@ -522,6 +551,53 @@ public class BLECentralPlugin extends CordovaPlugin {
         }
         this.stateCallback = null;
         this.stateReceiver = null;
+    }
+
+    private void onLocationStateChange(Intent intent) {
+        final String action = intent.getAction();
+
+        if (LocationManager.PROVIDERS_CHANGED_ACTION.equals(action)) {
+            sendLocationStateChange();
+        }
+    }
+
+    private void sendLocationStateChange() {
+        if (this.locationStateCallback != null) {
+            PluginResult result = new PluginResult(PluginResult.Status.OK, locationServicesEnabled());
+            result.setKeepCallback(true);
+            this.locationStateCallback.sendPluginResult(result);
+        }
+    }
+
+    private void addLocationStateListener() {
+        if (this.locationStateReceiver == null) {
+            this.locationStateReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    onLocationStateChange(intent);
+                }
+            };
+        }
+
+        try {
+            IntentFilter intentFilter = new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION);
+            intentFilter.addAction(Intent.ACTION_PROVIDER_CHANGED);
+            webView.getContext().registerReceiver(this.locationStateReceiver, intentFilter);
+        } catch (Exception e) {
+            LOG.e(TAG, "Error registering location state receiver: " + e.getMessage(), e);
+        }
+    }
+
+    private void removeLocationStateListener() {
+        if (this.locationStateReceiver != null) {
+            try {
+                webView.getContext().unregisterReceiver(this.locationStateReceiver);
+            } catch (Exception e) {
+                LOG.e(TAG, "Error unregistering location state receiver: " + e.getMessage(), e);
+            }
+        }
+        this.locationStateCallback = null;
+        this.locationStateReceiver = null;
     }
 
     private void connect(CallbackContext callbackContext, String macAddress) {

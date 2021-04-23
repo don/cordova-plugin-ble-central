@@ -674,6 +674,47 @@ Function `isLocationEnabled` calls the success callback when location services a
         }
     );
 
+## startLocationStateNotifications
+
+Registers to be notified when Location service state changes on the device.
+
+    ble.startLocationStateNotifications(success, failure);
+
+### Description
+
+Function `startLocationStateNotifications` calls the success callback when the Location service is enabled or disabled on the device.
+
+### Supported Platforms
+
+ * Android
+
+### Parameters
+
+- __success__: Success callback function that is invoked with a boolean for the Location state.
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
+### Quick Example
+
+    ble.startLocationStateNotifications(
+        function(enabled) {
+            console.log("Location is " + enabled);
+        }
+    );
+
+## stopLocationStateNotifications
+
+Stops state notifications.
+
+    ble.stopLocationStateNotifications(success, failure);
+
+### Description
+
+Function `stopLocationStateNotifications` calls the success callback when Location state notifications have been stopped.
+
+### Supported Platforms
+
+ * Android
+
 ## startStateNotifications
 
 Registers to be notified when Bluetooth state changes on the device.
