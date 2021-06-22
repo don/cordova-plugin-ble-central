@@ -108,6 +108,7 @@ public class BLECentralPlugin extends CordovaPlugin {
 
     // scan options
     boolean reportDuplicates = false;
+    boolean aggressive = false;
 
     private static final int REQUEST_ACCESS_LOCATION = 2;
     private CallbackContext permissionCallback;
@@ -331,6 +332,7 @@ public class BLECentralPlugin extends CordovaPlugin {
 
             resetScanOptions();
             this.reportDuplicates = options.optBoolean("reportDuplicates", false);
+            this.aggressive = options.optBoolean("aggressive", false);
             findLowEnergyDevices(callbackContext, serviceUUIDs, -1);
 
         } else if (action.equals(BONDED_DEVICES)) {
@@ -760,6 +762,27 @@ public class BLECentralPlugin extends CordovaPlugin {
 
         discoverCallback = callbackContext;
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+
+        ScanSettings.Builder builder = new ScanSettings.Builder();
+        
+        if(this.aggressive == true)
+        {
+            builder.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY);
+        
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // Do not ignore repeating device advertisements
+                builder.setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES);
+
+                // Determine a match sooner even with a feeble signal strength
+                builder.setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE);
+
+                // Match all possible advertisements
+                builder.setNumOfMatches(ScanSettings.MATCH_NUM_MAX_ADVERTISEMENT);
+            }
+        }
+
+        ScanSettings settings = builder.build();
+
         if (serviceUUIDs != null && serviceUUIDs.length > 0) {
             List<ScanFilter> filters = new ArrayList<ScanFilter>();
             for (UUID uuid : serviceUUIDs) {
@@ -770,7 +793,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             ScanSettings settings = new ScanSettings.Builder().build();
             bluetoothLeScanner.startScan(filters, settings, leScanCallback);
         } else {
-            bluetoothLeScanner.startScan(leScanCallback);
+            bluetoothLeScanner.startScan(null, settings, leScanCallback);
         }
 
         if (scanSeconds > 0) {
@@ -876,6 +899,7 @@ public class BLECentralPlugin extends CordovaPlugin {
      */
     private void resetScanOptions() {
         this.reportDuplicates = false;
+        this.aggressive = false;
     }
 
 }
