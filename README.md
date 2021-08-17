@@ -91,6 +91,10 @@ It is possible to delay the initialization of the plugin on iOS. Normally the Bl
 - [ble.connectedPeripheralsWithServices](#connectedperipheralswithservices)
 - [ble.peripheralsWithIdentifiers](#peripheralswithidentifiers)
 - [ble.bondedDevices](#bondeddevices)
+- [ble.l2cap.open](#l2capopen)
+- [ble.l2cap.close](#l2capclose)
+- [ble.l2cap.receiveData](#l2capreceivedata)
+- [ble.l2cap.write](#l2capwrite)
 
 ## scan
 
@@ -830,6 +834,113 @@ Sends a list of bonded low energy peripherals to the success callback.
 
  * Android
 
+## l2cap.open
+
+Open an L2CAP channel with a connected peripheral. The PSM is assigned by the peripheral, or possibly defined by the Bluetooth standard.
+
+    ble.l2cap.open(device_id, psm, connectCallback, disconnectCallback);
+
+Using await with promises
+
+    await ble.withPromises.l2cap.open(device_id, psm, disconnectCallback);
+
+Android supports additional arguments in the psm flag to select whether the L2CAP channel is insecure or secure (iOS does this automatically):
+
+  ble.l2cap.open(device_id, { psm: psm, secureChannel: true }, connectCallback, disconnectCallback);
+  // or with promises
+  await ble.withPromises.l2cap.open(device_id, { psm: psm, secureChannel: true }, disconnectCallback);
+
+### Description
+
+An L2CAP channel is a duplex byte stream interface (similar to a network socket) that can be used for much more efficient binary data transfer. This is used in some streaming applications, such as the Bluetooth Object Transfer Service.
+
+The PSM (protocol/service multiplexer) is specified by the peripheral when it opens the channel. Some channels have predefined identifiers controlled by [Bluetooth organisation](https://www.bluetooth.com/specifications/assigned-numbers/logical-link-control/). Apple has also outlined a [generic design](https://developer.apple.com/documentation/corebluetooth/cbuuidl2cappsmcharacteristicstring) for PSM exchange. To advertise an L2CAP channel on a specific service, a characteristic with the UUID "ABDD3056-28FA-441D-A470-55A75A52553A" is added to that service, and updated by the peripheral when the L2CAP channel is opened.
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __psm__ or __options__: Protocol/service multiplexer, specified by the peripheral when the channel was opened. Can be an object which includes a `psm` key, with an optional `secureChannel` boolean setting to control whether the channel is encrypted or not (Android-only)
+- __connectCallback__: Connect callback function, invoked when an L2CAP connection is successfully opened
+- __disconnectCallback__: Disconnect callback function, invoked when the L2CAP stream closes or an error occurs.
+
+### Supported Platforms
+
+ * iOS
+ * Android (>= 10)
+
+## l2cap.close
+
+Close an L2CAP channel.
+
+    ble.l2cap.close(device_id, psm, success, failure);
+
+Using await with promises
+
+    await ble.withPromises.l2cap.close(device_id, psm);
+
+### Description
+
+Closes an open L2CAP channel with the selected device. All pending reads and writes are aborted.
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __psm__: Protocol/service multiplexer, specified by the peripheral when the channel was opened
+- __success__: Success callback function that is invoked when the stream is closed successfully. [optional]
+- __failure__: Error callback function, invoked when error occurs. [optional]
+
+### Supported Platforms
+
+ * iOS
+ * Android (>= 10)
+
+## l2cap.receiveData
+
+Receive data from an L2CAP channel.
+
+    ble.l2cap.receiveData(device_id, psm, dataCallback);
+
+### Description
+
+Sets the function to be called whenever bytes are received on the L2CAP channel. This function will be used as long as the L2CAP connection remains open.
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __psm__: Protocol/service multiplexer, specified by the peripheral when the channel was opened
+- __dataCallback__: Data processing function that is invoked when bytes are received from the peripheral
+
+### Supported Platforms
+
+ * iOS
+ * Android (>= 10)
+
+## l2cap.write
+
+Write data to an L2CAP channel.
+
+    ble.l2cap.write(device_id, psm, data, success, failure);
+
+Using await with promises
+
+    await ble.withPromises.l2cap.write(device_id, psm, data);
+
+### Description
+
+Writes all data to an open L2CAP channel. If the data exceeds the available space in the transmit buffer, the data will be automatically sent in chunks as space becomes available. The success callback is called only once after all the supplied bytes have been written to the transmit stream.
+
+### Parameters
+
+- __device_id__: UUID or MAC address of the peripheral
+- __psm__: Protocol/service multiplexer, specified by the peripheral when the channel was opened
+- __data__: Data to write to the stream
+- __success__: Success callback function that is invoked after all bytes have been written to the stream [optional]
+- __failure__: Error callback function, invoked when error occurs [optional]
+
+### Supported Platforms
+
+ * iOS
+ * Android (>= 10)
 
 # Peripheral Data
 

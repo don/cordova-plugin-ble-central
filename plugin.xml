@@ -35,6 +35,9 @@
         <header-file src="src/ios/BLECommandContext.h" target-dir="BLECentralPlugin" />
         <source-file src="src/ios/BLECommandContext.m" target-dir="BLECentralPlugin" />
 
+        <header-file src="src/ios/BLEStreamContext.h" target-dir="BLECentralPlugin" />
+        <source-file src="src/ios/BLEStreamContext.m" target-dir="BLECentralPlugin" />
+
         <!-- frameworks -->
         <framework src="CoreBluetooth.framework" />
 
@@ -74,6 +77,8 @@
         <source-file src="src/android/Helper.java"
             target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/UUIDHelper.java"
+            target-dir="src/com/megster/cordova/ble/central"/>
+        <source-file src="src/android/L2CAPContext.java"
             target-dir="src/com/megster/cordova/ble/central"/>
 
     </platform>
