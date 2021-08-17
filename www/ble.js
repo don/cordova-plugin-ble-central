@@ -239,8 +239,15 @@ module.exports = {
 
     stopStateNotifications: function (success, failure) {
         cordova.exec(success, failure, "BLE", "stopStateNotifications", []);
-    }
+    },
 
+    createBond: function(device_id, success, failure) {
+      cordova.exec(success, failure, "BLE", "createBond", [device_id]);
+    },
+
+    getBondState: function(device_id, success, failure) {
+      cordova.exec(success, failure, "BLE", "getBondState", [device_id]);
+    }
 };
 
 module.exports.withPromises = {
@@ -333,6 +340,18 @@ module.exports.withPromises = {
         return new Promise(function(resolve, reject) {
             module.exports.readRSSI(device_id, resolve, reject);
         });
+    },
+
+    createBond: function(device_id) {
+      return new Promise(function(resolve, reject) {
+        module.exports.createBond(device_id, resolve, reject);
+      })
+    },
+
+    getBondState: function(device_id) {
+      return new Promise(function(resolve, reject) {
+        module.exports.getBondState(device_id, resolve, reject);
+      })
     }
 };
 

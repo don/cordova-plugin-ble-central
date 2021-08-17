@@ -17,6 +17,10 @@ package com.megster.cordova.ble.central;
 import android.app.Activity;
 
 import android.bluetooth.*;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Base64;
@@ -32,6 +36,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import java.lang.reflect.Method;
 
+import static android.bluetooth.BluetoothDevice.ACTION_BOND_STATE_CHANGED;
+import static android.bluetooth.BluetoothDevice.EXTRA_BOND_STATE;
+
 /**
  * Peripheral wraps the BluetoothDevice and provides methods to convert to JSON.
  */
@@ -41,6 +48,11 @@ public class Peripheral extends BluetoothGattCallback {
     //public final static UUID CLIENT_CHARACTERISTIC_CONFIGURATION_UUID = UUID.fromString("00002902-0000-1000-8000-00805F9B34FB");
     public final static UUID CLIENT_CHARACTERISTIC_CONFIGURATION_UUID = UUIDHelper.uuidFromString("2902");
     private static final String TAG = "Peripheral";
+    private final static Map<Integer, String> bondStates = new Hashtable<Integer, String>() {{
+        put(BluetoothDevice.BOND_NONE, "none");
+        put(BluetoothDevice.BOND_BONDING, "bonding");
+        put(BluetoothDevice.BOND_BONDED, "bonded");
+    }};
 
     private static final int FAKE_PERIPHERAL_RSSI = 0x7FFFFFFF;
 
@@ -51,6 +63,7 @@ public class Peripheral extends BluetoothGattCallback {
     private boolean connected = false;
     private boolean connecting = false;
     private ConcurrentLinkedQueue<BLECommand> commandQueue = new ConcurrentLinkedQueue<BLECommand>();
+    private BroadcastReceiver bondStateReceiver;
     private boolean bleProcessing;
     private final Map<Integer, L2CAPContext> l2capContexts = new HashMap<Integer, L2CAPContext>();
 
@@ -940,5 +953,59 @@ public class Peripheral extends BluetoothGattCallback {
             }
             return context;
         }
+    }
+
+    public void createBond(CallbackContext callbackContext, BluetoothAdapter bluetoothAdapter, Context context) {
+        int bondState = device.getBondState();
+        if (bondState == BluetoothDevice.BOND_BONDED) {
+            callbackContext.success();
+            return;
+        }
+
+        if (bondStateReceiver != null) {
+            context.unregisterReceiver(bondStateReceiver);
+        }
+
+        final CallbackContext bondStateCallback = callbackContext;
+        bondStateReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                final String action = intent.getAction();
+                if (ACTION_BOND_STATE_CHANGED.equals(action)) {
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    if (gatt == null || device == null || !gatt.getDevice().getAddress().equals(device.getAddress()))
+                        return;
+
+                    int bondState = intent.getIntExtra(EXTRA_BOND_STATE, BluetoothDevice.ERROR);
+                    int previousBondState = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, -1);
+                    LOG.d(TAG, "Bonding state update %s => %s", previousBondState, bondState);
+
+                    if (bondState == BluetoothDevice.BOND_BONDED || bondState == BluetoothDevice.BOND_NONE) {
+                        if (bondState == BluetoothDevice.BOND_BONDED) {
+                            bondStateCallback.success();
+                        } else {
+                            bondStateCallback.error(bondStates.get(bondState));
+                        }
+                    }
+                }
+            }
+        };
+        context.registerReceiver(bondStateReceiver, new IntentFilter(ACTION_BOND_STATE_CHANGED));
+
+        if (bondState == BluetoothDevice.BOND_NONE) {
+            // Fake Bluetooth discovery so Android gives us a prompt rather than a crappy notification
+            // Source: https://stackoverflow.com/a/59881926
+            bluetoothAdapter.startDiscovery();
+            bluetoothAdapter.cancelDiscovery();
+            if (!device.createBond()) {
+                context.unregisterReceiver(bondStateReceiver);
+                bondStateReceiver = null;
+                callbackContext.error("createBond returned false");
+            }
+        }
+    }
+
+    public void getBondState(CallbackContext callbackContext) {
+        callbackContext.success(bondStates.get(device.getBondState()));
     }
 }

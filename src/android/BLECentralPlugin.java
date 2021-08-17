@@ -66,6 +66,8 @@ public class BLECentralPlugin extends CordovaPlugin {
 
     private static final String QUEUE_CLEANUP = "queueCleanup";
     private static final String SET_PIN = "setPin";
+    private static final String CREATE_BOND = "createBond";
+    private static final String GET_BOND_STATE = "getBondState";
 
     private static final String REQUEST_MTU = "requestMtu";
     private static final String REQUEST_CONNECTION_PRIORITY = "requestConnectionPriority";
@@ -205,6 +207,16 @@ public class BLECentralPlugin extends CordovaPlugin {
 
             String pin = args.getString(0);
             setPin(callbackContext, pin);
+
+        } else if (action.equals(CREATE_BOND)) {
+
+            String macAddress = args.getString(0);
+            createBond(callbackContext, macAddress);
+
+        } else if (action.equals(GET_BOND_STATE)) {
+
+            String macAddress = args.getString(0);
+            getBondState(callbackContext, macAddress);
 
         } else if (action.equals(REQUEST_MTU)) {
 
@@ -543,6 +555,30 @@ public class BLECentralPlugin extends CordovaPlugin {
         } catch (Exception e) {
             callbackContext.error("Error: " + e.getMessage());
             return;
+        }
+    }
+
+    private void createBond(CallbackContext callbackContext, String macAddress) {
+        Peripheral peripheral = peripherals.get(macAddress);
+        if (peripheral != null) {
+            peripheral.createBond(callbackContext, bluetoothAdapter, webView.getContext());
+        } else {
+            callbackContext.error("Peripheral " + macAddress + " not found.");
+        }
+    }
+
+    private void getBondState(CallbackContext callbackContext, String macAddress) {
+        if (!peripherals.containsKey(macAddress) && BluetoothAdapter.checkBluetoothAddress(macAddress)) {
+            BluetoothDevice device = BLECentralPlugin.this.bluetoothAdapter.getRemoteDevice(macAddress);
+            Peripheral peripheral = new Peripheral(device);
+            peripherals.put(macAddress, peripheral);
+        }
+
+        Peripheral peripheral = peripherals.get(macAddress);
+        if (peripheral != null) {
+            peripheral.getBondState(callbackContext);
+        } else {
+            callbackContext.error("Peripheral " + macAddress + " not found.");
         }
     }
 
