@@ -1,10 +1,10 @@
 {
   "name": "@planetinnovation/cordova-plugin-ble-central",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Bluetooth Low Energy (BLE) Central Plugin",
   "types": "./types/index.d.ts",
-  "publishConfig":{
-    "registry":"https://artifactory.pi.planetinnovation.com.au/artifactory/api/npm/digital-npm/"
+  "publishConfig": {
+    "registry": "https://artifactory.pi.planetinnovation.com.au/artifactory/api/npm/digital-npm/"
   },
   "cordova": {
     "id": "cordova-plugin-ble-central",
