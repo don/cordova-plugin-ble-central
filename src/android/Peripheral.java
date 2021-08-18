@@ -65,7 +65,6 @@ public class Peripheral extends BluetoothGattCallback {
     private boolean connecting = false;
     private ConcurrentLinkedQueue<BLECommand> commandQueue = new ConcurrentLinkedQueue<BLECommand>();
     private BroadcastReceiver bondStateReceiver;
-    private boolean bleProcessing;
     private final Map<Integer, L2CAPContext> l2capContexts = new HashMap<Integer, L2CAPContext>();
     private final AtomicBoolean bleProcessing = new AtomicBoolean();
 
