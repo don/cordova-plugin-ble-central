@@ -2,10 +2,10 @@
 <plugin
     xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    id="cordova-plugin-ble-central"
-    version="1.3.1">
+    id="@planetinnovation/cordova-plugin-ble-central"
+    version="1.3.4">
 
-    <name>BLE</name>
+    <name>@planetinnovation/cordova-plugin-ble-central</name>
     <description>Bluetooth Low Energy (BLE) Central Plugin</description>
     <license>Apache 2.0</license>
     <keywords>bluetooth, BLE, bluetooth low energy, bluetooth smart</keywords>
