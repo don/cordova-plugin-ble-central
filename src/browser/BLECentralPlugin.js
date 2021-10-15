@@ -14,7 +14,7 @@ module.exports = {
     devices: new Map(),
     scanning: null,
 
-    scan: function(services, success, failure) {
+    scan: function(services, seconds, success, failure) {
 
         if (!navigator.bluetooth) {
             failure('Bluetooth is not supported on this browser.');
