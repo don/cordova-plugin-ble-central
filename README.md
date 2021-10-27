@@ -1,3 +1,7 @@
+# Warning
+Warning: This fork of Bluetooth Low Energy (BLE) Central Plugin for Apache Cordova contains specific changes that serves our company needs, and is thus not a generic plugin.
+Use at your own risk and make sure to look at the commit history and compare with the original repo.
+
 # Bluetooth Low Energy (BLE) Central Plugin for Apache Cordova
 
 This plugin enables communication between a phone and Bluetooth Low Energy (BLE) peripherals.
