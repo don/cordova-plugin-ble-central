@@ -331,7 +331,109 @@ public class BLECentralPlugin extends CordovaPlugin {
 
             resetScanOptions();
             this.reportDuplicates = options.optBoolean("reportDuplicates", false);
-            findLowEnergyDevices(callbackContext, serviceUUIDs, -1);
+            ScanSettings.Builder scanSettings = new ScanSettings.Builder();
+
+            switch (options.optString("scanMode", "")) {
+                case "":
+                    break;
+                case "lowPower":
+                    scanSettings.setScanMode( ScanSettings.SCAN_MODE_LOW_POWER );
+                    break;
+                case "balanced":
+                    scanSettings.setScanMode( ScanSettings.SCAN_MODE_BALANCED );
+                    break;
+                case "lowLatency":
+                    scanSettings.setScanMode( ScanSettings.SCAN_MODE_LOW_LATENCY );
+                    break;
+                case "opportunistic":
+                    scanSettings.setScanMode( ScanSettings.SCAN_MODE_OPPORTUNISTIC );
+                    break;
+                default:
+                    callbackContext.error("scanMode must be one of: lowPower | balanced | lowLatency");
+                    validAction = false;
+                    break;
+            }
+
+            switch (options.optString("callbackType", "")) {
+                case "":
+                    break;
+                case "all":
+                    scanSettings.setCallbackType( ScanSettings.CALLBACK_TYPE_ALL_MATCHES );
+                    break;
+                case "first":
+                    scanSettings.setCallbackType( ScanSettings.CALLBACK_TYPE_FIRST_MATCH );
+                    break;
+                case "lost":
+                    scanSettings.setCallbackType( ScanSettings.CALLBACK_TYPE_MATCH_LOST );
+                    break;
+                default:
+                    callbackContext.error("callbackType must be one of: all | first | lost");
+                    validAction = false;
+                    break;
+            }
+
+            switch (options.optString("matchMode", "")) {
+                case "":
+                    break;
+                case "aggressive":
+                    scanSettings.setCallbackType( ScanSettings.MATCH_MODE_AGGRESSIVE );
+                    break;
+                case "sticky":
+                    scanSettings.setCallbackType( ScanSettings.MATCH_MODE_STICKY );
+                    break;
+                default:
+                    callbackContext.error("matchMode must be one of: aggressive | sticky");
+                    validAction = false;
+                    break;
+            }
+
+            switch (options.optString("numOfMatches", "")) {
+                case "":
+                    break;
+                case "one":
+                    scanSettings.setNumOfMatches( ScanSettings.MATCH_NUM_ONE_ADVERTISEMENT );
+                    break;
+                case "few":
+                    scanSettings.setNumOfMatches( ScanSettings.MATCH_NUM_FEW_ADVERTISEMENT );
+                    break;
+                case "max":
+                    scanSettings.setNumOfMatches( ScanSettings.MATCH_NUM_MAX_ADVERTISEMENT );
+                    break;
+                default:
+                    callbackContext.error("numOfMatches must be one of: one | few | max");
+                    validAction = false;
+                    break;
+            }
+
+            switch (options.optString("phy", "")) {
+                case "":
+                    break;
+                case "1m":
+                    scanSettings.setPhy( BluetoothDevice.PHY_LE_1M );
+                    break;
+                case "coded":
+                    scanSettings.setPhy( BluetoothDevice.PHY_LE_CODED );
+                    break;
+                case "all":
+                    scanSettings.setPhy( ScanSettings.PHY_LE_ALL_SUPPORTED );
+                    break;
+                default:
+                    callbackContext.error("phy must be one of: 1m | coded | all");
+                    validAction = false;
+                    break;
+            }
+
+            if (validAction) {
+                String LEGACY = "legacy";
+                if (!options.isNull(LEGACY))
+                    scanSettings.setLegacy( options.getBoolean(LEGACY) );
+
+                long reportDelay = options.optLong("reportDelay", -1 );
+                if (reportDelay >= 0L)
+                    scanSettings.setReportDelay( reportDelay );
+
+                findLowEnergyDevices(callbackContext, serviceUUIDs, -1, scanSettings.build() );
+            }
 
         } else if (action.equals(BONDED_DEVICES)) {
 
@@ -704,8 +806,11 @@ public class BLECentralPlugin extends CordovaPlugin {
         }
     };
 
-    private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds) {
 
+    private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds) {
+        findLowEnergyDevices( callbackContext, serviceUUIDs, scanSeconds, new ScanSettings.Builder().build() );
+    }
+    private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds, ScanSettings scanSettings) {
 
 
         if (!locationServicesEnabled()) {
@@ -763,18 +868,15 @@ public class BLECentralPlugin extends CordovaPlugin {
 
         discoverCallback = callbackContext;
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+        List<ScanFilter> filters = new ArrayList<ScanFilter>();
         if (serviceUUIDs != null && serviceUUIDs.length > 0) {
-            List<ScanFilter> filters = new ArrayList<ScanFilter>();
             for (UUID uuid : serviceUUIDs) {
                 ScanFilter filter = new ScanFilter.Builder().setServiceUuid(
                         new ParcelUuid(uuid)).build();
                 filters.add(filter);
             }
-            ScanSettings settings = new ScanSettings.Builder().build();
-            bluetoothLeScanner.startScan(filters, settings, leScanCallback);
-        } else {
-            bluetoothLeScanner.startScan(leScanCallback);
         }
+        bluetoothLeScanner.startScan(filters, scanSettings, leScanCallback);
 
         if (scanSeconds > 0) {
             Handler handler = new Handler();
