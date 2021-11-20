@@ -31,6 +31,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Peripheral wraps the BluetoothDevice and provides methods to convert to JSON.
@@ -51,7 +52,7 @@ public class Peripheral extends BluetoothGattCallback {
     private boolean connected = false;
     private boolean connecting = false;
     private ConcurrentLinkedQueue<BLECommand> commandQueue = new ConcurrentLinkedQueue<BLECommand>();
-    private boolean bleProcessing;
+    private final AtomicBoolean bleProcessing = new AtomicBoolean();
 
     BluetoothGatt gatt;
 
@@ -825,10 +826,11 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     public void queueCleanup() {
-        bleProcessing = false;
+        bleProcessing.set(true); // Stop anything else trying to process
         for (BLECommand command = commandQueue.poll(); command != null; command = commandQueue.poll()) {
             command.getCallbackContext().error("Peripheral Disconnected");
         }
+        bleProcessing.set(false); // Now re-allow processing
     }
 
     private void callbackCleanup() {
@@ -855,55 +857,49 @@ public class Peripheral extends BluetoothGattCallback {
         result.setKeepCallback(true);
         command.getCallbackContext().sendPluginResult(result);
 
-        if (!bleProcessing) {
-            processCommands();
-        }
+        processCommands();
     }
 
     // command finished, queue the next command
     private void commandCompleted() {
         LOG.d(TAG,"Processing Complete");
-        bleProcessing = false;
+        bleProcessing.set(false);
         processCommands();
     }
 
     // process the queue
     private void processCommands() {
+        final boolean canProcess = bleProcessing.compareAndSet(false, true);
+        if (!canProcess) { return; }
         LOG.d(TAG,"Processing Commands");
-
-        if (bleProcessing) { return; }
 
         BLECommand command = commandQueue.poll();
         if (command != null) {
             if (command.getType() == BLECommand.READ) {
                 LOG.d(TAG,"Read %s", command.getCharacteristicUUID());
-                bleProcessing = true;
                 readCharacteristic(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID());
             } else if (command.getType() == BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) {
                 LOG.d(TAG,"Write %s", command.getCharacteristicUUID());
-                bleProcessing = true;
                 writeCharacteristic(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID(), command.getData(), command.getType());
             } else if (command.getType() == BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE) {
                 LOG.d(TAG,"Write No Response %s", command.getCharacteristicUUID());
-                bleProcessing = true;
                 writeCharacteristic(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID(), command.getData(), command.getType());
             } else if (command.getType() == BLECommand.REGISTER_NOTIFY) {
                 LOG.d(TAG,"Register Notify %s", command.getCharacteristicUUID());
-                bleProcessing = true;
                 registerNotifyCallback(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID());
             } else if (command.getType() == BLECommand.REMOVE_NOTIFY) {
                 LOG.d(TAG,"Remove Notify %s", command.getCharacteristicUUID());
-                bleProcessing = true;
                 removeNotifyCallback(command.getCallbackContext(), command.getServiceUUID(), command.getCharacteristicUUID());
             } else if (command.getType() == BLECommand.READ_RSSI) {
                 LOG.d(TAG,"Read RSSI");
-                bleProcessing = true;
                 readRSSI(command.getCallbackContext());
             } else {
                 // this shouldn't happen
+                bleProcessing.set(false);
                 throw new RuntimeException("Unexpected BLE Command type " + command.getType());
             }
         } else {
+            bleProcessing.set(false);
             LOG.d(TAG, "Command Queue is empty.");
         }
 
