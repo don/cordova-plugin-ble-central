@@ -67,6 +67,8 @@ If your app targets Android 10 (API level 29) or higher, you have also the optio
 
     --variable ACCESS_BACKGROUND_LOCATION=true
 
+If your app targets Android 12 (API level 31) or higher, you have to define BLUETOOTH_SCAN and BLUETOOTH_CONNECT permissions (https://developer.android.com/guide/topics/connectivity/bluetooth/permissions#declare-android12-or-higher) into your Android Manifest.
+
 # API
 
 ## Methods
