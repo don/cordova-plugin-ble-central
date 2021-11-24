@@ -133,10 +133,12 @@ public class BLECentralPlugin extends CordovaPlugin {
 
     public void onDestroy() {
         removeStateListener();
+        removeLocationStateListener();
     }
 
     public void onReset() {
         removeStateListener();
+        removeLocationStateListener();
     }
 
     @Override
