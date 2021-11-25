@@ -389,7 +389,25 @@ requestConnectionPriority
 
 ### Description
 
-When Connecting to a peripheral android can request for the connection priority for better communication.
+When Connecting to a peripheral android can request for the connection priority for better communication. See [BluetoothGatt#requestConnectionPriority](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#requestConnectionPriority(int)) for technical details
+
+Connection priority can be one of:
+
+- `0` - [CONNECTION_PRIORITY_BALANCED](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_BALANCED)
+- `1` - [CONNECTION_PRIORITY_HIGH](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_HIGH)
+- `2` - [CONNECTION_PRIORITY_LOW_POWER](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER)
+
+
+### Quick Example
+
+    ble.requestConnectionPriority(device_id, 0,
+        function() {
+            alert("success");
+        },
+        function(failure){
+            alert("Failed to request connection priority: " + failure);
+        }
+    );
 
 ### Supported Platforms
 
