@@ -61,6 +61,12 @@ It is possible to delay the initialization of the plugin on iOS. Normally the Bl
 
     --variable IOS_INIT_ON_LOAD=false
 
+### Android
+
+If your app targets Android 10 (API level 29) or higher, you have also the option of requesting the ACCESS_BACKGROUND_LOCATION permission. If your app has a feature that requires it, set `ACCESS_BACKGROUND_LOCATION ` to true when installing.
+
+    --variable ACCESS_BACKGROUND_LOCATION=true
+
 # API
 
 ## Methods
@@ -197,7 +203,19 @@ See the [location permission notes](#location-permission-notes) above for inform
 
 - __services__: List of services to discover, or [] to find all devices
 - __options__: an object specifying a set of name-value pairs. The currently acceptable options are:
-- _reportDuplicates_: true if duplicate devices should be reported, false (default) if devices should only be reported once. [optional]
+    * _reportDuplicates_: _true_ if duplicate devices should be reported, _false_ (default) if devices should only be reported once. [optional]
+    * _scanMode_: String defines [setScanMode()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setscanmode) argument on Android.  
+ Can be one of: _lowPower_ | _balanced_ | _lowLatency_ | _opportunistic_
+    * _callbackType_: String defines [setCallbackType()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setcallbacktype) argument on Android.  
+ Can be one of: _all_ | _first_ | _lost_
+    * _matchMode_: String defines [setMatchMode()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setmatchmode) argument on Android.  
+ Can be one of: _aggressive_ | _sticky_
+    * _numOfMatches_: String defines [setNumOfMatches()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setnumofmatches) argument on Android.  
+ Can be one of: _one_ | _few_ | _max_
+    * _phy_: String for [setPhy()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setphy) on Android.  
+ Can be one of: _1m_ | _coded_ | _all_
+    * _legacy_: _true_ or _false_ to [control filtering](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setlegacy) bluetooth spec.pre-4.2 advertisements on Android.  
+    * _reportDelay_: Milliseconds for [setReportDelay()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setreportdelay) on Android. _0_ to be notified of results immediately. Values > _0_ causes the scan results to be queued up and delivered after the requested delay or when the internal buffers fill up.
 - __success__: Success callback function that is invoked which each discovered device.
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
@@ -430,7 +448,25 @@ requestConnectionPriority
 
 ### Description
 
-When Connecting to a peripheral android can request for the connection priority for better communication.
+When Connecting to a peripheral android can request for the connection priority for better communication. See [BluetoothGatt#requestConnectionPriority](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#requestConnectionPriority(int)) for technical details
+
+Connection priority can be one of:
+
+- `0` - [CONNECTION_PRIORITY_BALANCED](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_BALANCED)
+- `1` - [CONNECTION_PRIORITY_HIGH](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_HIGH)
+- `2` - [CONNECTION_PRIORITY_LOW_POWER](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER)
+
+
+### Quick Example
+
+    ble.requestConnectionPriority(device_id, 0,
+        function() {
+            alert("success");
+        },
+        function(failure){
+            alert("Failed to request connection priority: " + failure);
+        }
+    );
 
 ### Supported Platforms
 

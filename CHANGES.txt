@@ -1,3 +1,11 @@
+= 1.4.1 =
+Add additional options to startScanWithOptions() on Android #835 Thanks helllamer 
+Fix some instances where the Android command loop locks up #847 #830 Thanks doug-a-brunner
+Improve documentation around requestConnectionPriority usage #877
+
+= 1.4.0 =
+Android has new plugin variable ACCESS_BACKGROUND_LOCATION enable or disable background scanning permissions. Defaults to false. #844 #821 #870 Thanks marioshtika
+
 = 1.3.1 =
 Android updated to BluetoothLeScanner removing deprecated LeScanCallback #796 Thanks pentabarf
 Android updated to work with android-cordova@8 and android-cordova@9 #819
