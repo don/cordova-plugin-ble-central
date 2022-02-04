@@ -202,11 +202,11 @@ declare namespace BLECentralPlugin {
             failure: () => any
         ): void;
 
-        /* Find known (but not necessarily connected) peripherals offering the listed service UUIDs.
+        /* Find known (but not necessarily connected) peripherals offering the listed device UUIDs.
                This function wraps CBCentralManager.retrievePeripheralsWithIdentifiers
                [Android] peripheralsWithIdentifiers is not supported on Android. */
         peripheralsWithIdentifiers(
-            services: string[],
+            device_ids: string[],
             success: (data: PeripheralData[]) => any,
             failure: () => any
         ): void;
