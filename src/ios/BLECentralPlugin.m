@@ -23,6 +23,7 @@
     NSDictionary *bluetoothStates;
 }
 - (CBPeripheral *)findPeripheralByUUID:(NSString *)uuid;
+- (CBPeripheral *)retrievePeripheralWithUUID:(NSString *)uuid;
 - (void)stopScanTimer:(NSTimer *)timer;
 @end
 
@@ -72,12 +73,14 @@
 - (void)centralManager:(CBCentralManager *)central willRestoreState:(NSDictionary<NSString *,id> *)state {
 }
 
-// TODO add timeout
 - (void)connect:(CDVInvokedUrlCommand *)command {
     NSLog(@"connect");
     NSString *uuid = [command argumentAtIndex:0];
 
     CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
+    if (!peripheral) {
+        peripheral = [self retrievePeripheralWithUUID:uuid];
+    }
 
     if (peripheral) {
         NSLog(@"Connecting to peripheral with UUID : %@", uuid);
@@ -101,6 +104,9 @@
     NSString *uuid = [command argumentAtIndex:0];
     
     CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
+    if (!peripheral) {
+        peripheral = [self retrievePeripheralWithUUID:uuid];
+    }
     
     if (peripheral) {
         NSLog(@"Autoconnecting to peripheral with UUID : %@", uuid);
@@ -728,6 +734,17 @@
             peripheral = p;
             break;
         }
+    }
+    return peripheral;
+}
+
+- (CBPeripheral*)retrievePeripheralWithUUID:(NSString*)uuid {
+    NSUUID *typedUUID = [[NSUUID alloc] initWithUUIDString:uuid];
+    NSArray *existingPeripherals = [manager retrievePeripheralsWithIdentifiers:@[typedUUID]];
+    CBPeripheral *peripheral = nil;
+    if ([existingPeripherals count] > 0) {
+        peripheral = [existingPeripherals firstObject];
+        [peripherals addObject:peripheral];
     }
     return peripheral;
 }
