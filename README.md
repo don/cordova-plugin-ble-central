@@ -61,6 +61,10 @@ It is possible to delay the initialization of the plugin on iOS. Normally the Bl
 
     --variable IOS_INIT_ON_LOAD=false
 
+If background scanning and operation is required, the [iOS restore state](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW13) should be enabled:
+
+    --variable BLUETOOTH_RESTORE_STATE=true
+
 ### Android
 
 If your app targets Android 10 (API level 29) or higher, you have also the option of requesting the ACCESS_BACKGROUND_LOCATION permission. If your app has a feature that requires it, set `ACCESS_BACKGROUND_LOCATION ` to true when installing.
@@ -1032,6 +1036,14 @@ Add a new section to config.xml
     </platform>
 
 See [ble-background](https://github.com/don/ble-background) example project for more details.
+
+Additional, iOS state restoration should be enabled if long-running scans or connects should be restarted after the phone is rebooted or the app is suspended by iOS.See [iOS restore state](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW13) for the details and limitations of this feature.
+
+To activate iOS state restoration, set the BLUETOOTH_RESTORE_STATE to true when adding the plugin to the project:
+
+    --variable BLUETOOTH_RESTORE_STATE=true
+
+It's important to note that iOS will **not** automatically relaunch an application under some conditions. For a detailed list of these conditions, see the [iOS Technical QA on the subject](https://developer.apple.com/library/archive/qa/qa1962/_index.html).
 
 # Testing the Plugin
 

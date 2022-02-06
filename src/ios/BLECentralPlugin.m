@@ -37,8 +37,17 @@
 
     [super pluginInitialize];
 
+    NSMutableDictionary *options = [[NSMutableDictionary alloc] init];
+    options[CBCentralManagerOptionShowPowerAlertKey] = @NO;
+
+    NSDictionary *pluginSettings = [[self commandDelegate] settings];
+    NSString *enableState = pluginSettings[@"bluetooth_restore_state"];
+    if (enableState != nil && [@"true" isEqualToString:[enableState lowercaseString]]) {
+        options[CBCentralManagerOptionRestoreIdentifierKey] = @"cordova-plugin-ble-central";
+    }
+
     peripherals = [NSMutableSet new];
-    manager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:@{CBCentralManagerOptionShowPowerAlertKey: @NO}];
+    manager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:options];
 
     connectCallbacks = [NSMutableDictionary new];
     connectCallbackLatches = [NSMutableDictionary new];
@@ -59,6 +68,9 @@
 }
 
 #pragma mark - Cordova Plugin Methods
+
+- (void)centralManager:(CBCentralManager *)central willRestoreState:(NSDictionary<NSString *,id> *)state {
+}
 
 // TODO add timeout
 - (void)connect:(CDVInvokedUrlCommand *)command {
