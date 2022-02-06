@@ -31,5 +31,6 @@
   "bugs": {
     "url": "https://github.com/don/cordova-plugin-ble-central/issues"
   },
+  "types": "./types.d.ts",
   "homepage": "https://github.com/don/cordova-plugin-ble-central#readme"
 }
