@@ -929,7 +929,7 @@ Retreives a list of the peripherals (containing any of the specified services) c
 
 ## peripheralsWithIdentifiers
 
-Find the connected peripherals offering the listed service UUIDs.
+Find the connected peripherals offering the listed peripheral UUIDs.
 
     ble.peripheralsWithIdentifiers([uuids], success, failure);
 
@@ -1227,10 +1227,6 @@ UUIDs are always strings and not numbers. Some 16-bit UUIDs, such as '2220' look
 Android applications will continue to receive notification while the application is in the background.
 
 iOS applications need additional configuration to allow Bluetooth to run in the background.
-
-Install the [cordova-custom-config](https://www.npmjs.com/package/cordova-custom-config) plugin.
-
-    cordova plugin add cordova-custom-config
 
 Add a new section to config.xml
 
