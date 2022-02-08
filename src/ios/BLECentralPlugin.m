@@ -50,6 +50,7 @@
     peripherals = [NSMutableSet new];
     manager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:options];
 
+    restoredState = nil;
     connectCallbacks = [NSMutableDictionary new];
     connectCallbackLatches = [NSMutableDictionary new];
     readCallbacks = [NSMutableDictionary new];
@@ -71,6 +72,41 @@
 #pragma mark - Cordova Plugin Methods
 
 - (void)centralManager:(CBCentralManager *)central willRestoreState:(NSDictionary<NSString *,id> *)state {
+    restoredState = state;
+}
+
+- (void)restoredBluetoothState:(CDVInvokedUrlCommand *)command {
+    NSMutableDictionary *state = [[NSMutableDictionary alloc] init];
+
+    if (restoredState) {
+        NSArray *restoredPeripherals = restoredState[CBCentralManagerRestoredStatePeripheralsKey];
+        if (restoredPeripherals != nil) {
+            NSMutableArray *peripherals = [NSMutableArray arrayWithCapacity:[restoredPeripherals count]];
+            for (id peripheral in restoredPeripherals) {
+                [peripherals addObject:[peripheral asDictionary]];
+            }
+
+            state[@"peripherals"] = peripherals;
+        }
+
+        NSArray *restoredScanServices = restoredState[CBCentralManagerRestoredStateScanServicesKey];
+        if (restoredScanServices != nil) {
+            NSMutableArray *uuids = [NSMutableArray arrayWithCapacity:[restoredScanServices count]];
+            for (id uuid in restoredScanServices) {
+                [uuids addObject:[uuid UUIDString]];
+            }
+            
+            state[@"scanServiceUUIDs"] = uuids;
+        }
+
+        if (restoredState[CBCentralManagerRestoredStateScanOptionsKey]) {
+            state[@"scanOptions"] = restoredState[CBCentralManagerRestoredStateScanOptionsKey];
+        }
+    }
+
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                  messageAsDictionary:state];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void)connect:(CDVInvokedUrlCommand *)command {

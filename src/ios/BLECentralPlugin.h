@@ -35,6 +35,7 @@
     NSMutableDictionary *stopNotificationCallbacks;
     NSMutableDictionary *connectCallbackLatches;
     NSMutableDictionary *readRSSICallbacks;
+    NSDictionary<NSString*,id> *restoredState;
 }
 
 @property (strong, nonatomic) NSMutableSet *peripherals;
@@ -67,6 +68,8 @@
 - (void)onReset;
 
 - (void)readRSSI:(CDVInvokedUrlCommand *)command;
+
+- (void)restoredBluetoothState:(CDVInvokedUrlCommand *)command;
 
 @end
 

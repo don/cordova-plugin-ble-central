@@ -250,6 +250,10 @@ module.exports = {
     stopStateNotifications: function (success, failure) {
         cordova.exec(success, failure, 'BLE', 'stopStateNotifications', []);
     },
+
+    restoredBluetoothState: function (success, failure) {
+        cordova.exec(success, failure, 'BLE', 'restoredBluetoothState', []);
+    },
 };
 
 module.exports.withPromises = {
@@ -341,6 +345,12 @@ module.exports.withPromises = {
     readRSSI: function (device_id) {
         return new Promise(function (resolve, reject) {
             module.exports.readRSSI(device_id, resolve, reject);
+        });
+    },
+
+    restoredBluetoothState: function () {
+        return new Promise(function (resolve, reject) {
+            module.exports.restoredBluetoothState(resolve, reject);
         });
     },
 };
