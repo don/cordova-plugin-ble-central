@@ -43,8 +43,11 @@
 
     NSDictionary *pluginSettings = [[self commandDelegate] settings];
     NSString *enableState = pluginSettings[@"bluetooth_restore_state"];
-    if (enableState != nil && [@"true" isEqualToString:[enableState lowercaseString]]) {
-        options[CBCentralManagerOptionRestoreIdentifierKey] = @"cordova-plugin-ble-central";
+    if (enableState != nil && [enableState length] > 0) {
+        NSString *restoreIdentifier = [@"true" isEqualToString:[enableState lowercaseString]]
+            ? [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]
+            : enableState;
+        options[CBCentralManagerOptionRestoreIdentifierKey] = restoreIdentifier;
     }
 
     peripherals = [NSMutableSet new];

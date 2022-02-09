@@ -1070,6 +1070,10 @@ To activate iOS state restoration, set the BLUETOOTH_RESTORE_STATE to true when 
 
     --variable BLUETOOTH_RESTORE_STATE=true
 
+By default, the app id (otherwise known as the bundle identifier) will be used as the iOS restore identifier key. This can be overridden by setting the variable to the desired key directly. For example:
+
+    --variable BLUETOOTH_RESTORE_STATE=my.custom.restoration.identifier.key
+
 It's important to note that iOS will **not** automatically relaunch an application under some conditions. For a detailed list of these conditions, see the [iOS Technical QA on the subject](https://developer.apple.com/library/archive/qa/qa1962/_index.html).
 
 # Testing the Plugin
