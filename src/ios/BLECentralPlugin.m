@@ -64,8 +64,16 @@
 // TODO add timeout
 - (void)connect:(CDVInvokedUrlCommand *)command {
     NSLog(@"connect");
-    NSString *uuid = [command argumentAtIndex:0];
+    if ([manager state] != CBManagerStatePoweredOn) {
+        NSString *error = @"Bluetooth is disabled";
+        NSLog(@"%@", error);
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:error];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
 
+    NSString *uuid = [command argumentAtIndex:0];
     CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
 
     if (peripheral) {
@@ -87,6 +95,15 @@
 // If not scanning, try connectedPeripheralsWIthServices or peripheralsWithIdentifiers
 - (void)autoConnect:(CDVInvokedUrlCommand *)command {
     NSLog(@"autoConnect");
+    if ([manager state] != CBManagerStatePoweredOn) {
+        NSString *error = @"Bluetooth is disabled";
+        NSLog(@"%@", error);
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:error];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
     NSString *uuid = [command argumentAtIndex:0];
     
     CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
@@ -275,6 +292,15 @@
 
 - (void)scan:(CDVInvokedUrlCommand*)command {
     NSLog(@"scan");
+    if ([manager state] != CBManagerStatePoweredOn) {
+        NSString *error = @"Bluetooth is disabled";
+        NSLog(@"%@", error);
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:error];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
     discoverPeripheralCallbackId = [command.callbackId copy];
 
     NSArray<NSString *> *serviceUUIDStrings = [command argumentAtIndex:0];
@@ -292,6 +318,15 @@
 
 - (void)startScan:(CDVInvokedUrlCommand*)command {
     NSLog(@"startScan");
+    if ([manager state] != CBManagerStatePoweredOn) {
+        NSString *error = @"Bluetooth is disabled";
+        NSLog(@"%@", error);
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:error];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
     discoverPeripheralCallbackId = [command.callbackId copy];
     NSArray<NSString *> *serviceUUIDStrings = [command argumentAtIndex:0];
     NSArray<CBUUID *> *serviceUUIDs = [self uuidStringsToCBUUIDs:serviceUUIDStrings];
@@ -301,6 +336,15 @@
 
 - (void)startScanWithOptions:(CDVInvokedUrlCommand*)command {
     NSLog(@"startScanWithOptions");
+    if ([manager state] != CBManagerStatePoweredOn) {
+        NSString *error = @"Bluetooth is disabled";
+        NSLog(@"%@", error);
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:error];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
     discoverPeripheralCallbackId = [command.callbackId copy];
     NSArray<NSString *> *serviceUUIDStrings = [command argumentAtIndex:0];
     NSArray<CBUUID *> *serviceUUIDs = [self uuidStringsToCBUUIDs:serviceUUIDStrings];
@@ -319,7 +363,9 @@
 - (void)stopScan:(CDVInvokedUrlCommand*)command {
     NSLog(@"stopScan");
 
-    [manager stopScan];
+    if ([manager state] == CBManagerStatePoweredOn) {
+        [manager stopScan];
+    }
 
     if (discoverPeripheralCallbackId) {
         discoverPeripheralCallbackId = nil;
@@ -399,6 +445,15 @@
 // https://developer.apple.com/documentation/corebluetooth/cbcentralmanager/1518924-retrieveconnectedperipheralswith?language=objc
 - (void)connectedPeripheralsWithServices:(CDVInvokedUrlCommand*)command {
     NSLog(@"connectedPeripheralsWithServices");
+    if ([manager state] != CBManagerStatePoweredOn) {
+        NSString *error = @"Bluetooth is disabled";
+        NSLog(@"%@", error);
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:error];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
     NSArray *serviceUUIDStrings = [command argumentAtIndex:0];
     NSArray<CBUUID *> *serviceUUIDs = [self uuidStringsToCBUUIDs:serviceUUIDStrings];
 

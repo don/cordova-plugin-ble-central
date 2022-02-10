@@ -127,12 +127,11 @@ declare namespace BLECentralPlugin {
         enable(): Promise<void>;
         showBluetoothSettings(): Promise<void>;
         stopStateNotifications(): Promise<void>;
+        stopLocationStateNotifications(): Promise<void>;
         readRSSI(device_id: string): Promise<number>;
         disconnect(device_id: string): Promise<void>;
         createBond(device_id: string): Promise<void>;
         getBondState(device_id: string): Promise<'none' | 'bonding' | 'bonded'>;
-        stopStateNotifications(): Promise<void>;
-        stopLocationStateNotifications(): Promise<void>;
     }
 
     export interface BLECentralPluginStatic extends BLECentralPluginCommon {
@@ -198,6 +197,15 @@ declare namespace BLECentralPlugin {
            [iOS] requestMtu is not supported on iOS. */
         requestMtu(device_id: string, mtu: number, success?: () => any, failure?: () => any): void;
 
+        /* When Connecting to a peripheral android can request for the connection priority for better communication.
+           [iOS] requestConnectionPriority is not supported on iOS. */
+        requestConnectionPriority(
+            device_id: string,
+            priority: 'high' | 'balanced' | 'low',
+            success?: () => any,
+            failure?: () => any
+        ): void;
+
         /* Clears cached services and characteristics info for some poorly behaved devices. Uses an undocumented API,
         so it is not guaranteed to work.
            [iOS] refreshDeviceCache is not supported on iOS. */
@@ -209,6 +217,15 @@ declare namespace BLECentralPlugin {
         ): void;
 
         stopStateNotifications(success?: () => any, failure?: () => any): void;
+
+        /* Registers a change listener for location-related services.
+           [iOS] startLocationStateNotifications is not supported on iOS. */
+        startLocationStateNotifications(
+            change: (isLocationEnabled: boolean) => any,
+            failure?: (error: string) => any
+        ): void;
+
+        stopLocationStateNotifications(success?: () => any, failure?: (error: string) => any): void;
 
         /* Opens the Bluetooth settings for the operating systems.
            [iOS] showBluetoothSettings is not supported on iOS. */
@@ -247,11 +264,6 @@ declare namespace BLECentralPlugin {
         createBond(device_id: string, success?: () => any, failure?: (error: string) => any): void;
         getBondState(device_id: string, success?: () => any, failure?: (error: string) => any): void;
         isLocationEnabled(success: () => any, failure: (error: string) => any): void;
-        startLocationStateNotifications(
-            change: (isLocationEnabled: boolean) => any,
-            failure?: (error: string) => any
-        ): void;
-        stopLocationStateNotifications(success?: () => any, failure?: (error: string) => any): void;
     }
 }
 
