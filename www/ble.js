@@ -243,6 +243,14 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'showBluetoothSettings', []);
     },
 
+    startLocationStateNotifications: function (success, failure) {
+      cordova.exec(success, failure, "BLE", "startLocationStateNotifications", []);
+    },
+
+    stopLocationStateNotifications: function (success, failure) {
+      cordova.exec(success, failure, "BLE", "stopLocationStateNotifications", []);
+    },
+
     startStateNotifications: function (success, failure) {
         cordova.exec(success, failure, 'BLE', 'startStateNotifications', []);
     },
@@ -336,6 +344,12 @@ module.exports.withPromises = {
         return new Promise(function (resolve, reject) {
             module.exports.stopStateNotifications(resolve, reject);
         });
+    },
+
+    stopLocationStateNotifications: function () {
+      return new Promise(function(resolve, reject) {
+          module.exports.stopLocationStateNotifications(resolve, reject);
+      });
     },
 
     readRSSI: function (device_id) {

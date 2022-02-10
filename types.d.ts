@@ -89,6 +89,7 @@ declare namespace BLECentralPlugin {
         enable(): Promise<void>;
         showBluetoothSettings(): Promise<void>;
         stopStateNotifications(): Promise<void>;
+        stopLocationStateNotifications(): Promise<void>;
         readRSSI(device_id: string): Promise<number>;
     }
 
@@ -166,7 +167,7 @@ declare namespace BLECentralPlugin {
            [iOS] requestConnectionPriority is not supported on iOS. */
         requestConnectionPriority(
             device_id: string,
-            priority: "high" | "balanced" | "low",
+            priority: 'high' | 'balanced' | 'low',
             success?: () => any,
             failure?: () => any
         ): void;
@@ -182,6 +183,15 @@ declare namespace BLECentralPlugin {
         ): void;
 
         stopStateNotifications(success?: () => any, failure?: () => any): void;
+
+        /* Registers a change listener for location-related services.
+           [iOS] startLocationStateNotifications is not supported on iOS. */
+        startLocationStateNotifications(
+            change: (isLocationEnabled: boolean) => any,
+            failure?: (error: string) => any
+        ): void;
+
+        stopLocationStateNotifications(success?: () => any, failure?: (error: string) => any): void;
 
         /* Opens the Bluetooth settings for the operating systems.
            [iOS] showBluetoothSettings is not supported on iOS. */
