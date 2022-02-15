@@ -1,4 +1,6 @@
 declare namespace BLECentralPlugin {
+    type PeripheralState = 'disconnected' | 'disconnecting' | 'connecting' | 'connected';
+
     interface PeripheralCharacteristic {
         service: string;
         characteristic: string;
@@ -11,6 +13,7 @@ declare namespace BLECentralPlugin {
         id: string;
         rssi: number;
         advertising: ArrayBuffer | any;
+        state: PeripheralState;
     }
 
     interface PeripheralDataExtended extends PeripheralData {
@@ -26,6 +29,12 @@ declare namespace BLECentralPlugin {
 
     interface StartScanOptions {
         reportDuplicates?: boolean | undefined;
+    }
+
+    interface RestoredState {
+        peripherals?: PeripheralDataExtended[];
+        scanServiceUUIDs?: string[];
+        scanOptions?: Record<string, any>;
     }
 
     interface BLECentralPluginCommon {
@@ -91,6 +100,7 @@ declare namespace BLECentralPlugin {
         stopStateNotifications(): Promise<void>;
         stopLocationStateNotifications(): Promise<void>;
         readRSSI(device_id: string): Promise<number>;
+        restoredBluetoothState(): Promise<RestoredState | undefined>;
     }
 
     export interface BLECentralPluginStatic extends BLECentralPluginCommon {
@@ -224,6 +234,12 @@ declare namespace BLECentralPlugin {
         /* Find the bonded devices.
                    [iOS] bondedDevices is not supported on iOS. */
         bondedDevices(success: (data: PeripheralData[]) => any, failure: () => any): void;
+
+        /* Reports the BLE restoration status if the app was restarted by iOS
+           as a result of a BLE event.
+           See https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW10
+            [Android] restoredBluetoothState is not supported on Android. */
+        restoredBluetoothState(success: (data: RestoredState) => any, failure: () => any): void;
 
         withPromises: BLECentralPluginPromises;
     }
