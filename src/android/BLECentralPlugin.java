@@ -404,7 +404,7 @@ public class BLECentralPlugin extends CordovaPlugin {
                     scanSettings.setScanMode( ScanSettings.SCAN_MODE_OPPORTUNISTIC );
                     break;
                 default:
-                    callbackContext.error("scanMode must be one of: lowPower | balanced | lowLatency");
+                    callbackContext.error("scanMode must be one of: lowPower | balanced | lowLatency | opportunistic");
                     validAction = false;
                     break;
             }
@@ -1020,6 +1020,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds) {
         findLowEnergyDevices( callbackContext, serviceUUIDs, scanSeconds, new ScanSettings.Builder().build() );
     }
+
     private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds, ScanSettings scanSettings) {
 
 
