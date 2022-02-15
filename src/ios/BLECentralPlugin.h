@@ -36,6 +36,7 @@
     NSMutableDictionary *stopNotificationCallbacks;
     NSMutableDictionary *connectCallbackLatches;
     NSMutableDictionary *readRSSICallbacks;
+    NSDictionary<NSString*,id> *restoredState;
     NSMutableDictionary *l2CapContexts;
 }
 
@@ -69,6 +70,8 @@
 - (void)onReset;
 
 - (void)readRSSI:(CDVInvokedUrlCommand *)command;
+
+- (void)restoredBluetoothState:(CDVInvokedUrlCommand *)command;
 
 - (void)closeL2Cap:(CDVInvokedUrlCommand*)command;
 - (void)openL2Cap:(CDVInvokedUrlCommand*)command;

@@ -61,6 +61,18 @@ It is possible to delay the initialization of the plugin on iOS. Normally the Bl
 
     --variable IOS_INIT_ON_LOAD=false
 
+If background scanning and operation is required, the [iOS restore state](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW13) should be enabled:
+
+    --variable BLUETOOTH_RESTORE_STATE=true
+
+For more information about background operation, see [Background Scanning and Notifications on iOS](#background-scanning-and-notifications-on-ios).
+
+### Android
+
+If your app targets Android 10 (API level 29) or higher, you have also the option of requesting the ACCESS_BACKGROUND_LOCATION permission. If your app has a feature that requires it, set `ACCESS_BACKGROUND_LOCATION ` to true when installing.
+
+    --variable ACCESS_BACKGROUND_LOCATION=true
+
 # API
 
 ## Methods
@@ -90,6 +102,7 @@ It is possible to delay the initialization of the plugin on iOS. Normally the Bl
 - [ble.readRSSI](#readrssi)
 - [ble.connectedPeripheralsWithServices](#connectedperipheralswithservices)
 - [ble.peripheralsWithIdentifiers](#peripheralswithidentifiers)
+- [ble.restoredBluetoothState](#restoredbluetoothstate)
 - [ble.bondedDevices](#bondeddevices)
 - [ble.l2cap.open](#l2capopen)
 - [ble.l2cap.close](#l2capclose)
@@ -197,7 +210,19 @@ See the [location permission notes](#location-permission-notes) above for inform
 
 - __services__: List of services to discover, or [] to find all devices
 - __options__: an object specifying a set of name-value pairs. The currently acceptable options are:
-- _reportDuplicates_: true if duplicate devices should be reported, false (default) if devices should only be reported once. [optional]
+    * _reportDuplicates_: _true_ if duplicate devices should be reported, _false_ (default) if devices should only be reported once. [optional]
+    * _scanMode_: String defines [setScanMode()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setscanmode) argument on Android.  
+ Can be one of: _lowPower_ | _balanced_ | _lowLatency_ | _opportunistic_
+    * _callbackType_: String defines [setCallbackType()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setcallbacktype) argument on Android.  
+ Can be one of: _all_ | _first_ | _lost_
+    * _matchMode_: String defines [setMatchMode()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setmatchmode) argument on Android.  
+ Can be one of: _aggressive_ | _sticky_
+    * _numOfMatches_: String defines [setNumOfMatches()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setnumofmatches) argument on Android.  
+ Can be one of: _one_ | _few_ | _max_
+    * _phy_: String for [setPhy()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setphy) on Android.  
+ Can be one of: _1m_ | _coded_ | _all_
+    * _legacy_: _true_ or _false_ to [control filtering](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setlegacy) bluetooth spec.pre-4.2 advertisements on Android.  
+    * _reportDelay_: Milliseconds for [setReportDelay()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setreportdelay) on Android. _0_ to be notified of results immediately. Values > _0_ causes the scan results to be queued up and delivered after the requested delay or when the internal buffers fill up.
 - __success__: Success callback function that is invoked which each discovered device.
 - __failure__: Error callback function, invoked when error occurs. [optional]
 
@@ -430,7 +455,25 @@ requestConnectionPriority
 
 ### Description
 
-When Connecting to a peripheral android can request for the connection priority for better communication.
+When Connecting to a peripheral android can request for the connection priority for better communication. See [BluetoothGatt#requestConnectionPriority](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#requestConnectionPriority(int)) for technical details
+
+Connection priority can be one of:
+
+- `0` - [CONNECTION_PRIORITY_BALANCED](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_BALANCED)
+- `1` - [CONNECTION_PRIORITY_HIGH](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_HIGH)
+- `2` - [CONNECTION_PRIORITY_LOW_POWER](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER)
+
+
+### Quick Example
+
+    ble.requestConnectionPriority(device_id, 0,
+        function() {
+            alert("success");
+        },
+        function(failure){
+            alert("Failed to request connection priority: " + failure);
+        }
+    );
 
 ### Supported Platforms
 
@@ -893,7 +936,7 @@ Retreives a list of the peripherals (containing any of the specified services) c
 
 ## peripheralsWithIdentifiers
 
-Find the connected peripherals offering the listed service UUIDs.
+Find the connected peripherals offering the listed peripheral UUIDs.
 
     ble.peripheralsWithIdentifiers([uuids], success, failure);
 
@@ -910,6 +953,30 @@ Sends a list of known peripherals by their identifiers to the success callback. 
 ### Supported Platforms
 
  * iOS
+
+## restoredBluetoothState
+
+Retrieve the CBManager restoration state (if applicable)
+
+    ble.restoredBluetoothState(success, failure);
+    await ble.withPromises.restoredBluetoothState();
+
+### Description
+
+**Use of this feature requires the [BLUETOOTH_RESTORE_STATE variable to be set](#background-scanning-and-notifications-on-ios) to true.** For more information about background operation, see [Background Scanning and Notifications on iOS](#background-scanning-and-notifications-on-ios).
+
+Retrives the state dictionary that [iOS State Preservation and Restoration](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW10) will supply when the application was launched by iOS.
+
+If the application has no state restored, this will return an empty object.
+
+### Parameters
+
+-   __success__: Success callback function, invoked with the restored Bluetooth state (if any)
+-   __failure__: Error callback function
+
+### Supported Platforms
+
+*   iOS
 
 ## bondedDevices
 
@@ -1192,10 +1259,6 @@ Android applications will continue to receive notification while the application
 
 iOS applications need additional configuration to allow Bluetooth to run in the background.
 
-Install the [cordova-custom-config](https://www.npmjs.com/package/cordova-custom-config) plugin.
-
-    cordova plugin add cordova-custom-config
-
 Add a new section to config.xml
 
     <platform name="ios">
@@ -1207,6 +1270,18 @@ Add a new section to config.xml
     </platform>
 
 See [ble-background](https://github.com/don/ble-background) example project for more details.
+
+Additionally, iOS state restoration should be enabled if long-running scans or connects should be restarted after the phone is rebooted or the app is suspended by iOS. See [iOS restore state](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW13) for the details and limitations of this feature.
+
+To activate iOS state restoration, set the BLUETOOTH_RESTORE_STATE to true when adding the plugin to the project:
+
+    --variable BLUETOOTH_RESTORE_STATE=true
+
+By default, the app id (otherwise known as the bundle identifier) will be used as the iOS restore identifier key. This can be overridden by setting the variable to the desired key directly. For example:
+
+    --variable BLUETOOTH_RESTORE_STATE=my.custom.restoration.identifier.key
+
+It's important to note that iOS will **not** automatically relaunch an application under some conditions. For a detailed list of these conditions, see the [iOS Technical QA on the subject](https://developer.apple.com/library/archive/qa/qa1962/_index.html).
 
 # Testing the Plugin
 

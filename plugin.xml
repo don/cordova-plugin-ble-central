@@ -3,7 +3,7 @@
     xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="@planetinnovation/cordova-plugin-ble-central"
-    version="1.4.1">
+    version="1.4.2">
 
     <name>@planetinnovation/cordova-plugin-ble-central</name>
     <description>Bluetooth Low Energy (BLE) Central Plugin</description>
@@ -20,6 +20,7 @@
     <platform name="ios">
 
         <preference name="IOS_INIT_ON_LOAD" default="true" />
+        <preference name="BLUETOOTH_RESTORE_STATE" default="" />
         <config-file target="config.xml" parent="/widget">
             <feature name="BLE">
                 <param name="ios-package" value="BLECentralPlugin" onload="$IOS_INIT_ON_LOAD"/>
@@ -49,9 +50,15 @@
         <config-file target="*-Info.plist" parent="NSBluetoothAlwaysUsageDescription">
             <string>$BLUETOOTH_USAGE_DESCRIPTION</string>
         </config-file>
+        <config-file target="config.xml" parent="/*">
+            <preference name="bluetooth_restore_state" value="$BLUETOOTH_RESTORE_STATE"/>
+        </config-file>
     </platform>
 
     <platform name="android">
+        
+        <preference name="ACCESS_BACKGROUND_LOCATION" default="false" />
+        
         <config-file target="res/xml/config.xml" parent="/widget">
             <feature name="BLE">
                 <param name="android-package" value="com.megster.cordova.ble.central.BLECentralPlugin"/>
@@ -61,10 +68,15 @@
         <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
             <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-            <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
-            <uses-permission android:name="android.permission.BLUETOOTH"/>
-            <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+            <uses-permission android:name="android.permission.BLUETOOTH" />
+            <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
         </config-file>
+
+        <config-file target="res/xml/config.xml" parent="/*">
+            <preference name="accessBackgroundLocation" value="$ACCESS_BACKGROUND_LOCATION"/>
+        </config-file>
+
+        <hook type="after_prepare" src="hooks/after_prepare.js"/>
 
         <source-file src="src/android/BLECentralPlugin.java"
             target-dir="src/com/megster/cordova/ble/central"/>
