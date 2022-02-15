@@ -1,3 +1,9 @@
+= 1.4.2 =
+Add typescript definitions for all methods
+Add location state notifications on Android (similar to Bluetooth state notifications)
+Add support for iOS state restoration. This is opt-in, see README for usage details #717
+Turn API misuse warnings on iOS into reported errors to prevent dead scans #828
+
 = 1.4.1 =
 Add additional options to startScanWithOptions() on Android #835 Thanks helllamer 
 Fix some instances where the Android command loop locks up #847 #830 Thanks doug-a-brunner
