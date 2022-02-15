@@ -20,6 +20,7 @@
     <platform name="ios">
 
         <preference name="IOS_INIT_ON_LOAD" default="true" />
+        <preference name="BLUETOOTH_RESTORE_STATE" default="" />
         <config-file target="config.xml" parent="/widget">
             <feature name="BLE">
                 <param name="ios-package" value="BLECentralPlugin" onload="$IOS_INIT_ON_LOAD"/>
@@ -48,6 +49,9 @@
         </config-file>
         <config-file target="*-Info.plist" parent="NSBluetoothAlwaysUsageDescription">
             <string>$BLUETOOTH_USAGE_DESCRIPTION</string>
+        </config-file>
+        <config-file target="config.xml" parent="/*">
+            <preference name="bluetooth_restore_state" value="$BLUETOOTH_RESTORE_STATE"/>
         </config-file>
     </platform>
 

@@ -243,6 +243,14 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'showBluetoothSettings', []);
     },
 
+    startLocationStateNotifications: function (success, failure) {
+      cordova.exec(success, failure, "BLE", "startLocationStateNotifications", []);
+    },
+
+    stopLocationStateNotifications: function (success, failure) {
+      cordova.exec(success, failure, "BLE", "stopLocationStateNotifications", []);
+    },
+
     startStateNotifications: function (success, failure) {
         cordova.exec(success, failure, 'BLE', 'startStateNotifications', []);
     },
@@ -251,20 +259,16 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'stopStateNotifications', []);
     },
 
+    restoredBluetoothState: function (success, failure) {
+        cordova.exec(success, failure, 'BLE', 'restoredBluetoothState', []);
+    },
+
     createBond: function (device_id, success, failure) {
         cordova.exec(success, failure, 'BLE', 'createBond', [device_id]);
     },
 
     getBondState: function (device_id, success, failure) {
         cordova.exec(success, failure, 'BLE', 'getBondState', [device_id]);
-    },
-
-    startLocationStateNotifications: function (success, failure) {
-        cordova.exec(success, failure, 'BLE', 'startLocationStateNotifications', []);
-    },
-
-    stopLocationStateNotifications: function (success, failure) {
-        cordova.exec(success, failure, 'BLE', 'stopLocationStateNotifications', []);
     },
 };
 
@@ -363,6 +367,12 @@ module.exports.withPromises = {
     readRSSI: function (device_id) {
         return new Promise(function (resolve, reject) {
             module.exports.readRSSI(device_id, resolve, reject);
+        });
+    },
+
+    restoredBluetoothState: function () {
+        return new Promise(function (resolve, reject) {
+            module.exports.restoredBluetoothState(resolve, reject);
         });
     },
 

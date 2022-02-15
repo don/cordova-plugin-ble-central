@@ -61,6 +61,12 @@ It is possible to delay the initialization of the plugin on iOS. Normally the Bl
 
     --variable IOS_INIT_ON_LOAD=false
 
+If background scanning and operation is required, the [iOS restore state](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW13) should be enabled:
+
+    --variable BLUETOOTH_RESTORE_STATE=true
+
+For more information about background operation, see [Background Scanning and Notifications on iOS](#background-scanning-and-notifications-on-ios).
+
 ### Android
 
 If your app targets Android 10 (API level 29) or higher, you have also the option of requesting the ACCESS_BACKGROUND_LOCATION permission. If your app has a feature that requires it, set `ACCESS_BACKGROUND_LOCATION ` to true when installing.
@@ -96,6 +102,7 @@ If your app targets Android 10 (API level 29) or higher, you have also the optio
 - [ble.readRSSI](#readrssi)
 - [ble.connectedPeripheralsWithServices](#connectedperipheralswithservices)
 - [ble.peripheralsWithIdentifiers](#peripheralswithidentifiers)
+- [ble.restoredBluetoothState](#restoredbluetoothstate)
 - [ble.bondedDevices](#bondeddevices)
 - [ble.l2cap.open](#l2capopen)
 - [ble.l2cap.close](#l2capclose)
@@ -947,6 +954,30 @@ Sends a list of known peripherals by their identifiers to the success callback. 
 
  * iOS
 
+## restoredBluetoothState
+
+Retrieve the CBManager restoration state (if applicable)
+
+    ble.restoredBluetoothState(success, failure);
+    await ble.withPromises.restoredBluetoothState();
+
+### Description
+
+**Use of this feature requires the [BLUETOOTH_RESTORE_STATE variable to be set](#background-scanning-and-notifications-on-ios) to true.** For more information about background operation, see [Background Scanning and Notifications on iOS](#background-scanning-and-notifications-on-ios).
+
+Retrives the state dictionary that [iOS State Preservation and Restoration](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW10) will supply when the application was launched by iOS.
+
+If the application has no state restored, this will return an empty object.
+
+### Parameters
+
+-   __success__: Success callback function, invoked with the restored Bluetooth state (if any)
+-   __failure__: Error callback function
+
+### Supported Platforms
+
+*   iOS
+
 ## bondedDevices
 
 Find the bonded devices.
@@ -1239,6 +1270,18 @@ Add a new section to config.xml
     </platform>
 
 See [ble-background](https://github.com/don/ble-background) example project for more details.
+
+Additionally, iOS state restoration should be enabled if long-running scans or connects should be restarted after the phone is rebooted or the app is suspended by iOS. See [iOS restore state](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW13) for the details and limitations of this feature.
+
+To activate iOS state restoration, set the BLUETOOTH_RESTORE_STATE to true when adding the plugin to the project:
+
+    --variable BLUETOOTH_RESTORE_STATE=true
+
+By default, the app id (otherwise known as the bundle identifier) will be used as the iOS restore identifier key. This can be overridden by setting the variable to the desired key directly. For example:
+
+    --variable BLUETOOTH_RESTORE_STATE=my.custom.restoration.identifier.key
+
+It's important to note that iOS will **not** automatically relaunch an application under some conditions. For a detailed list of these conditions, see the [iOS Technical QA on the subject](https://developer.apple.com/library/archive/qa/qa1962/_index.html).
 
 # Testing the Plugin
 
