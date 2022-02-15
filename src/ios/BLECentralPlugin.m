@@ -742,30 +742,58 @@
     NSString *stopNotificationCallbackId = [stopNotificationCallbacks objectForKey:key];
 
     CDVPluginResult *pluginResult = nil;
-
-    if (!characteristic.isNotifying && stopNotificationCallbackId) {
-        if (error) {
-            NSLog(@"%@", error);
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
-        } else {
+    
+    if (stopNotificationCallbackId) {
+        if (!characteristic.isNotifying) {
+            // successfully stopped notifications
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            [notificationCallbacks removeObjectForKey:key];
+        } else {
+            if (error) {
+                // error: something went wrong
+                NSLog(@"%@", error);
+                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
+            } else {
+                // error: still notifying
+                NSLog(@"Notifications failed to stop");
+                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Notifications failed to stop"];
+            }
         }
+
         [self.commandDelegate sendPluginResult:pluginResult callbackId:stopNotificationCallbackId];
         [stopNotificationCallbacks removeObjectForKey:key];
-        [notificationCallbacks removeObjectForKey:key];
-        NSAssert(![startNotificationCallbacks objectForKey:key], @"%@ existed in both start and stop notification callback dicts!", key);
     }
-    
-    if (characteristic.isNotifying && startNotificationCallbackId) {
-        if (error) {
-            NSLog(@"%@", error);
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:startNotificationCallbackId];
-            [startNotificationCallbacks removeObjectForKey:key];
-        } else {
+
+    if (startNotificationCallbackId) {
+        if (characteristic.isNotifying) {
+            // successfully started notifications
             // notification start succeeded, move the callback to the value notifications dict
             [notificationCallbacks setObject:startNotificationCallbackId forKey:key];
             [startNotificationCallbacks removeObjectForKey:key];
+        } else {
+            if (error) {
+                // error: something went wrong
+                NSLog(@"%@", error);
+                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
+            } else {
+                // error: not notifying
+                NSLog(@"Notifications failed to start");
+                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Notifications failed to start"];
+            }
+
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:startNotificationCallbackId];
+            [startNotificationCallbacks removeObjectForKey:key];
+        }
+    }
+
+    if (!characteristic.isNotifying) {
+        // characteristic is not notifying
+        NSString *notificationCallbackId = [notificationCallbacks objectForKey:key];
+        if (notificationCallbackId) {
+            // error: characteristic no longer notifying
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Characteristic not notifying"];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:startNotificationCallbackId];
+            [notificationCallbacks removeObjectForKey:key];
         }
     }
 }
