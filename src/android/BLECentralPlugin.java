@@ -430,10 +430,10 @@ public class BLECentralPlugin extends CordovaPlugin {
                 case "":
                     break;
                 case "aggressive":
-                    scanSettings.setCallbackType( ScanSettings.MATCH_MODE_AGGRESSIVE );
+                    scanSettings.setMatchMode( ScanSettings.MATCH_MODE_AGGRESSIVE );
                     break;
                 case "sticky":
-                    scanSettings.setCallbackType( ScanSettings.MATCH_MODE_STICKY );
+                    scanSettings.setMatchMode( ScanSettings.MATCH_MODE_STICKY );
                     break;
                 default:
                     callbackContext.error("matchMode must be one of: aggressive | sticky");
