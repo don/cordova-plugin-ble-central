@@ -117,6 +117,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     private CallbackContext permissionCallback;
     private UUID[] serviceUUIDs;
     private int scanSeconds;
+    private ScanSettings scanSettings;
 
     // Bluetooth state notification
     CallbackContext stateCallback;
@@ -900,6 +901,7 @@ public class BLECentralPlugin extends CordovaPlugin {
                 permissionCallback = callbackContext;
                 this.serviceUUIDs = serviceUUIDs;
                 this.scanSeconds = scanSeconds;
+                this.scanSettings = scanSettings;
 
                 List<String> permissionsList = new ArrayList<String>();
                 permissionsList.add(Manifest.permission.ACCESS_FINE_LOCATION);
@@ -918,6 +920,7 @@ public class BLECentralPlugin extends CordovaPlugin {
                 permissionCallback = callbackContext;
                 this.serviceUUIDs = serviceUUIDs;
                 this.scanSeconds = scanSeconds;
+                this.scanSettings = scanSettings;
                 PermissionHelper.requestPermission(this, REQUEST_ACCESS_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION);
                 return;
             }
@@ -1042,10 +1045,11 @@ public class BLECentralPlugin extends CordovaPlugin {
         switch(requestCode) {
             case REQUEST_ACCESS_LOCATION:
                 LOG.d(TAG, "User granted Location Access");
-                findLowEnergyDevices(permissionCallback, serviceUUIDs, scanSeconds);
+                findLowEnergyDevices(permissionCallback, serviceUUIDs, scanSeconds, scanSettings);
                 this.permissionCallback = null;
                 this.serviceUUIDs = null;
                 this.scanSeconds = -1;
+                this.scanSettings = null;
                 break;
         }
     }
