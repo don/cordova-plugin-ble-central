@@ -85,11 +85,7 @@ public class Peripheral extends BluetoothGattCallback {
 
     private void gattConnect() {
 
-        if (gatt != null) {
-            gatt.disconnect();
-            gatt.close();
-            gatt = null;
-        }
+        closeGatt();
         connected = false;
         connecting = true;
         queueCleanup();
@@ -122,11 +118,7 @@ public class Peripheral extends BluetoothGattCallback {
         connected = false;
         connecting = false;
 
-        if (gatt != null) {
-            gatt.disconnect();
-            gatt.close();
-            gatt = null;
-        }
+        closeGatt();
         queueCleanup();
         callbackCleanup();
     }
@@ -138,16 +130,26 @@ public class Peripheral extends BluetoothGattCallback {
         connecting = false;
 
         // don't remove the gatt for autoconnect
-        if (!autoconnect && gatt != null) {
-            gatt.disconnect();
-            gatt.close();
-            gatt = null;
+        if (!autoconnect) {
+            closeGatt();
         }
 
         sendDisconnectMessage();
 
         queueCleanup();
         callbackCleanup();
+    }
+
+    private void closeGatt() {
+        BluetoothGatt localGatt;
+        synchronized (this) {
+            localGatt = this.gatt;
+            this.gatt = null;
+        }
+        if (localGatt != null) {
+            localGatt.disconnect();
+            localGatt.close();
+        }
     }
 
     // notify the phone that the peripheral disconnected
