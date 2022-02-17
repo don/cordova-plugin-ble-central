@@ -298,7 +298,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             if (peripherals.containsKey(macAddress) && peripherals.get(macAddress).isConnected()) {
                 callbackContext.success();
             } else {
-                callbackContext.error("Not connected.");
+                callbackContext.error("Not connected");
             }
 
         } else if (action.equals(SETTINGS)) {
