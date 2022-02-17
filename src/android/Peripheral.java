@@ -133,7 +133,7 @@ public class Peripheral extends BluetoothGattCallback {
 
     // the peripheral disconnected
     // always call connectCallback.error to notify the app
-    private void peripheralDisconnected() {
+    public void peripheralDisconnected(String message) {
         connected = false;
         connecting = false;
 
@@ -144,16 +144,16 @@ public class Peripheral extends BluetoothGattCallback {
             gatt = null;
         }
 
-        sendDisconnectMessage();
+        sendDisconnectMessage(message);
 
         queueCleanup();
         callbackCleanup();
     }
 
     // notify the phone that the peripheral disconnected
-    private void sendDisconnectMessage() {
+    private void sendDisconnectMessage(String messageContent) {
         if (connectCallback != null) {
-            JSONObject message = this.asJSONObject("Peripheral Disconnected");
+            JSONObject message = this.asJSONObject(messageContent);
             if (autoconnect) {
                 PluginResult result = new PluginResult(PluginResult.Status.ERROR, message);
                 result.setKeepCallback(true);
@@ -309,7 +309,7 @@ public class Peripheral extends BluetoothGattCallback {
                         //characteristicsJSON.put("instanceId", characteristic.getInstanceId());
 
                         characteristicsJSON.put("properties", Helper.decodeProperties(characteristic));
-                            // characteristicsJSON.put("propertiesValue", characteristic.getProperties());
+                        // characteristicsJSON.put("propertiesValue", characteristic.getProperties());
 
                         if (characteristic.getPermissions() > 0) {
                             characteristicsJSON.put("permissions", Helper.decodePermissions(characteristic));
@@ -403,7 +403,7 @@ public class Peripheral extends BluetoothGattCallback {
         } else {  // Disconnected
             LOG.d(TAG, "onConnectionStateChange DISCONNECTED");
             connected = false;
-            peripheralDisconnected();
+            peripheralDisconnected("Peripheral Disconnected");
 
         }
 
