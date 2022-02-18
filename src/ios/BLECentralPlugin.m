@@ -43,7 +43,7 @@
 
     NSDictionary *pluginSettings = [[self commandDelegate] settings];
     NSString *enableState = pluginSettings[@"bluetooth_restore_state"];
-    if (enableState != nil && [enableState length] > 0) {
+    if (![self isFalsey:enableState]) {
         NSString *restoreIdentifier = [@"true" isEqualToString:[enableState lowercaseString]]
             ? [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]
             : enableState;
@@ -1066,6 +1066,10 @@
         [uuids addObject:uuid];
     }
     return uuids;
+}
+
+- (BOOL) isFalsey:(NSString *)value {
+    return value == nil || [value length] == 0 || [@"false" isEqualToString:[value lowercaseString]];
 }
 
 @end
