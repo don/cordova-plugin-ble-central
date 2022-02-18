@@ -1,3 +1,10 @@
+= 1.4.3 =
+iOS: Make BLUETOOTH_RESTORE_STATE variable optional
+Android Synchronise access to the gatt during cleanup to avoid null ref errors #799
+Android: Ensure scan settings are correctly applied when permissions are requested
+Android: Correctly set match mode rather than callback type for scanWithOptions
+Android: Align "Not connected" message with iOS #784
+
 = 1.4.2 =
 Add typescript definitions for all methods
 Add location state notifications on Android (similar to Bluetooth state notifications)
