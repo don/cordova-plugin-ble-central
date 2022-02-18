@@ -20,7 +20,7 @@
     <platform name="ios">
 
         <preference name="IOS_INIT_ON_LOAD" default="true" />
-        <preference name="BLUETOOTH_RESTORE_STATE" default="" />
+        <preference name="BLUETOOTH_RESTORE_STATE" default="false" />
         <config-file target="config.xml" parent="/widget">
             <feature name="BLE">
                 <param name="ios-package" value="BLECentralPlugin" onload="$IOS_INIT_ON_LOAD"/>
