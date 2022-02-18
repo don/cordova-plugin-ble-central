@@ -117,6 +117,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     private CallbackContext permissionCallback;
     private UUID[] serviceUUIDs;
     private int scanSeconds;
+    private ScanSettings scanSettings;
 
     // Bluetooth state notification
     CallbackContext stateCallback;
@@ -297,7 +298,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             if (peripherals.containsKey(macAddress) && peripherals.get(macAddress).isConnected()) {
                 callbackContext.success();
             } else {
-                callbackContext.error("Not connected.");
+                callbackContext.error("Not connected");
             }
 
         } else if (action.equals(SETTINGS)) {
@@ -380,7 +381,7 @@ public class BLECentralPlugin extends CordovaPlugin {
                     scanSettings.setScanMode( ScanSettings.SCAN_MODE_OPPORTUNISTIC );
                     break;
                 default:
-                    callbackContext.error("scanMode must be one of: lowPower | balanced | lowLatency");
+                    callbackContext.error("scanMode must be one of: lowPower | balanced | lowLatency | opportunistic");
                     validAction = false;
                     break;
             }
@@ -407,10 +408,10 @@ public class BLECentralPlugin extends CordovaPlugin {
                 case "":
                     break;
                 case "aggressive":
-                    scanSettings.setCallbackType( ScanSettings.MATCH_MODE_AGGRESSIVE );
+                    scanSettings.setMatchMode( ScanSettings.MATCH_MODE_AGGRESSIVE );
                     break;
                 case "sticky":
-                    scanSettings.setCallbackType( ScanSettings.MATCH_MODE_STICKY );
+                    scanSettings.setMatchMode( ScanSettings.MATCH_MODE_STICKY );
                     break;
                 default:
                     callbackContext.error("matchMode must be one of: aggressive | sticky");
@@ -888,6 +889,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds) {
         findLowEnergyDevices( callbackContext, serviceUUIDs, scanSeconds, new ScanSettings.Builder().build() );
     }
+
     private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds, ScanSettings scanSettings) {
 
 
@@ -900,6 +902,7 @@ public class BLECentralPlugin extends CordovaPlugin {
                 permissionCallback = callbackContext;
                 this.serviceUUIDs = serviceUUIDs;
                 this.scanSeconds = scanSeconds;
+                this.scanSettings = scanSettings;
 
                 List<String> permissionsList = new ArrayList<String>();
                 permissionsList.add(Manifest.permission.ACCESS_FINE_LOCATION);
@@ -918,6 +921,7 @@ public class BLECentralPlugin extends CordovaPlugin {
                 permissionCallback = callbackContext;
                 this.serviceUUIDs = serviceUUIDs;
                 this.scanSeconds = scanSeconds;
+                this.scanSettings = scanSettings;
                 PermissionHelper.requestPermission(this, REQUEST_ACCESS_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION);
                 return;
             }
@@ -1042,10 +1046,11 @@ public class BLECentralPlugin extends CordovaPlugin {
         switch(requestCode) {
             case REQUEST_ACCESS_LOCATION:
                 LOG.d(TAG, "User granted Location Access");
-                findLowEnergyDevices(permissionCallback, serviceUUIDs, scanSeconds);
+                findLowEnergyDevices(permissionCallback, serviceUUIDs, scanSeconds, scanSettings);
                 this.permissionCallback = null;
                 this.serviceUUIDs = null;
                 this.scanSeconds = -1;
+                this.scanSettings = null;
                 break;
         }
     }
