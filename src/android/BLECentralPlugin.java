@@ -21,6 +21,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
@@ -530,7 +531,7 @@ public class BLECentralPlugin extends CordovaPlugin {
                     if (!peripheral.isConnected()) continue;
                     
                     int connectedState = bluetoothManager.getConnectionState(peripheral.getDevice(), BluetoothProfile.GATT);
-                    if (connectedState == STATE_DISCONNECTED) {
+                    if (connectedState == BluetoothProfile.STATE_DISCONNECTED) {
                         peripheral.peripheralDisconnected("Bluetooth Disabled");
                     }
                 }
