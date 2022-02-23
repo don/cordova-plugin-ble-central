@@ -21,6 +21,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
@@ -515,6 +516,20 @@ public class BLECentralPlugin extends CordovaPlugin {
         if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
             final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
             sendBluetoothStateChange(state);
+            if (state == BluetoothAdapter.STATE_OFF) {
+               // #894 When Bluetooth is physically turned off the whole process might die, so the normal
+                // onConnectionStateChange callbacks won't be invoked
+                
+                BluetoothManager bluetoothManager = (BluetoothManager) cordova.getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
+                for(Peripheral peripheral : peripherals.values()) {
+                    if (!peripheral.isConnected()) continue;
+                    
+                    int connectedState = bluetoothManager.getConnectionState(peripheral.getDevice(), BluetoothProfile.GATT);
+                    if (connectedState == BluetoothProfile.STATE_DISCONNECTED) {
+                        peripheral.peripheralDisconnected("Bluetooth Disabled");
+                    }
+                }
+            }
         }
     }
 
@@ -612,6 +627,8 @@ public class BLECentralPlugin extends CordovaPlugin {
 
         Peripheral peripheral = peripherals.get(macAddress);
         if (peripheral != null) {
+            // #894: BLE adapter state listener required so disconnect can be fired on BLE disabled
+            addStateListener();
             peripheral.connect(callbackContext, cordova.getActivity(), false);
         } else {
             callbackContext.error("Peripheral " + macAddress + " not found.");
@@ -634,6 +651,8 @@ public class BLECentralPlugin extends CordovaPlugin {
             }
         }
 
+        // #894: BLE adapter state listener required so disconnect can be fired on BLE disabled
+        addStateListener();
         peripheral.connect(callbackContext, cordova.getActivity(), true);
 
     }
