@@ -467,6 +467,18 @@ public class Peripheral extends BluetoothGattCallback {
     public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
         super.onDescriptorWrite(gatt, descriptor, status);
         LOG.d(TAG, "onDescriptorWrite %s", descriptor);
+        if (descriptor.getUuid().equals(CLIENT_CHARACTERISTIC_CONFIGURATION_UUID)) {
+            BluetoothGattCharacteristic characteristic = descriptor.getCharacteristic();
+            String key = generateHashKey(characteristic);
+            SequentialCallbackContext callback = notificationCallbacks.get(key);
+
+            if (callback != null) {
+                boolean success = callback.completeSubscription(status);
+                if (!success) {
+                    notificationCallbacks.remove(key);
+                }
+            }
+        }
         commandCompleted();
     }
 
@@ -560,7 +572,6 @@ public class Peripheral extends BluetoothGattCallback {
             notificationCallbacks.remove(key);
             commandCompleted();
         }
-
     }
 
     private void removeNotifyCallback(CallbackContext callbackContext, UUID serviceUUID, UUID characteristicUUID) {
