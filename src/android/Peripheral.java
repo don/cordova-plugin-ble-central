@@ -532,6 +532,7 @@ public class Peripheral extends BluetoothGattCallback {
 
         if (!gatt.setCharacteristicNotification(characteristic, true)) {
             callbackContext.error("Failed to register notification for " + characteristicUUID);
+            notificationCallbacks.remove(key);
             commandCompleted();
             return;
         }
@@ -540,6 +541,7 @@ public class Peripheral extends BluetoothGattCallback {
         BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIGURATION_UUID);
         if (descriptor == null) {
             callbackContext.error("Set notification failed for " + characteristicUUID);
+            notificationCallbacks.remove(key);
             commandCompleted();
             return;
         }
@@ -555,6 +557,7 @@ public class Peripheral extends BluetoothGattCallback {
 
         if (!gatt.writeDescriptor(descriptor)) {
             callbackContext.error("Failed to set client characteristic notification for " + characteristicUUID);
+            notificationCallbacks.remove(key);
             commandCompleted();
         }
 
