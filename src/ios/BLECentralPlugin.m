@@ -776,7 +776,9 @@
             // successfully started notifications
             // notification start succeeded, move the callback to the value notifications dict
             [notificationCallbacks setObject:startNotificationCallbackId forKey:key];
-            [startNotificationCallbacks removeObjectForKey:key];
+            
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"registered"];
+            [pluginResult setKeepCallbackAsBool:TRUE]; // keep for notification
         } else {
             if (error) {
                 // error: something went wrong
@@ -787,10 +789,10 @@
                 NSLog(@"Notifications failed to start");
                 pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Notifications failed to start"];
             }
-
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:startNotificationCallbackId];
-            [startNotificationCallbacks removeObjectForKey:key];
         }
+
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:startNotificationCallbackId];
+        [startNotificationCallbacks removeObjectForKey:key];
     }
 
     if (!characteristic.isNotifying) {
