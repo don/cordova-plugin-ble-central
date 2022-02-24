@@ -63,15 +63,6 @@ declare namespace BLECentralPlugin {
             connectCallback: (data: PeripheralDataExtended) => any,
             disconnectCallback: (error: string | BLEError) => any
         ): void;
-
-        /* Register to be notified when the value of a characteristic changes. */
-        startNotification(
-            device_id: string,
-            service_uuid: string,
-            characteristic_uuid: string,
-            success: (rawData: ArrayBuffer) => any,
-            failure?: (error: string | BLEError) => any
-        ): void;
     }
 
     export interface BLECentralPluginPromises extends BLECentralPluginCommon {
@@ -84,6 +75,15 @@ declare namespace BLECentralPlugin {
             service_uuid: string,
             characteristic_uuid: string,
             value: ArrayBuffer
+        ): Promise<void>;
+
+        /* Register to be notified when the value of a characteristic changes. */
+        startNotification(
+            device_id: string,
+            service_uuid: string,
+            characteristic_uuid: string,
+            success: (rawData: ArrayBuffer) => any,
+            failure?: (error: string | BLEError) => any
         ): Promise<void>;
         stopNotification(device_id: string, service_uuid: string, characteristic_uuid: string): Promise<void>;
 
@@ -118,8 +118,7 @@ declare namespace BLECentralPlugin {
            [iOS] setPin is not supported on iOS. */
         setPin(pin: string, success?: () => any, failure?: (error: string | BLEError) => any): void;
 
-        stopScan(): void;
-        stopScan(success: () => any, failure?: () => any): void;
+        stopScan(success?: () => any, failure?: () => any): void;
 
         /* Automatically connect to a device when it is in range of the phone
            [iOS] background notifications on ios must be enabled if you want to run in the background
@@ -159,6 +158,23 @@ declare namespace BLECentralPlugin {
             data: ArrayBuffer,
             success?: () => any,
             failure?: (error: string) => any
+        ): void;
+
+        startNotification(
+            device_id: string,
+            service_uuid: string,
+            characteristic_uuid: string,
+            success: (rawData: ArrayBuffer | 'registered') => any,
+            failure?: (error: string | BLEError) => any,
+            options: { emitOnRegistered: boolean } = { emitOnRegistered: true }
+        ): void;
+
+        startNotification(
+            device_id: string,
+            service_uuid: string,
+            characteristic_uuid: string,
+            success: (rawData: ArrayBuffer) => any,
+            failure?: (error: string | BLEError) => any
         ): void;
 
         stopNotification(

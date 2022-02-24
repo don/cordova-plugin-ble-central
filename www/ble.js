@@ -213,8 +213,17 @@ module.exports = {
     },
 
     // success callback is called on notification
-    startNotification: function (device_id, service_uuid, characteristic_uuid, success, failure) {
-        cordova.exec(success, failure, 'BLE', 'startNotification', [device_id, service_uuid, characteristic_uuid]);
+    startNotification: function (device_id, service_uuid, characteristic_uuid, success, failure, options) {
+        const emitOnRegistered = options && options.emitOnRegistered == true;
+        function onEvent(data) {
+            if (data === 'registered') {
+                // For backwards compatibility, don't emit the registered event unless explicitly instructed
+                if (emitOnRegistered) success(data);
+            } else {
+                success(data);
+            }
+        }
+        cordova.exec(onEvent, failure, 'BLE', 'startNotification', [device_id, service_uuid, characteristic_uuid]);
     },
 
     // success callback is called when the descriptor 0x2902 is written
@@ -269,7 +278,6 @@ module.exports.withPromises = {
     startScan: module.exports.startScan,
     startScanWithOptions: module.exports.startScanWithOptions,
     connect: module.exports.connect,
-    startNotification: module.exports.startNotification,
 
     stopScan: function () {
         return new Promise(function (resolve, reject) {
@@ -310,6 +318,26 @@ module.exports.withPromises = {
     writeWithoutResponse: function (device_id, service_uuid, characteristic_uuid, value) {
         return new Promise(function (resolve, reject) {
             module.exports.writeWithoutResponse(device_id, service_uuid, characteristic_uuid, value, resolve, reject);
+        });
+    },
+
+    startNotification: function (device_id, service_uuid, characteristic_uuid, success, failure) {
+        return new Promise(function (resolve, reject) {
+            module.exports.startNotification(
+                device_id,
+                service_uuid,
+                characteristic_uuid,
+                (data) => {
+                    resolve();
+                    // Filter out registered callback
+                    if (data !== 'registered') success(data);
+                },
+                (err) => {
+                    reject(err);
+                    failure(err);
+                },
+                { emitOnRegistered: true }
+            );
         });
     },
 
