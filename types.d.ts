@@ -72,8 +72,6 @@ declare namespace BLECentralPlugin {
             success: (rawData: ArrayBuffer) => any,
             failure?: (error: string | BLEError) => any
         ): void;
-
-        startStateNotifications(success: (state: string) => any, failure?: (error: string) => any): void;
     }
 
     export interface BLECentralPluginPromises extends BLECentralPluginCommon {
@@ -97,8 +95,20 @@ declare namespace BLECentralPlugin {
 
         enable(): Promise<void>;
         showBluetoothSettings(): Promise<void>;
+
+        /** Registers a change listener for Bluetooth adapter state changes */
+        startStateNotifications(success: (state: string) => any, failure?: (error: string) => any): Promise<void>;
+
         stopStateNotifications(): Promise<void>;
+
+        /* Registers a change listener for location-related services.
+           [iOS] startLocationStateNotifications is not supported on iOS. */
+        startLocationStateNotifications(
+            change: (isLocationEnabled: boolean) => any,
+            failure?: (error: string) => any
+        ): Promise<void>;
         stopLocationStateNotifications(): Promise<void>;
+
         readRSSI(device_id: string): Promise<number>;
         restoredBluetoothState(): Promise<RestoredState | undefined>;
     }
@@ -191,6 +201,9 @@ declare namespace BLECentralPlugin {
             success?: (data: PeripheralDataExtended) => any,
             failure?: (error: string | BLEError) => any
         ): void;
+
+        /** Registers a change listener for Bluetooth adapter state changes */
+        startStateNotifications(success: (state: string) => any, failure?: (error: string) => any): void;
 
         stopStateNotifications(success?: () => any, failure?: () => any): void;
 

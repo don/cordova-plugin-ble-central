@@ -244,11 +244,11 @@ module.exports = {
     },
 
     startLocationStateNotifications: function (success, failure) {
-      cordova.exec(success, failure, "BLE", "startLocationStateNotifications", []);
+        cordova.exec(success, failure, 'BLE', 'startLocationStateNotifications', []);
     },
 
     stopLocationStateNotifications: function (success, failure) {
-      cordova.exec(success, failure, "BLE", "stopLocationStateNotifications", []);
+        cordova.exec(success, failure, 'BLE', 'stopLocationStateNotifications', []);
     },
 
     startStateNotifications: function (success, failure) {
@@ -270,7 +270,6 @@ module.exports.withPromises = {
     startScanWithOptions: module.exports.startScanWithOptions,
     connect: module.exports.connect,
     startNotification: module.exports.startNotification,
-    startStateNotifications: module.exports.startStateNotifications,
 
     stopScan: function () {
         return new Promise(function (resolve, reject) {
@@ -344,16 +343,46 @@ module.exports.withPromises = {
         });
     },
 
+    startStateNotifications: function (success, failure) {
+        return new Promise(function (resolve, reject) {
+            module.exports.startStateNotifications(
+                function (state) {
+                    resolve();
+                    success(state);
+                },
+                function (err) {
+                    reject(err);
+                    failure(err);
+                }
+            );
+        });
+    },
+
     stopStateNotifications: function () {
         return new Promise(function (resolve, reject) {
             module.exports.stopStateNotifications(resolve, reject);
         });
     },
 
+    startLocationStateNotifications: function (change, failure) {
+        return new Promise(function (resolve, reject) {
+            module.exports.startLocationStateNotifications(
+                function (state) {
+                    resolve();
+                    change(state);
+                },
+                function (err) {
+                    reject(err);
+                    failure(err);
+                }
+            );
+        });
+    },
+
     stopLocationStateNotifications: function () {
-      return new Promise(function(resolve, reject) {
-          module.exports.stopLocationStateNotifications(resolve, reject);
-      });
+        return new Promise(function (resolve, reject) {
+            module.exports.stopLocationStateNotifications(resolve, reject);
+        });
     },
 
     readRSSI: function (device_id) {
