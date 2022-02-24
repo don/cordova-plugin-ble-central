@@ -230,9 +230,9 @@
 // write: function (device_id, service_uuid, characteristic_uuid, value, success, failure) {
 - (void)write:(CDVInvokedUrlCommand*)command {
     BLECommandContext *context = [self getData:command prop:CBCharacteristicPropertyWrite];
-    NSData *message = [command argumentAtIndex:3]; // This is binary
+    id message = [self tryDecodeBinaryData:[command argumentAtIndex:3]]; // This should be binary
     if (context) {
-        if (message != nil) {
+        if (message != nil && [message isKindOfClass:[NSData class]]) {
             CBPeripheral *peripheral = [context peripheral];
             if ([peripheral state] != CBPeripheralStateConnected) {
                 CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral is not connected"];
@@ -248,6 +248,11 @@
             [peripheral writeValue:message forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
 
             // response is sent from didWriteValueForCharacteristic
+        } else if (message != nil) {
+            // #897: some alternative BLE plugins expect a string rather than array buffer, so this is a common misuse
+            CDVPluginResult *pluginResult = nil;
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"message was not ArrayBuffer"];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
         } else {
             CDVPluginResult *pluginResult = nil;
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"message was null"];
@@ -261,11 +266,10 @@
     NSLog(@"writeWithoutResponse");
 
     BLECommandContext *context = [self getData:command prop:CBCharacteristicPropertyWriteWithoutResponse];
-    NSData *message = [command argumentAtIndex:3]; // This is binary
-
+    id message = [self tryDecodeBinaryData:[command argumentAtIndex:3]]; // This should be binary
     if (context) {
         CDVPluginResult *pluginResult = nil;
-        if (message != nil) {
+        if (message != nil && [message isKindOfClass:[NSData class]]) {
             CBPeripheral *peripheral = [context peripheral];
             if ([peripheral state] != CBPeripheralStateConnected) {
                 CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral is not connected"];
@@ -278,6 +282,9 @@
             [peripheral writeValue:message forCharacteristic:characteristic type:CBCharacteristicWriteWithoutResponse];
 
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        } else if (message != nil) {
+            // #897: some alternative BLE plugins expect a string rather than array buffer, so this is a common misuse
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"message was not ArrayBuffer"];
         } else {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"message was null"];
         }
@@ -1098,6 +1105,16 @@
 
 - (BOOL) isFalsey:(NSString *)value {
     return value == nil || [value length] == 0 || [@"false" isEqualToString:[value lowercaseString]];
+}
+
+- (id) tryDecodeBinaryData:(id)value {
+    if (value != nil && [value isKindOfClass:[NSString class]]) {
+        NSData *decoded = [[NSData alloc] initWithBase64EncodedString:value options:0];
+        if (decoded != nil) {
+            return decoded;
+        }
+    }
+    return value;
 }
 
 @end
