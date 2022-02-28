@@ -160,13 +160,18 @@ declare namespace BLECentralPlugin {
             failure?: (error: string) => any
         ): void;
 
+        /* Start notifications on the given characteristic
+           - options
+               emitOnRegistered     Default is false. Emit "registered" to success callback 
+                                    when peripheral confirms notifications are active
+          */
         startNotification(
             device_id: string,
             service_uuid: string,
             characteristic_uuid: string,
             success: (rawData: ArrayBuffer | 'registered') => any,
-            failure?: (error: string | BLEError) => any,
-            options: { emitOnRegistered: boolean } = { emitOnRegistered: true }
+            failure: (error: string | BLEError) => any,
+            options: { emitOnRegistered: boolean }
         ): void;
 
         startNotification(
