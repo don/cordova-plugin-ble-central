@@ -1059,6 +1059,15 @@ Some of the values such as kCBAdvDataManufacturerData are ArrayBuffers. The data
 
     ble.scan([], 5, onDiscoverDevice, onError);
 
+## Browser
+
+### Chrome
+
+Enable: chrome://flags/#enable-experimental-web-platform-features and
+chrome://flags/#enable-web-bluetooth-new-permissions-backend
+
+Scan must be initiated from a user action (click, touch, etc).
+
 # Typed Arrays
 
 This plugin uses typed Arrays or ArrayBuffers for sending and receiving data.
