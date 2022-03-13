@@ -77,7 +77,7 @@ module.exports = {
     },
     disconnect: function(deviceId, success, failure) {
         if (this.deviceInfos.has(deviceId)) {
-            var device = this.deviceInfos.get(deviceId).device;
+            var device = this.deviceInfos.get(deviceId).server.device;
             this.deviceInfos.delete(deviceId);
             if (device.gatt.connected) {
                 device.gatt.disconnect();
@@ -86,7 +86,7 @@ module.exports = {
                 success();
             }
         } else if (failure) {
-            failure();
+            failure(new Error("device not connected"));
         }
     },
     read: function(deviceId, service_uuid, characteristic_uuid, success, failure) {
@@ -176,7 +176,7 @@ module.exports = {
     },
     isConnected: function(deviceId, success, failure) {
         if (this.deviceInfos.has(deviceId)) {
-            var device = this.deviceInfos.get(deviceId).device;
+            var device = this.deviceInfos.get(deviceId).server.device;
             if (device.gatt.connected) {
                 success();
             } else {
