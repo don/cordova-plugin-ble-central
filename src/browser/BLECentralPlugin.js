@@ -17,32 +17,14 @@ module.exports = {
     deviceInfos: new Map(),
     
     scan: function(services, seconds, success, failure) {
+        return this.startScanWithOptions(services, {}, success, failure);
+    },
+    startScanWithOptions: function(services, options, success, failure) {
         if (!navigator.bluetooth) {
             failure('Bluetooth is not supported on this browser.');
             return;
         }
 
-        let options = {};
-
-        if (services && services.length) {
-            options.filters = [{
-                services: services.map(formatUUID)
-            }];
-        } else {
-            options.acceptAllDevices = true;
-        }
-
-        navigator.bluetooth.requestDevice(options).then(device => {
-            this.deviceInfos.set(device.id, {
-                device: device
-            });
-            success({ id: device.id });
-        }).catch(failure);
-    },
-    stopScan: function(success, failure) {
-        if (success) success();
-    },
-    startScanWithOptions: function(services, options, success, failure) {
         let requestDeviceOptions = {};
 
         if (services && services.length) {
@@ -59,6 +41,9 @@ module.exports = {
             });
             success({ id: device.id });
         }).catch(failure);
+    },
+    stopScan: function(success, failure) {
+        if (success) success();
     },
     connect: function(deviceId, success, failure) {
         const connectGatt = (gatt) => {
