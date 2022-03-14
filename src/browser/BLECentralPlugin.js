@@ -19,6 +19,9 @@ module.exports = {
     scan: function(services, seconds, success, failure) {
         return this.startScanWithOptions(services, {}, success, failure);
     },
+    startScan: function(services, success, failure) {
+        return this.startScanWithOptions(services, {}, success, failure);
+    },
     startScanWithOptions: function(services, options, success, failure) {
         if (!navigator.bluetooth) {
             failure('Bluetooth is not supported on this browser.');
