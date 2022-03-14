@@ -79,17 +79,17 @@ module.exports = {
         }
     },
     disconnect: function(deviceId, success, failure) {
-        if (this.deviceInfos.has(deviceId)) {
-            var device = this.deviceInfos.get(deviceId).server.device;
-            this.deviceInfos.delete(deviceId);
-            if (device.gatt.connected) {
+        var deviceInfo = this.deviceInfos.get(deviceId)
+        if (deviceInfo) {
+            var device = deviceInfo.server && deviceInfo.server.device;
+            if (device && device.gatt.connected) {
                 device.gatt.disconnect();
                 success(device);
             } else {
                 success();
             }
         } else if (failure) {
-            failure(new Error("device not connected"));
+            failure(new Error("Peripheral not found"));
         }
     },
     read: function(deviceId, service_uuid, characteristic_uuid, success, failure) {
