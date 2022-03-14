@@ -1,3 +1,10 @@
+= 1.4.4 =
+Browser: Add support via navigator.Bluetooth #907 #231 Thanks joeferner
+iOS: More explicitly handle edge cases when starting/stopping notifications on iOS #577 #893
+iOS: Improve ble.write handling when given non-ArrayBuffer types #897 #900
+Android: Report peripherals as disconnected when BLE is turned off #894 #896
+Android: Properly dispose of connected gatts on plugin reset #825 #845
+
 = 1.4.3 =
 iOS: Make BLUETOOTH_RESTORE_STATE variable optional
 Android Synchronise access to the gatt during cleanup to avoid null ref errors #799
