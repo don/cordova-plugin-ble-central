@@ -25,6 +25,7 @@ See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master
 
 -   iOS
 -   Android (4.3 or greater)
+-   Browser (where navigator.bluetooth is supported)
 
 # Installing
 
@@ -87,14 +88,17 @@ If your app targets Android 10 (API level 29) or higher, you have also the optio
 -   [ble.disconnect](#disconnect)
 -   [ble.requestMtu](#requestmtu)
 -   [ble.requestConnectionPriority](#requestconnectionpriority)
+-   [ble.refreshDeviceCache](#refreshdevicecache)
 -   [ble.read](#read)
 -   [ble.write](#write)
 -   [ble.writeWithoutResponse](#writewithoutresponse)
 -   [ble.startNotification](#startnotification)
 -   [ble.stopNotification](#stopnotification)
+-   [ble.isConnected](#isconnected)
 -   [ble.isEnabled](#isenabled)
 -   [ble.isLocationEnabled](#islocationenabled)
--   [ble.isConnected](#isconnected)
+-   [ble.startLocationStateNotifications](#startlocationstatenotifications)
+-   [ble.stopLocationStateNotifications](#stoplocationstatenotifications)
 -   [ble.startStateNotifications](#startstatenotifications)
 -   [ble.stopStateNotifications](#stopstatenotifications)
 -   [ble.showBluetoothSettings](#showbluetoothsettings)
@@ -404,17 +408,6 @@ Connection priority can be one of:
 -   `1` - [CONNECTION_PRIORITY_HIGH](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_HIGH)
 -   `2` - [CONNECTION_PRIORITY_LOW_POWER](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER)
 
-### Quick Example
-
-    ble.requestConnectionPriority(device_id, 0,
-        function() {
-            alert("success");
-        },
-        function(failure){
-            alert("Failed to request connection priority: " + failure);
-        }
-    );
-
 ### Supported Platforms
 
 -   Android
@@ -425,6 +418,17 @@ Connection priority can be one of:
 -   **priority**: high or balanced or low
 -   **success**: Success callback function that is invoked when the connection is successful. [optional]
 -   **failure**: Error callback function, invoked when error occurs. [optional]
+
+### Quick Example
+
+    ble.requestConnectionPriority(device_id, 0,
+        function() {
+            alert("success");
+        },
+        function(failure){
+            alert("Failed to request connection priority: " + failure);
+        }
+    );
 
 ## refreshDeviceCache
 
@@ -672,7 +676,7 @@ Function `isLocationEnabled` calls the success callback when location services a
 
 ### Quick Example
 
-    ble.isEnabled(
+    ble.isLocationEnabled(
         function() {
             console.log("location services are enabled");
         },
@@ -743,6 +747,11 @@ Function `startStateNotifications` calls the success callback when the Bluetooth
 -   "unsupported" (iOS Only)
 -   "unauthorized" (iOS Only)
 
+### Supported Platforms
+
+-   Android
+-   iOS
+
 ### Parameters
 
 -   **success**: Success callback function that is invoked with a string for the Bluetooth state.
@@ -765,6 +774,11 @@ Stops state notifications.
 ### Description
 
 Function `stopStateNotifications` calls the success callback when Bluetooth state notifications have been stopped.
+
+### Supported Platforms
+
+-   Android
+-   iOS
 
 ## showBluetoothSettings
 
@@ -801,11 +815,13 @@ Enable Bluetooth on the device.
 
 Function `enable` prompts the user to enable Bluetooth.
 
-#### Android
-
 `enable` is only supported on Android and does not work on iOS.
 
 If `enable` is called when Bluetooth is already enabled, the user will not prompted and the success callback will be invoked.
+
+### Supported Platforms
+
+-   Android
 
 ### Parameters
 
@@ -866,15 +882,15 @@ Find the connected peripherals offering the listed service UUIDs.
 
 Retreives a list of the peripherals (containing any of the specified services) currently connected to the system. The peripheral list is sent to the success callback. This function wraps [CBCentralManager.retrieveConnectedPeripheralsWithServices:](https://developer.apple.com/documentation/corebluetooth/cbcentralmanager/1518924-retrieveconnectedperipheralswith?language=objc)
 
+### Supported Platforms
+
+-   iOS
+
 ### Parameters
 
 -   **services**: List of services to discover
 -   **success**: Success callback function, invoked with a list of peripheral objects
 -   **failure**: Error callback function
-
-### Supported Platforms
-
--   iOS
 
 ## peripheralsWithIdentifiers
 
@@ -886,15 +902,15 @@ Find the connected peripherals offering the listed peripheral UUIDs.
 
 Sends a list of known peripherals by their identifiers to the success callback. This function wraps [CBCentralManager.retrievePeripheralsWithIdentifiers:](https://developer.apple.com/documentation/corebluetooth/cbcentralmanager/1519127-retrieveperipheralswithidentifie?language=objc)
 
+### Supported Platforms
+
+-   iOS
+
 ### Parameters
 
 -   **identifiers**: List of peripheral UUIDs
 -   **success**: Success callback function, invoked with a list of peripheral objects
 -   **failure**: Error callback function
-
-### Supported Platforms
-
--   iOS
 
 ## restoredBluetoothState
 
@@ -911,14 +927,14 @@ Retrives the state dictionary that [iOS State Preservation and Restoration](http
 
 If the application has no state restored, this will return an empty object.
 
+### Supported Platforms
+
+-   iOS
+
 ### Parameters
 
 -   **success**: Success callback function, invoked with the restored Bluetooth state (if any)
 -   **failure**: Error callback function
-
-### Supported Platforms
-
--   iOS
 
 ## bondedDevices
 
@@ -930,14 +946,14 @@ Find the bonded devices.
 
 Sends a list of bonded low energy peripherals to the success callback.
 
+### Supported Platforms
+
+-   Android
+
 ### Parameters
 
 -   **success**: Success callback function, invoked with a list of peripheral objects
 -   **failure**: Error callback function
-
-### Supported Platforms
-
--   Android
 
 # Peripheral Data
 
