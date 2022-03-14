@@ -39,9 +39,9 @@ module.exports = {
         }
 
         navigator.bluetooth.requestDevice(requestDeviceOptions).then(device => {
-            this.deviceInfos.set(device.id, {
-                device: device
-            });
+            var deviceInfo = this.deviceInfos.get(device.id) || {};
+            deviceInfo.device = device;
+            this.deviceInfos.set(device.id, deviceInfo);
             success({ id: device.id });
         }).catch(failure);
     },
