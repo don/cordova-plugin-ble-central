@@ -4,11 +4,11 @@ This plugin enables communication between a phone and Bluetooth Low Energy (BLE)
 
 The plugin provides a simple [JavaScript API](#api) for iOS and Android.
 
- * Scan for peripherals
- * Connect to a peripheral
- * Read the value of a characteristic
- * Write new value to a characteristic
- * Get notified when characteristic's value changes
+-   Scan for peripherals
+-   Connect to a peripheral
+-   Read the value of a characteristic
+-   Write new value to a characteristic
+-   Get notified when characteristic's value changes
 
 Advertising information is returned when scanning for peripherals.
 Service, characteristic, and property info is returned when connecting to a peripheral.
@@ -23,8 +23,8 @@ See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master
 
 ## Supported Platforms
 
-* iOS
-* Android (4.3 or greater)
+-   iOS
+-   Android (4.3 or greater)
 
 # Installing
 
@@ -77,33 +77,33 @@ If your app targets Android 10 (API level 29) or higher, you have also the optio
 
 ## Methods
 
-- [ble.scan](#scan)
-- [ble.startScan](#startscan)
-- [ble.startScanWithOptions](#startscanwithoptions)
-- [ble.stopScan](#stopscan)
-- [ble.setPin](#setpin)
-- [ble.connect](#connect)
-- [ble.autoConnect](#autoconnect)
-- [ble.disconnect](#disconnect)
-- [ble.requestMtu](#requestmtu)
-- [ble.requestConnectionPriority](#requestconnectionpriority)
-- [ble.read](#read)
-- [ble.write](#write)
-- [ble.writeWithoutResponse](#writewithoutresponse)
-- [ble.startNotification](#startnotification)
-- [ble.stopNotification](#stopnotification)
-- [ble.isEnabled](#isenabled)
-- [ble.isLocationEnabled](#islocationenabled)
-- [ble.isConnected](#isconnected)
-- [ble.startStateNotifications](#startstatenotifications)
-- [ble.stopStateNotifications](#stopstatenotifications)
-- [ble.showBluetoothSettings](#showbluetoothsettings)
-- [ble.enable](#enable)
-- [ble.readRSSI](#readrssi)
-- [ble.connectedPeripheralsWithServices](#connectedperipheralswithservices)
-- [ble.peripheralsWithIdentifiers](#peripheralswithidentifiers)
-- [ble.restoredBluetoothState](#restoredbluetoothstate)
-- [ble.bondedDevices](#bondeddevices)
+-   [ble.scan](#scan)
+-   [ble.startScan](#startscan)
+-   [ble.startScanWithOptions](#startscanwithoptions)
+-   [ble.stopScan](#stopscan)
+-   [ble.setPin](#setpin)
+-   [ble.connect](#connect)
+-   [ble.autoConnect](#autoconnect)
+-   [ble.disconnect](#disconnect)
+-   [ble.requestMtu](#requestmtu)
+-   [ble.requestConnectionPriority](#requestconnectionpriority)
+-   [ble.read](#read)
+-   [ble.write](#write)
+-   [ble.writeWithoutResponse](#writewithoutresponse)
+-   [ble.startNotification](#startnotification)
+-   [ble.stopNotification](#stopnotification)
+-   [ble.isEnabled](#isenabled)
+-   [ble.isLocationEnabled](#islocationenabled)
+-   [ble.isConnected](#isconnected)
+-   [ble.startStateNotifications](#startstatenotifications)
+-   [ble.stopStateNotifications](#stopstatenotifications)
+-   [ble.showBluetoothSettings](#showbluetoothsettings)
+-   [ble.enable](#enable)
+-   [ble.readRSSI](#readrssi)
+-   [ble.connectedPeripheralsWithServices](#connectedperipheralswithservices)
+-   [ble.peripheralsWithIdentifiers](#peripheralswithidentifiers)
+-   [ble.restoredBluetoothState](#restoredbluetoothstate)
+-   [ble.bondedDevices](#bondeddevices)
 
 ## scan
 
@@ -113,7 +113,7 @@ Scan and discover BLE peripherals.
 
 ### Description
 
-Function `scan` scans for BLE devices.  The success callback is called each time a peripheral is discovered. Scanning automatically stops after the specified number of seconds.
+Function `scan` scans for BLE devices. The success callback is called each time a peripheral is discovered. Scanning automatically stops after the specified number of seconds.
 
     {
         "name": "TI SensorTag",
@@ -125,16 +125,17 @@ Function `scan` scans for BLE devices.  The success callback is called each time
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
 
 ### Location Permission Notes
+
 With Android SDK >= 23 (6.0), additional permissions are required for Bluetooth low energy scanning. The location permission [ACCESS_COARSE_LOCATION](https://developer.android.com/reference/android/Manifest.permission.html#ACCESS_COARSE_LOCATION) is required because Bluetooth beacons can be used to determine a user's location. If necessary, the plugin will prompt the user to allow the app to access to device's location. If the user denies permission, the scan failure callback will receive the error "Location permission not granted".
 
 Location Services must be enabled for Bluetooth scanning. If location services are disabled, the failure callback will receive the error "Location services are disabled". If you want to manage location permission and screens, try the [cordova-diagonostic-plugin](https://github.com/dpa99c/cordova-diagnostic-plugin) or the Ionic Native [Diagnostic plugin](https://ionicframework.com/docs/native/diagnostic/).
 
 ### Parameters
 
-- __services__: List of services to discover, or [] to find all devices
-- __seconds__: Number of seconds to run discovery
-- __success__: Success callback function that is invoked which each discovered device.
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **services**: List of services to discover, or [] to find all devices
+-   **seconds**: Number of seconds to run discovery
+-   **success**: Success callback function that is invoked which each discovered device.
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
 
@@ -150,7 +151,7 @@ Scan and discover BLE peripherals.
 
 ### Description
 
-Function `startScan` scans for BLE devices.  The success callback is called each time a peripheral is discovered. Scanning will continue until `stopScan` is called.
+Function `startScan` scans for BLE devices. The success callback is called each time a peripheral is discovered. Scanning will continue until `stopScan` is called.
 
     {
         "name": "TI SensorTag",
@@ -165,9 +166,9 @@ See the [location permission notes](#location-permission-notes) above for inform
 
 ### Parameters
 
-- __services__: List of services to discover, or [] to find all devices
-- __success__: Success callback function that is invoked which each discovered device.
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **services**: List of services to discover, or [] to find all devices
+-   **success**: Success callback function that is invoked which each discovered device.
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
 
@@ -189,7 +190,7 @@ Scan and discover BLE peripherals, specifying scan options.
 
 ### Description
 
-Function `startScanWithOptions` scans for BLE devices. It operates similarly to the `startScan` function, but allows you to specify extra options (like allowing duplicate device reports).  The success callback is called each time a peripheral is discovered. Scanning will continue until `stopScan` is called.
+Function `startScanWithOptions` scans for BLE devices. It operates similarly to the `startScan` function, but allows you to specify extra options (like allowing duplicate device reports). The success callback is called each time a peripheral is discovered. Scanning will continue until `stopScan` is called.
 
     {
         "name": "TI SensorTag",
@@ -204,23 +205,23 @@ See the [location permission notes](#location-permission-notes) above for inform
 
 ### Parameters
 
-- __services__: List of services to discover, or [] to find all devices
-- __options__: an object specifying a set of name-value pairs. The currently acceptable options are:
-    * _reportDuplicates_: _true_ if duplicate devices should be reported, _false_ (default) if devices should only be reported once. [optional]
-    * _scanMode_: String defines [setScanMode()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setscanmode) argument on Android.  
- Can be one of: _lowPower_ | _balanced_ | _lowLatency_ | _opportunistic_
-    * _callbackType_: String defines [setCallbackType()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setcallbacktype) argument on Android.  
- Can be one of: _all_ | _first_ | _lost_
-    * _matchMode_: String defines [setMatchMode()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setmatchmode) argument on Android.  
- Can be one of: _aggressive_ | _sticky_
-    * _numOfMatches_: String defines [setNumOfMatches()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setnumofmatches) argument on Android.  
- Can be one of: _one_ | _few_ | _max_
-    * _phy_: String for [setPhy()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setphy) on Android.  
- Can be one of: _1m_ | _coded_ | _all_
-    * _legacy_: _true_ or _false_ to [control filtering](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setlegacy) bluetooth spec.pre-4.2 advertisements on Android.  
-    * _reportDelay_: Milliseconds for [setReportDelay()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setreportdelay) on Android. _0_ to be notified of results immediately. Values > _0_ causes the scan results to be queued up and delivered after the requested delay or when the internal buffers fill up.
-- __success__: Success callback function that is invoked which each discovered device.
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **services**: List of services to discover, or [] to find all devices
+-   **options**: an object specifying a set of name-value pairs. The currently acceptable options are:
+    -   _reportDuplicates_: _true_ if duplicate devices should be reported, _false_ (default) if devices should only be reported once. [optional]
+    -   _scanMode_: String defines [setScanMode()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setscanmode) argument on Android.  
+        Can be one of: _lowPower_ | _balanced_ | _lowLatency_ | _opportunistic_
+    -   _callbackType_: String defines [setCallbackType()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setcallbacktype) argument on Android.  
+        Can be one of: _all_ | _first_ | _lost_
+    -   _matchMode_: String defines [setMatchMode()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setmatchmode) argument on Android.  
+        Can be one of: _aggressive_ | _sticky_
+    -   _numOfMatches_: String defines [setNumOfMatches()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setnumofmatches) argument on Android.  
+        Can be one of: _one_ | _few_ | _max_
+    -   _phy_: String for [setPhy()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setphy) on Android.  
+        Can be one of: _1m_ | _coded_ | _all_
+    -   _legacy_: _true_ or _false_ to [control filtering](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setlegacy) bluetooth spec.pre-4.2 advertisements on Android.
+    -   _reportDelay_: Milliseconds for [setReportDelay()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setreportdelay) on Android. _0_ to be notified of results immediately. Values > _0_ causes the scan results to be queued up and delivered after the requested delay or when the internal buffers fill up.
+-   **success**: Success callback function that is invoked which each discovered device.
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
 
@@ -237,7 +238,6 @@ See the [location permission notes](#location-permission-notes) above for inform
         function() { console.log("stopScan failed"); }
     );
 
-
 ## stopScan
 
 Stop scanning for BLE peripherals.
@@ -250,8 +250,8 @@ Function `stopScan` stops scanning for BLE devices.
 
 ### Parameters
 
-- __success__: Success callback function, invoked when scanning is stopped. [optional]
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **success**: Success callback function, invoked when scanning is stopped. [optional]
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
 
@@ -286,9 +286,9 @@ Function `setPin` sets the pin when device requires it.
 
 ### Parameters
 
-- __pin__: Pin of the device as a string
-- __success__: Success callback function that is invoked when the function is invoked. [optional]
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **pin**: Pin of the device as a string
+-   **success**: Success callback function that is invoked when the function is invoked. [optional]
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ## connect
 
@@ -298,7 +298,7 @@ Connect to a peripheral.
 
 ### Description
 
-Function `connect` connects to a BLE peripheral. The callback is long running. The connect callback will be called when the connection is successful. Service and characteristic info will be passed to the connect callback in the [peripheral object](#peripheral-data). 
+Function `connect` connects to a BLE peripheral. The callback is long running. The connect callback will be called when the connection is successful. Service and characteristic info will be passed to the connect callback in the [peripheral object](#peripheral-data).
 
 The disconnect callback is called if the connection fails, or later if the peripheral disconnects. When possible, a peripheral object is passed to the failure callback. The disconnect callback is only called when the peripheral initates the disconnection. The disconnect callback is not called when the application calls [ble.disconnect](#disconnect). The disconnect callback is how your app knows the peripheral inintiated a disconnect.
 
@@ -310,9 +310,9 @@ For iOS, the plugin needs to know about any device UUID before calling connect. 
 
 ### Parameters
 
-- __device_id__: UUID or MAC address of the peripheral
-- __connectCallback__: Connect callback function that is invoked when the connection is successful.
-- __disconnectCallback__: Disconnect callback function, invoked when the peripheral disconnects or an error occurs.
+-   **device_id**: UUID or MAC address of the peripheral
+-   **connectCallback**: Connect callback function that is invoked when the connection is successful.
+-   **disconnectCallback**: Disconnect callback function, invoked when the peripheral disconnects or an error occurs.
 
 ## autoConnect
 
@@ -326,7 +326,7 @@ Automatically connect to a device when it is in range of the phone. When the dev
 
 Calling [ble.disconnect](#disconnect) will stop the automatic reconnection.
 
-Both the connect and disconnect callbacks can be called many times as the device connects and disconnects. Do not wrap this function in a Promise or Observable. 
+Both the connect and disconnect callbacks can be called many times as the device connects and disconnects. Do not wrap this function in a Promise or Observable.
 
 On iOS, [background notifications on ios](#background-notifications-on-ios) must be enabled if you want to run in the background. On Android, this relies on the autoConnect argument of `BluetoothDevice.connectGatt()`. Not all Android devices implement this feature correctly.
 
@@ -334,9 +334,9 @@ See notes about [scanning before connecting](#scanning-before-connecting)
 
 ### Parameters
 
-- __device_id__: UUID or MAC address of the peripheral
-- __connectCallback__: Connect callback function that is invoked when the connection is successful.
-- __disconnectCallback__: Disconnect callback function, invoked when the peripheral disconnects or an error occurs.
+-   **device_id**: UUID or MAC address of the peripheral
+-   **connectCallback**: Connect callback function that is invoked when the connection is successful.
+-   **disconnectCallback**: Disconnect callback function, invoked when the peripheral disconnects or an error occurs.
 
 ## disconnect
 
@@ -350,9 +350,9 @@ Function `disconnect` disconnects the selected device.
 
 ### Parameters
 
-- __device_id__: UUID or MAC address of the peripheral
-- __success__: Success callback function that is invoked when the connection is successful. [optional]
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **device_id**: UUID or MAC address of the peripheral
+-   **success**: Success callback function that is invoked when the connection is successful. [optional]
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ## requestMtu
 
@@ -368,14 +368,14 @@ The resulting MTU size is sent to the success callback. The requested and result
 
 ### Supported Platforms
 
- * Android
+-   Android
 
 ### Parameters
 
-- __device_id__: UUID or MAC address of the peripheral
-- __mtu__: MTU size
-- __success__: Success callback function that is invoked when the MTU size request is successful. The resulting MTU size is passed as an integer.
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **device_id**: UUID or MAC address of the peripheral
+-   **mtu**: MTU size
+-   **success**: Success callback function that is invoked when the MTU size request is successful. The resulting MTU size is passed as an integer.
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
 
@@ -396,14 +396,13 @@ requestConnectionPriority
 
 ### Description
 
-When Connecting to a peripheral android can request for the connection priority for better communication. See [BluetoothGatt#requestConnectionPriority](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#requestConnectionPriority(int)) for technical details
+When Connecting to a peripheral android can request for the connection priority for better communication. See [BluetoothGatt#requestConnectionPriority](<https://developer.android.com/reference/android/bluetooth/BluetoothGatt#requestConnectionPriority(int)>) for technical details
 
 Connection priority can be one of:
 
-- `0` - [CONNECTION_PRIORITY_BALANCED](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_BALANCED)
-- `1` - [CONNECTION_PRIORITY_HIGH](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_HIGH)
-- `2` - [CONNECTION_PRIORITY_LOW_POWER](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER)
-
+-   `0` - [CONNECTION_PRIORITY_BALANCED](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_BALANCED)
+-   `1` - [CONNECTION_PRIORITY_HIGH](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_HIGH)
+-   `2` - [CONNECTION_PRIORITY_LOW_POWER](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER)
 
 ### Quick Example
 
@@ -418,14 +417,14 @@ Connection priority can be one of:
 
 ### Supported Platforms
 
- * Android
+-   Android
 
 ### Parameters
 
-- __device_id__: UUID or MAC address of the peripheral
-- __priority__: high or balanced or low
-- __success__: Success callback function that is invoked when the connection is successful. [optional]
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **device_id**: UUID or MAC address of the peripheral
+-   **priority**: high or balanced or low
+-   **success**: Success callback function that is invoked when the connection is successful. [optional]
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ## refreshDeviceCache
 
@@ -436,21 +435,21 @@ refreshDeviceCache
 ### Description
 
 Some poorly behaved devices show old cached services and characteristics info. (Usually because they
-don't implement Service Changed 0x2a05 on Generic Attribute Service 0x1801 and the central doesn't know 
+don't implement Service Changed 0x2a05 on Generic Attribute Service 0x1801 and the central doesn't know
 the data needs to be refreshed.) This method might help.
 
-*NOTE* Since this uses an undocumented API it's not guaranteed to work.
+_NOTE_ Since this uses an undocumented API it's not guaranteed to work.
 
 ### Supported Platforms
 
- * Android
+-   Android
 
 ### Parameters
 
-- __deviceId__: UUID or MAC address of the peripheral
-- __timeoutMillis__: timeout in milliseconds after refresh before discovering services  
-- __success__: Success callback function invoked with the refreshed peripheral. [optional]
-- __failure__: Error callback function, invoked when an error occurs. [optional]
+-   **deviceId**: UUID or MAC address of the peripheral
+-   **timeoutMillis**: timeout in milliseconds after refresh before discovering services
+-   **success**: Success callback function invoked with the refreshed peripheral. [optional]
+-   **failure**: Error callback function, invoked when an error occurs. [optional]
 
 ## read
 
@@ -466,11 +465,11 @@ Raw data is passed from native code to the callback as an [ArrayBuffer](#typed-a
 
 ### Parameters
 
-- __device_id__: UUID or MAC address of the peripheral
-- __service_uuid__: UUID of the BLE service
-- __characteristic_uuid__: UUID of the BLE characteristic
-- __success__: Success callback function that is invoked when the connection is successful. [optional]
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **device_id**: UUID or MAC address of the peripheral
+-   **service_uuid**: UUID of the BLE service
+-   **characteristic_uuid**: UUID of the BLE characteristic
+-   **success**: Success callback function that is invoked when the connection is successful. [optional]
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
 
@@ -498,12 +497,13 @@ Writes data to a characteristic.
 Function `write` writes data to a characteristic.
 
 ### Parameters
-- __device_id__: UUID or MAC address of the peripheral
-- __service_uuid__: UUID of the BLE service
-- __characteristic_uuid__: UUID of the BLE characteristic
-- __data__: binary data, use an [ArrayBuffer](#typed-arrays)
-- __success__: Success callback function that is invoked when the connection is successful. [optional]
-- __failure__: Error callback function, invoked when error occurs. [optional]
+
+-   **device_id**: UUID or MAC address of the peripheral
+-   **service_uuid**: UUID of the BLE service
+-   **characteristic_uuid**: UUID of the BLE characteristic
+-   **data**: binary data, use an [ArrayBuffer](#typed-arrays)
+-   **success**: Success callback function that is invoked when the connection is successful. [optional]
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
 
@@ -537,12 +537,13 @@ Writes data to a characteristic without confirmation from the peripheral.
 Function `writeWithoutResponse` writes data to a characteristic without a response from the peripheral. You are not notified if the write fails in the BLE stack. The success callback is be called when the characteristic is written.
 
 ### Parameters
-- __device_id__: UUID or MAC address of the peripheral
-- __service_uuid__: UUID of the BLE service
-- __characteristic_uuid__: UUID of the BLE characteristic
-- __data__: binary data, use an [ArrayBuffer](#typed-arrays)
-- __success__: Success callback function that is invoked when the connection is successful. [optional]
-- __failure__: Error callback function, invoked when error occurs. [optional]
+
+-   **device_id**: UUID or MAC address of the peripheral
+-   **service_uuid**: UUID of the BLE service
+-   **characteristic_uuid**: UUID of the BLE characteristic
+-   **data**: binary data, use an [ArrayBuffer](#typed-arrays)
+-   **success**: Success callback function that is invoked when the connection is successful. [optional]
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ## startNotification
 
@@ -552,7 +553,7 @@ Register to be notified when the value of a characteristic changes.
 
 ### Description
 
-Function `startNotification` registers a callback that is called *every time* the value of a characteristic changes. This method handles both `notifications` and `indications`. The success callback is called multiple times.
+Function `startNotification` registers a callback that is called _every time_ the value of a characteristic changes. This method handles both `notifications` and `indications`. The success callback is called multiple times.
 
 Raw data is passed from native code to the success callback as an [ArrayBuffer](#typed-arrays).
 
@@ -560,11 +561,11 @@ See [Background Notifications on iOS](#background-notifications-on-ios)
 
 ### Parameters
 
-- __device_id__: UUID or MAC address of the peripheral
-- __service_uuid__: UUID of the BLE service
-- __characteristic_uuid__: UUID of the BLE characteristic
-- __success__: Success callback function invoked every time a notification occurs
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **device_id**: UUID or MAC address of the peripheral
+-   **service_uuid**: UUID of the BLE service
+-   **characteristic_uuid**: UUID of the BLE characteristic
+-   **success**: Success callback function invoked every time a notification occurs
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
 
@@ -588,11 +589,11 @@ Function `stopNotification` stops a previously registered notification callback.
 
 ### Parameters
 
-- __device_id__: UUID or MAC address of the peripheral
-- __service_uuid__: UUID of the BLE service
-- __characteristic_uuid__: UUID of the BLE characteristic
-- __success__: Success callback function that is invoked when the notification is removed. [optional]
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **device_id**: UUID or MAC address of the peripheral
+-   **service_uuid**: UUID of the BLE service
+-   **characteristic_uuid**: UUID of the BLE characteristic
+-   **success**: Success callback function that is invoked when the notification is removed. [optional]
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ## isConnected
 
@@ -602,15 +603,15 @@ Reports the connection status.
 
 ### Description
 
-Function `isConnected` calls the success callback when the peripheral is connected and the failure callback when *not* connected.
+Function `isConnected` calls the success callback when the peripheral is connected and the failure callback when _not_ connected.
 
 NOTE that for many apps isConnected is unncessary. The app can track the connected state. Ater calling [connect](#connect) the app is connected when the success callback function is called. If the device disconnects at any point in the future, the failure callback of connect will be called.
 
 ### Parameters
 
-- __device_id__: UUID or MAC address of the peripheral
-- __success__: Success callback function that is invoked with a boolean for connected status.
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **device_id**: UUID or MAC address of the peripheral
+-   **success**: Success callback function that is invoked with a boolean for connected status.
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
 
@@ -632,12 +633,12 @@ Reports if bluetooth is enabled.
 
 ### Description
 
-Function `isEnabled` calls the success callback when Bluetooth is enabled and the failure callback when Bluetooth is *not* enabled.
+Function `isEnabled` calls the success callback when Bluetooth is enabled and the failure callback when Bluetooth is _not_ enabled.
 
 ### Parameters
 
-- __success__: Success callback function, invoked when Bluetooth is enabled.
-- __failure__: Error callback function, invoked when Bluetooth is disabled.
+-   **success**: Success callback function, invoked when Bluetooth is enabled.
+-   **failure**: Error callback function, invoked when Bluetooth is disabled.
 
 ### Quick Example
 
@@ -650,7 +651,6 @@ Function `isEnabled` calls the success callback when Bluetooth is enabled and th
         }
     );
 
-
 ## isLocationEnabled
 
 Reports if location services are enabled.
@@ -659,16 +659,16 @@ Reports if location services are enabled.
 
 ### Description
 
-Function `isLocationEnabled` calls the success callback when location services are enabled and the failure callback when location services are *not* enabled. On some devices, location services must be enabled in order to scan for peripherals.
+Function `isLocationEnabled` calls the success callback when location services are enabled and the failure callback when location services are _not_ enabled. On some devices, location services must be enabled in order to scan for peripherals.
 
 ### Supported Platforms
 
- * Android
+-   Android
 
 ### Parameters
 
-- __success__: Success callback function, invoked when location services are enabled.
-- __failure__: Error callback function, invoked when location services are disabled.
+-   **success**: Success callback function, invoked when location services are enabled.
+-   **failure**: Error callback function, invoked when location services are disabled.
 
 ### Quick Example
 
@@ -693,12 +693,12 @@ Function `startLocationStateNotifications` calls the success callback when the L
 
 ### Supported Platforms
 
- * Android
+-   Android
 
 ### Parameters
 
-- __success__: Success callback function that is invoked with a boolean for the Location state.
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **success**: Success callback function that is invoked with a boolean for the Location state.
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
 
@@ -720,7 +720,7 @@ Function `stopLocationStateNotifications` calls the success callback when Locati
 
 ### Supported Platforms
 
- * Android
+-   Android
 
 ## startStateNotifications
 
@@ -732,21 +732,21 @@ Registers to be notified when Bluetooth state changes on the device.
 
 Function `startStateNotifications` calls the success callback when the Bluetooth is enabled or disabled on the device.
 
-__States__
+**States**
 
-- "on"
-- "off"
-- "turningOn" (Android Only)
-- "turningOff" (Android Only)
-- "unknown" (iOS Only)
-- "resetting" (iOS Only)
-- "unsupported" (iOS Only)
-- "unauthorized" (iOS Only)
+-   "on"
+-   "off"
+-   "turningOn" (Android Only)
+-   "turningOff" (Android Only)
+-   "unknown" (iOS Only)
+-   "resetting" (iOS Only)
+-   "unsupported" (iOS Only)
+-   "unauthorized" (iOS Only)
 
 ### Parameters
 
-- __success__: Success callback function that is invoked with a string for the Bluetooth state.
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **success**: Success callback function that is invoked with a string for the Bluetooth state.
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
 
@@ -780,12 +780,12 @@ Function `showBluetoothSettings` opens the Bluetooth settings for the operating 
 
 ### Supported Platforms
 
- * Android
+-   Android
 
 ### Parameters
 
-- __success__: Success callback function [optional]
-- __failure__: Error callback function, invoked when error occurs. [optional]
+-   **success**: Success callback function [optional]
+-   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
 
@@ -809,8 +809,8 @@ If `enable` is called when Bluetooth is already enabled, the user will not promp
 
 ### Parameters
 
-- __success__: Success callback function, invoked if the user enabled Bluetooth.
-- __failure__: Error callback function, invoked if the user does not enabled Bluetooth.
+-   **success**: Success callback function, invoked if the user enabled Bluetooth.
+-   **failure**: Error callback function, invoked if the user does not enabled Bluetooth.
 
 ### Quick Example
 
@@ -835,11 +835,12 @@ Samples the RSSI value (a measure of signal strength) on the connection to a blu
 
 ### Parameters
 
-- __device_id__: device identifier
-- __success__: Success callback function, invoked with the RSSI value (as an integer)
-- __failure__: Error callback function, invoked if there is no current connection or if there is an error reading the RSSI.
+-   **device_id**: device identifier
+-   **success**: Success callback function, invoked with the RSSI value (as an integer)
+-   **failure**: Error callback function, invoked if there is no current connection or if there is an error reading the RSSI.
 
 ### Quick Example
+
     var rssiSample;
     ble.connect(device_id,
         function(device) {
@@ -867,13 +868,13 @@ Retreives a list of the peripherals (containing any of the specified services) c
 
 ### Parameters
 
-- __services__: List of services to discover
-- __success__: Success callback function, invoked with a list of peripheral objects
-- __failure__: Error callback function
+-   **services**: List of services to discover
+-   **success**: Success callback function, invoked with a list of peripheral objects
+-   **failure**: Error callback function
 
 ### Supported Platforms
 
- * iOS
+-   iOS
 
 ## peripheralsWithIdentifiers
 
@@ -887,13 +888,13 @@ Sends a list of known peripherals by their identifiers to the success callback. 
 
 ### Parameters
 
-- __identifiers__: List of peripheral UUIDs
-- __success__: Success callback function, invoked with a list of peripheral objects
-- __failure__: Error callback function
+-   **identifiers**: List of peripheral UUIDs
+-   **success**: Success callback function, invoked with a list of peripheral objects
+-   **failure**: Error callback function
 
 ### Supported Platforms
 
- * iOS
+-   iOS
 
 ## restoredBluetoothState
 
@@ -912,12 +913,12 @@ If the application has no state restored, this will return an empty object.
 
 ### Parameters
 
--   __success__: Success callback function, invoked with the restored Bluetooth state (if any)
--   __failure__: Error callback function
+-   **success**: Success callback function, invoked with the restored Bluetooth state (if any)
+-   **failure**: Error callback function
 
 ### Supported Platforms
 
-*   iOS
+-   iOS
 
 ## bondedDevices
 
@@ -931,13 +932,12 @@ Sends a list of bonded low energy peripherals to the success callback.
 
 ### Parameters
 
-- __success__: Success callback function, invoked with a list of peripheral objects
-- __failure__: Error callback function
+-   **success**: Success callback function, invoked with a list of peripheral objects
+-   **failure**: Error callback function
 
 ### Supported Platforms
 
- * Android
-
+-   Android
 
 # Peripheral Data
 
@@ -1002,7 +1002,6 @@ After connecting, the peripheral object also includes service, characteristic an
         ]
     }
 
-
 # Advertising Data
 
 Bluetooth advertising data is returned in when scanning for devices. The format varies depending on your platform. On Android advertising data will be the raw advertising bytes. iOS does not allow access to raw advertising data, so a dictionary of data is returned.
@@ -1034,7 +1033,7 @@ Note that iOS uses the string value of the constants for the [Advertisement Data
             "kCBAdvDataManufacturerData": {}, // arraybuffer data not shown
             "kCBAdvDataServiceUUIDs": [
                 "721b"
-            ],  
+            ],
             "kCBAdvDataIsConnectable": true,
             "kCBAdvDataServiceData": {
                 "BBB0": {}   // arraybuffer data not shown
@@ -1162,8 +1161,8 @@ Try the code. If you find an problem or missing feature, file an issue or create
 
 # Other Bluetooth Plugins
 
- * [cordova-plugin-ble-peripheral](https://github.com/don/cordova-plugin-ble-peripheral) - Create and publish Bluetooth LE services on iOS and Android using Javascript.
- * [BluetoothSerial](https://github.com/don/BluetoothSerial) - Connect to Arduino and other devices. Bluetooth Classic on Android, BLE on iOS.
- * [RFduino](https://github.com/don/cordova-plugin-rfduino) - RFduino specific plugin for iOS and Android.
- * [BluetoothLE](https://github.com/randdusing/BluetoothLE) - Rand Dusing's BLE plugin for Cordova
- * [PhoneGap Bluetooth Plugin](https://github.com/tanelih/phonegap-bluetooth-plugin) - Bluetooth classic pairing and connecting for Android
+-   [cordova-plugin-ble-peripheral](https://github.com/don/cordova-plugin-ble-peripheral) - Create and publish Bluetooth LE services on iOS and Android using Javascript.
+-   [BluetoothSerial](https://github.com/don/BluetoothSerial) - Connect to Arduino and other devices. Bluetooth Classic on Android, BLE on iOS.
+-   [RFduino](https://github.com/don/cordova-plugin-rfduino) - RFduino specific plugin for iOS and Android.
+-   [BluetoothLE](https://github.com/randdusing/BluetoothLE) - Rand Dusing's BLE plugin for Cordova
+-   [PhoneGap Bluetooth Plugin](https://github.com/tanelih/phonegap-bluetooth-plugin) - Bluetooth classic pairing and connecting for Android
