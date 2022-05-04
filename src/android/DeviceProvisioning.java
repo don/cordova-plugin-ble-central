@@ -75,6 +75,14 @@ public class DeviceProvisioning implements EventListener<String> {
   private Context ctx;
   private Context appCtx;
   private CallbackContext callbackContext;
+  private String MESH_EVENT_DEVICE_STATE_UPDATE = "device_state_update";
+  private String MESH_EVENT_DEVICE_PROV_BEGIN = "device_prov_begin";
+  private String MESH_EVENT_DEVICE_PROV_SUCCESS = "device_prov_suc";
+  private String MESH_EVENT_DEVICE_PROV_FAIL = "device_prov_fail";
+  private String MESH_EVENT_DEVICE_BIND_SUC = "device_bind_suc";
+  private String MESH_EVENT_DEVICE_BIND_FAIL = "device_bind_fail";
+
+
 
   /**
    * local mesh info
@@ -111,6 +119,7 @@ public class DeviceProvisioning implements EventListener<String> {
   }
 
   private void startScan() {
+    isScanning = true;
     ScanParameters parameters = ScanParameters.getDefault(false, false);
     parameters.setScanTimeout(10 * 1000);
     MeshService.getInstance().startScan(parameters);
@@ -158,7 +167,8 @@ public class DeviceProvisioning implements EventListener<String> {
        onScanTimeout();
 //      enableUI(true);
 
-    } else if (event.getType().equals(ProvisioningEvent.EVENT_TYPE_PROVISION_BEGIN)) {
+    }
+    else if (event.getType().equals(ProvisioningEvent.EVENT_TYPE_PROVISION_BEGIN)) {
       onProvisionStart((ProvisioningEvent) event);
     } else if (event.getType().equals(ProvisioningEvent.EVENT_TYPE_PROVISION_SUCCESS)) {
       onProvisionSuccess((ProvisioningEvent) event);
@@ -198,6 +208,7 @@ public class DeviceProvisioning implements EventListener<String> {
     NetworkingDevice pvDevice = getCurrentDevice(NetworkingState.PROVISIONING);
     if (pvDevice == null) return;
     pvDevice.addLog(NetworkingDevice.TAG_PROVISION, "begin");
+    updateDeviceStatus(pvDevice, MESH_EVENT_DEVICE_PROV_BEGIN);
 //    mListAdapter.notifyDataSetChanged();
   }
 
@@ -211,6 +222,7 @@ public class DeviceProvisioning implements EventListener<String> {
     }
     pvDevice.state = NetworkingState.PROVISION_FAIL;
     pvDevice.addLog(NetworkingDevice.TAG_PROVISION, event.getDesc());
+    updateDeviceStatus(pvDevice, MESH_EVENT_DEVICE_PROV_FAIL);
 //    mListAdapter.notifyDataSetChanged();
   }
 
@@ -256,6 +268,7 @@ public class DeviceProvisioning implements EventListener<String> {
 
     nodeInfo.setDefaultBind(defaultBound);
     pvDevice.addLog(NetworkingDevice.TAG_BIND, "action start");
+    updateDeviceStatus(pvDevice, MESH_EVENT_DEVICE_PROV_SUCCESS);
 //    mListAdapter.notifyDataSetChanged();
     int appKeyIndex = mesh.getDefaultAppKeyIndex();
     BindingDevice bindingDevice = new BindingDevice(nodeInfo.meshAddress, nodeInfo.deviceUUID, appKeyIndex);
@@ -271,6 +284,7 @@ public class DeviceProvisioning implements EventListener<String> {
 
     deviceInList.state = NetworkingState.BIND_FAIL;
     deviceInList.addLog(NetworkingDevice.TAG_BIND, "failed - " + event.getDesc());
+    updateDeviceStatus(deviceInList, MESH_EVENT_DEVICE_BIND_FAIL);
 //    mListAdapter.notifyDataSetChanged();
     mesh.saveOrUpdate(this.ctx);
   }
@@ -300,6 +314,7 @@ public class DeviceProvisioning implements EventListener<String> {
       pvDevice.state = NetworkingState.BIND_SUCCESS;
       provisionNext();
     }
+    updateDeviceStatus(pvDevice, MESH_EVENT_DEVICE_BIND_SUC);
 //    mListAdapter.notifyDataSetChanged();
     mesh.saveOrUpdate(this.ctx);
   }
@@ -352,47 +367,16 @@ public class DeviceProvisioning implements EventListener<String> {
 
   private void updateDevices(List<NetworkingDevice> devices) {
     try {
-    JSONObject resultObj = new JSONObject();
-    JSONArray devicesArray = new JSONArray();
-    if(devices.size() > 0) {
-      for (NetworkingDevice device : devices) {
-        JSONObject deviceObj = new JSONObject();
-        try {
-          deviceObj.put("isProcessing", device.isProcessing());
-          deviceObj.put("logExpand", device.logExpand);
-          JSONObject nodeInfo = new JSONObject();
-          nodeInfo.put("meshAddress", device.nodeInfo.meshAddress);
-          nodeInfo.put("macAddress", device.nodeInfo.macAddress);
-          nodeInfo.put("elementCnt", device.nodeInfo.elementCnt);
-          nodeInfo.put("bound", device.nodeInfo.bound);
-          nodeInfo.put("lum", device.nodeInfo.lum);
-          nodeInfo.put("temp", device.nodeInfo.temp);
-          nodeInfo.put("isLpn", device.nodeInfo.isLpn());
-          nodeInfo.put("isOffline", device.nodeInfo.isOffline());
-          nodeInfo.put("isDefaultBind", device.nodeInfo.isDefaultBind());
-          nodeInfo.put("pidDesc", device.nodeInfo.getPidDesc());
-          if(device.nodeInfo.deviceUUID != null && device.nodeInfo.deviceUUID.length > 0){
-            nodeInfo.put("deviceUUID", Util.convertByteToHexadecimal(device.nodeInfo.deviceUUID));
+      JSONObject resultObj = new JSONObject();
+      JSONArray devicesArray = new JSONArray();
+      if(devices.size() > 0) {
+        for (NetworkingDevice device : devices) {
+          JSONObject deviceObj = getDeviceObj(device);
+          if(deviceObj != null) {
+            devicesArray.put(deviceObj);
           }
-          if(device.nodeInfo.deviceKey != null && device.nodeInfo.deviceKey.length > 0){
-            nodeInfo.put("deviceKey", Util.convertByteToHexadecimal(device.nodeInfo.deviceKey));
-          }
-          JSONArray netKeyIndexes = new JSONArray();
-          if(device.nodeInfo.netKeyIndexes.size() > 0){
-            for (Integer ind : device.nodeInfo.netKeyIndexes) {
-              netKeyIndexes.put(ind);
-            }
-            nodeInfo.put("netKeyIdxes", netKeyIndexes);
-          }
-
-          deviceObj.put("nodeInfo", nodeInfo);
-
-          devicesArray.put(deviceObj);
-        } catch (Exception e) {
-          Log.d(TAG, "startScanLock error = " + e.toString());
         }
       }
-    }
       resultObj.put("devices", devicesArray);
       PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
       pluginResult.setKeepCallback(true);
@@ -403,7 +387,62 @@ public class DeviceProvisioning implements EventListener<String> {
     }
 
   }
+  private void updateDeviceStatus(NetworkingDevice device, String event){
+    JSONObject deviceObj = getDeviceObj(device);
+    JSONObject resultObj = new JSONObject();
+    try {
+      resultObj.put("ev",event);
+      resultObj.put("device", deviceObj);
+      if(callbackContext != null) {
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        pluginResult.setKeepCallback(true);
+        callbackContext.sendPluginResult(pluginResult);
+      }
 
+    } catch (JSONException e) {
+//      e.printStackTrace();
+      callbackContext.error(Util.makeError("1", "Unhandled Error in(updateDeviceStatus): "+ e.toString()));
+    }
+
+  }
+
+  private JSONObject getDeviceObj(NetworkingDevice device){
+    JSONObject deviceObj = new JSONObject();
+    try {
+      deviceObj.put("isProcessing", device.isProcessing());
+      deviceObj.put("logExpand", device.logExpand);
+      JSONObject nodeInfo = new JSONObject();
+      nodeInfo.put("meshAddress", device.nodeInfo.meshAddress);
+      nodeInfo.put("macAddress", device.nodeInfo.macAddress);
+      nodeInfo.put("elementCnt", device.nodeInfo.elementCnt);
+      nodeInfo.put("bound", device.nodeInfo.bound);
+      nodeInfo.put("lum", device.nodeInfo.lum);
+      nodeInfo.put("temp", device.nodeInfo.temp);
+      nodeInfo.put("isLpn", device.nodeInfo.isLpn());
+      nodeInfo.put("isOffline", device.nodeInfo.isOffline());
+      nodeInfo.put("isDefaultBind", device.nodeInfo.isDefaultBind());
+      nodeInfo.put("pidDesc", device.nodeInfo.getPidDesc());
+      if(device.nodeInfo.deviceUUID != null && device.nodeInfo.deviceUUID.length > 0){
+        nodeInfo.put("deviceUUID", Util.convertByteToHexadecimal(device.nodeInfo.deviceUUID));
+      }
+      if(device.nodeInfo.deviceKey != null && device.nodeInfo.deviceKey.length > 0){
+        nodeInfo.put("deviceKey", Util.convertByteToHexadecimal(device.nodeInfo.deviceKey));
+      }
+      JSONArray netKeyIndexes = new JSONArray();
+      if(device.nodeInfo.netKeyIndexes.size() > 0){
+        for (Integer ind : device.nodeInfo.netKeyIndexes) {
+          netKeyIndexes.put(ind);
+        }
+        nodeInfo.put("netKeyIdxes", netKeyIndexes);
+      }
+
+      deviceObj.put("nodeInfo", nodeInfo);
+      return deviceObj;
+    } catch (Exception e) {
+      Log.d(TAG, "startScanLock error = " + e.toString());
+    }
+    return null;
+  }
   public void provisionNext() {
 //    enableUI(false);
     NetworkingDevice waitingDevice = getNextWaitingDevice();
@@ -422,7 +461,7 @@ public class DeviceProvisioning implements EventListener<String> {
     }
     return null;
   }
-  private void startProvision(NetworkingDevice processingDevice) {
+  public void startProvision(NetworkingDevice processingDevice) {
     if (isScanning) {
       isScanning = false;
       MeshService.getInstance().stopScan();
@@ -432,6 +471,7 @@ public class DeviceProvisioning implements EventListener<String> {
     MeshLogger.d("alloc address: " + address);
     if (!MeshUtils.validUnicastAddress(address)) {
 //      enableUI(true);
+      callbackContext.error(Util.makeError("1", "Invalid device to provision"));
       return;
     }
 
@@ -441,6 +481,7 @@ public class DeviceProvisioning implements EventListener<String> {
     processingDevice.state = NetworkingState.PROVISIONING;
     processingDevice.addLog(NetworkingDevice.TAG_PROVISION, "action start -> 0x" + String.format("%04X", address));
     processingDevice.nodeInfo.meshAddress = address;
+      // Arihant - we'll not report to UI here. Instead send from the onProvisionstart callback.
 //    mListAdapter.notifyDataSetChanged();
 
     // check if oob exists
@@ -529,6 +570,16 @@ public class DeviceProvisioning implements EventListener<String> {
   private NetworkingDevice getCurrentDevice(NetworkingState state) {
     for (NetworkingDevice device : devices) {
       if (device.state == state) {
+        return device;
+      }
+    }
+    return null;
+  }
+
+  public NetworkingDevice getDevicebyUUID(String uuid){
+    byte[] deviceUUID = Util.convertHexStringtoBytesArray(uuid);
+    for (NetworkingDevice device : this.devices) {
+      if (device.state == NetworkingState.IDLE && Arrays.equals(deviceUUID, device.nodeInfo.deviceUUID)) {
         return device;
       }
     }

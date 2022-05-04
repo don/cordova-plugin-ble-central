@@ -59,4 +59,18 @@ public class Util {
 
     return hex;
   }
+  public static byte[] convertHexStringtoBytesArray(String s){
+    byte[] ans = new byte[s.length() / 2];
+
+    System.out.println("Hex String : "+s);
+
+    for (int i = 0; i < ans.length; i++) {
+      int index = i * 2;
+
+      // Using parseInt() method of Integer class
+      int val = Integer.parseInt(s.substring(index, index + 2), 16);
+      ans[i] = (byte)val;
+    }
+    return ans;
+  }
 }

@@ -32,6 +32,7 @@ import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 
+import com.megster.cordova.ble.central.model.NetworkingDevice;
 import com.telink.ble.mesh.foundation.MeshService;
 
 import org.apache.cordova.CallbackContext;
@@ -904,8 +905,14 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         }
     }
 
-    public void mesh_provAddDevice(CordovaArgs args, CallbackContext callbackContext) {
+    public void mesh_provAddDevice(CordovaArgs args, CallbackContext callbackContext) throws  JSONException {
         Log.d(TAG, "mesh_provAddDevice: ");
+        String deviceId = args.getString(0);
+        if(deviceId == null){
+            callbackContext.error(Util.makeError("1", "Deviceid not preent"));
+            return;
+        }
+
         if(dp == null){
             dp = new DeviceProvisioning();
             dp.initialize(cordova.getActivity().getApplication(), cordova.getActivity(), callbackContext);
@@ -913,7 +920,11 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         }
         dp.setCallbackContext(callbackContext);
 
-
-
+        NetworkingDevice device = dp.getDevicebyUUID(deviceId);
+        if(device == null){
+            callbackContext.error(Util.makeError("1", "Device with given uuid not found"));
+            return;
+        }
+        dp.startProvision(device);
     }
 }
