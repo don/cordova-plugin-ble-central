@@ -4,6 +4,7 @@
 - [initialize](#initialize)
 - [provScanDevices](#provscandevices)
 - [provAddDevice](#provadddevice)
+- [getMeshInfo](#getmeshinfo)
 
 ## initialize
 Initialize Ble Mesh & its handlers. Call this before any other functions. 
@@ -53,3 +54,7 @@ Provision a selected device. Send UUID of the device which needs to be provision
         {"ev":"device_bind_suc","device":{"isProcessing":false,"logExpand":false,"nodeInfo":{"meshAddress":6,"macAddress":"A4:C1:38:BB:1E:6C","elementCnt":2,"bound":true,"lum":100,"temp":0,"isLpn":false,"isOffline":true,"isDefaultBind":false,"pidDesc":"cid-1102 pid-0100","deviceUUID":"7CDA06A96E226C3CBEA5C5CE442F64FC","deviceKey":"AE023B27FF34E7321F6212187D942C35","netKeyIdxes":[0]}}}
 
 ```
+
+## getMeshInfo
+Get Full Mesh configuration. Usually needed for syncing with server. Sample response - [samplemeshinfo.json](meshdemo/samplemeshinfo.json)
+Note: the entire reponse can be bvery big, dont send it as it is to server. We can process and send it. 
