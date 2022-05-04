@@ -154,7 +154,8 @@ public class DeviceProvisioning implements EventListener<String> {
 //      }
     }
     else if (event.getType().equals(ScanEvent.EVENT_TYPE_SCAN_TIMEOUT)) {
-        Log.w(TAG, "EVENT_TYPE_SCAN_TIMEOUT");
+       Log.w(TAG, "EVENT_TYPE_SCAN_TIMEOUT");
+       onScanTimeout();
 //      enableUI(true);
 
     } else if (event.getType().equals(ProvisioningEvent.EVENT_TYPE_PROVISION_BEGIN)) {
@@ -343,41 +344,55 @@ public class DeviceProvisioning implements EventListener<String> {
     updateDevices(devices);
   }
 
+  private void onScanTimeout(){
+    updateDevices(devices);
+  }
+
+
+
   private void updateDevices(List<NetworkingDevice> devices) {
     try {
     JSONObject resultObj = new JSONObject();
     JSONArray devicesArray = new JSONArray();
-    for(NetworkingDevice device: devices){
-      JSONObject deviceObj = new JSONObject();
-      try {
-        deviceObj.put("isProcessing", device.isProcessing());
-        deviceObj.put("logExpand", device.logExpand);
-        JSONObject nodeInfo = new JSONObject();
-        nodeInfo.put("meshAddress", device.nodeInfo.meshAddress);
-        nodeInfo.put("macAddress", device.nodeInfo.macAddress);
-        nodeInfo.put("elementCnt", device.nodeInfo.elementCnt);
-        nodeInfo.put("bound", device.nodeInfo.bound);
-        nodeInfo.put("lum", device.nodeInfo.lum);
-        nodeInfo.put("temp", device.nodeInfo.temp);
-        nodeInfo.put("isLpn", device.nodeInfo.isLpn());
-        nodeInfo.put("isOffline", device.nodeInfo.isOffline());
-        nodeInfo.put("isDefaultBind", device.nodeInfo.isDefaultBind());
-        nodeInfo.put("pidDesc", device.nodeInfo.getPidDesc());
-        nodeInfo.put("deviceUUID", Util.convertByteToHexadecimal(device.nodeInfo.deviceUUID));
-        nodeInfo.put("deviceKey", Util.convertByteToHexadecimal(device.nodeInfo.deviceKey));
-        JSONArray netKeyIndexes = new JSONArray();
-        for(Integer ind: device.nodeInfo.netKeyIndexes){
-          netKeyIndexes.put(ind);
-        }
-        nodeInfo.put("netKeyIdxes", netKeyIndexes);
-        deviceObj.put("nodeInfo", nodeInfo);
+    if(devices.size() > 0) {
+      for (NetworkingDevice device : devices) {
+        JSONObject deviceObj = new JSONObject();
+        try {
+          deviceObj.put("isProcessing", device.isProcessing());
+          deviceObj.put("logExpand", device.logExpand);
+          JSONObject nodeInfo = new JSONObject();
+          nodeInfo.put("meshAddress", device.nodeInfo.meshAddress);
+          nodeInfo.put("macAddress", device.nodeInfo.macAddress);
+          nodeInfo.put("elementCnt", device.nodeInfo.elementCnt);
+          nodeInfo.put("bound", device.nodeInfo.bound);
+          nodeInfo.put("lum", device.nodeInfo.lum);
+          nodeInfo.put("temp", device.nodeInfo.temp);
+          nodeInfo.put("isLpn", device.nodeInfo.isLpn());
+          nodeInfo.put("isOffline", device.nodeInfo.isOffline());
+          nodeInfo.put("isDefaultBind", device.nodeInfo.isDefaultBind());
+          nodeInfo.put("pidDesc", device.nodeInfo.getPidDesc());
+          if(device.nodeInfo.deviceUUID != null && device.nodeInfo.deviceUUID.length > 0){
+            nodeInfo.put("deviceUUID", Util.convertByteToHexadecimal(device.nodeInfo.deviceUUID));
+          }
+          if(device.nodeInfo.deviceKey != null && device.nodeInfo.deviceKey.length > 0){
+            nodeInfo.put("deviceKey", Util.convertByteToHexadecimal(device.nodeInfo.deviceKey));
+          }
+          JSONArray netKeyIndexes = new JSONArray();
+          if(device.nodeInfo.netKeyIndexes.size() > 0){
+            for (Integer ind : device.nodeInfo.netKeyIndexes) {
+              netKeyIndexes.put(ind);
+            }
+            nodeInfo.put("netKeyIdxes", netKeyIndexes);
+          }
 
-        devicesArray.put(deviceObj);
-      } catch (Exception e) {
-        Log.d(TAG, "startScanLock error = " + e.toString());
+          deviceObj.put("nodeInfo", nodeInfo);
+
+          devicesArray.put(deviceObj);
+        } catch (Exception e) {
+          Log.d(TAG, "startScanLock error = " + e.toString());
+        }
       }
     }
-
       resultObj.put("devices", devicesArray);
       PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
       pluginResult.setKeepCallback(true);
