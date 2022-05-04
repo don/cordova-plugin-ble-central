@@ -1,0 +1,1 @@
+[{"outputType":{"type":"AAPT_FRIENDLY_MERGED_MANIFESTS"},"apkData":{"type":"MAIN","splits":[],"versionCode":3,"versionName":"3.3.2","enabled":true,"outputFile":"TelinkBleMeshLib-debug.aar","fullName":"debug","baseName":"debug"},"path":"AndroidManifest.xml","properties":{"packageId":"com.telink.ble.mesh.lib","split":""}}]
