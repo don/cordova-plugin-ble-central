@@ -32,7 +32,13 @@ import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.megster.cordova.ble.central.model.MeshInfo;
+import com.megster.cordova.ble.central.model.MeshNetKey;
 import com.megster.cordova.ble.central.model.NetworkingDevice;
+import com.megster.cordova.ble.central.model.json.MeshStorage;
+import com.megster.cordova.ble.central.model.json.MeshStorageService;
 import com.telink.ble.mesh.foundation.MeshService;
 
 import org.apache.cordova.CallbackContext;
@@ -133,6 +139,8 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private boolean meshSdkInitialized = false;
     private TelinkBleMeshHandler meshHandler;
     DeviceProvisioning dp;
+    private Gson mGson;
+
 
     public void onDestroy() {
         removeStateListener();
@@ -899,6 +907,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     public void mesh_initialize(CordovaArgs args, CallbackContext callbackContext) {
         Log.d(TAG, "mesh_initialize: ");
         if (!meshSdkInitialized) {
+            mGson = new GsonBuilder().setPrettyPrinting().create();
             meshSdkInitialized = true;
             meshHandler = new TelinkBleMeshHandler();
             meshHandler.initialize(cordova.getActivity().getApplication());
@@ -926,5 +935,12 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             return;
         }
         dp.startProvision(device);
+    }
+
+    public void mesh_getMeshInfo(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+        MeshInfo meshInfo = meshHandler.getMeshInfo();
+        List<MeshNetKey> selectedNetKeys = new ArrayList<MeshNetKey>(meshInfo.meshNetKeyList);
+        String meshInfoStr = MeshStorageService.getInstance().meshToJsonString(meshInfo, selectedNetKeys);
+        Util.sendPluginResult(callbackContext, meshInfoStr);
     }
 }

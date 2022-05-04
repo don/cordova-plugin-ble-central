@@ -1,11 +1,48 @@
 package com.megster.cordova.ble.central;
 
+import com.google.gson.Gson;
+import com.megster.cordova.ble.central.model.GroupInfo;
+import com.megster.cordova.ble.central.model.MeshAppKey;
+import com.megster.cordova.ble.central.model.MeshInfo;
+import com.megster.cordova.ble.central.model.MeshNetKey;
+import com.megster.cordova.ble.central.model.NodeInfo;
+import com.megster.cordova.ble.central.model.PublishModel;
+import com.megster.cordova.ble.central.model.Scene;
+import com.megster.cordova.ble.central.model.json.AddressRange;
+import com.megster.cordova.ble.central.model.json.MeshSecurity;
+import com.megster.cordova.ble.central.model.json.MeshStorage;
+import com.telink.ble.mesh.core.MeshUtils;
+import com.telink.ble.mesh.core.message.MeshSigModel;
+import com.telink.ble.mesh.entity.CompositionData;
+import com.telink.ble.mesh.entity.Scheduler;
+import com.telink.ble.mesh.entity.TransitionTime;
+import com.telink.ble.mesh.util.Arrays;
+import com.telink.ble.mesh.util.MeshLogger;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
 public class Util {
+
+  private static final byte[] VC_TOOL_CPS = new byte[]{
+          (byte) 0x00, (byte) 0x00, (byte) 0x01, (byte) 0x01, (byte) 0x33, (byte) 0x31, (byte) 0xE8, (byte) 0x03,
+          (byte) 0x04, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x17, (byte) 0x01, (byte) 0x00, (byte) 0x00,
+          (byte) 0x01, (byte) 0x00, (byte) 0x02, (byte) 0x00, (byte) 0x03, (byte) 0x00, (byte) 0x05, (byte) 0x00,
+          (byte) 0x00, (byte) 0xFE, (byte) 0x01, (byte) 0xFE, (byte) 0x02, (byte) 0xFE, (byte) 0x03, (byte) 0xFE,
+          (byte) 0x00, (byte) 0xFF, (byte) 0x01, (byte) 0xFF, (byte) 0x02, (byte) 0x12, (byte) 0x01, (byte) 0x10,
+          (byte) 0x03, (byte) 0x10, (byte) 0x05, (byte) 0x10, (byte) 0x08, (byte) 0x10, (byte) 0x05, (byte) 0x12,
+          (byte) 0x08, (byte) 0x12, (byte) 0x02, (byte) 0x13, (byte) 0x05, (byte) 0x13, (byte) 0x09, (byte) 0x13,
+          (byte) 0x11, (byte) 0x13, (byte) 0x15, (byte) 0x10, (byte) 0x11, (byte) 0x02, (byte) 0x01, (byte) 0x00
+  };
+
   // Send plugin functions
   public static void sendPluginResult(CallbackContext callbackContext, boolean success){
     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, success);
@@ -73,4 +110,5 @@ public class Util {
     }
     return ans;
   }
+
 }

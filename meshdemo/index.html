@@ -1,0 +1,42 @@
+<button id="scan" style="z-index:  1000;top: 150px;position: absolute; width: 100px; height: 50px; margin-top: 20px;">
+    Scan </button>
+<button id="provision"
+    style="z-index:  1000;top: 220px;position: absolute; width: 100px; height: 50px; margin-top: 20px;"> Prov 1st device
+</button>
+<button id="meshInfo"
+    style="z-index:  1000;top: 290px;position: absolute; width: 100px; height: 50px; margin-top: 20px;"> Mesh Info
+</button>
+
+
+<script type="text/javascript">
+    setTimeout(() => {
+        console.log("Document Ready");
+        document.getElementById("scan").addEventListener('click', () => {
+            console.log("Scan Button Clicked");
+            window.ble.mesh.initialize();
+            window.ble.mesh.provScanDevices({}, (d) => {
+                console.log("SCAN_RESULT: ", JSON.stringify(d));
+            }, (err) => {
+                console.log("Error in scanning", JSON.stringify(err));
+            })
+        });
+        document.getElementById("provision").addEventListener('click', () => {
+            console.log("Prov Button Clicked");
+            window.ble.mesh.provAddDevice({ uuid: "7CDA06A96E226C3CBEA5C5CE442F64FC" }, (d) => {
+                console.log(JSON.stringify(d));
+            }, (err) => {
+                console.log("Error in provisioning: ", JSON.stringify(err));
+            })
+        });
+        document.getElementById("meshInfo").addEventListener('click', () => {
+            console.log("Prov Button Clicked");
+            window.ble.mesh.getMeshInfo().then((d) => {
+                console.log(JSON.stringify(d));
+            }).catch((err) => {
+                console.log("Error in provisioning: ", JSON.stringify(err));
+            })
+        });
+
+    }, 5000);
+
+</script>

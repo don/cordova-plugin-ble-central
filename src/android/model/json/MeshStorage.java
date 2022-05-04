@@ -37,7 +37,7 @@ import java.util.List;
 
 public class MeshStorage {
 
-    interface Defaults {
+    public interface Defaults {
         String Schema = "http://json-schema.org/draft-04/schema#";
         String Version = "1.0.0";
         String Id = "http://www.bluetooth.com/specifications/assigned-numbers/mesh-profile/cdb-schema.json#";

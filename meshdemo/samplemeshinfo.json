@@ -1,0 +1,446 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "appKeys": [
+      {
+        "boundNetKey": 0,
+        "index": 0,
+        "key": "E7266117515D639E1F927DAC319AF71D",
+        "name": "Default App Key",
+        "oldKey": "00000000000000000000000000000000"
+      },
+      {
+        "boundNetKey": 1,
+        "index": 1,
+        "key": "E7266117515D639E1F927DAC319AF71D",
+        "name": "Sub App Key 1",
+        "oldKey": "00000000000000000000000000000000"
+      },
+      {
+        "boundNetKey": 2,
+        "index": 2,
+        "key": "E7266117515D639E1F927DAC319AF71D",
+        "name": "Sub App Key 2",
+        "oldKey": "00000000000000000000000000000000"
+      }
+    ],
+    "groups": [
+      {
+        "address": "C000",
+        "name": "Kitchen",
+        "parentAddress": "0000"
+      },
+      {
+        "address": "C001",
+        "name": "Balcony",
+        "parentAddress": "0000"
+      }
+    ],
+    "id": "http://www.bluetooth.com/specifications/assigned-numbers/mesh-profile/cdb-schema.json#",
+    "ivIndex": "00000000",
+    "meshName": "Telink-Sig-Mesh",
+    "meshUUID": "4A4227DFD308217BE74EB9CCA755DB09",
+    "netKeys": [
+      {
+        "index": 0,
+        "key": "C98D4A94611261627CB369C424A0E48C",
+        "minSecurity": "secure",
+        "name": "Default Net Key",
+        "oldKey": "00000000000000000000000000000000",
+        "phase": 0,
+        "timestamp": "2022-05-04T18:38:56+05:30"
+      },
+      {
+        "index": 1,
+        "key": "18433A972419568D7FA820CA61F3F715",
+        "minSecurity": "secure",
+        "name": "Sub Net Key 1",
+        "oldKey": "00000000000000000000000000000000",
+        "phase": 0,
+        "timestamp": "2022-05-04T18:38:56+05:30"
+      },
+      {
+        "index": 2,
+        "key": "126F97977E54CA17EF0F554AF8F57FE9",
+        "minSecurity": "secure",
+        "name": "Sub Net Key 2",
+        "oldKey": "00000000000000000000000000000000",
+        "phase": 0,
+        "timestamp": "2022-05-04T18:38:56+05:30"
+      }
+    ],
+    "nodes": [
+      {
+        "UUID": "B7D77F5D55E8FAE655317D261BD39666",
+        "appKeys": [
+          {
+            "index": 0,
+            "updated": false
+          }
+        ],
+        "blacklisted": false,
+        "configComplete": false,
+        "defaultTTL": 10,
+        "deviceKey": "00112233445566778899AABBCCDDEEFF",
+        "elements": [
+          {
+            "index": 0,
+            "location": "0000",
+            "models": [
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "0000",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "0001",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "0002",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "0003",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "0005",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "FE00",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "FE01",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "FE02",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "FE03",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "FF00",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "FF01",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1202",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1001",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1003",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1005",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1008",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1205",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1208",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1302",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1305",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1309",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1311",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1015",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "00010211",
+                "subscribe": []
+              }
+            ]
+          }
+        ],
+        "name": "Provisioner Node",
+        "netKeys": [
+          {
+            "index": 0,
+            "updated": false
+          }
+        ],
+        "secureNetworkBeacon": true,
+        "security": "secure",
+        "unicastAddress": "0001"
+      },
+      {
+        "UUID": "7CDA06A96E226C3CBEA5C5CE442F64FC",
+        "appKeys": [
+          {
+            "index": 0,
+            "updated": false
+          }
+        ],
+        "blacklisted": false,
+        "cid": "0211",
+        "configComplete": true,
+        "crpl": "0069",
+        "defaultTTL": 10,
+        "deviceKey": "AE023B27FF34E7321F6212187D942C35",
+        "elements": [
+          {
+            "index": 0,
+            "location": "0000",
+            "models": [
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "0000",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "0002",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "0003",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1000",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1002",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1004",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1006",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1007",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1300",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1301",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1303",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1304",
+                "subscribe": []
+              },
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "00000211",
+                "subscribe": []
+              }
+            ]
+          },
+          {
+            "index": 1,
+            "location": "0000",
+            "models": [
+              {
+                "bind": [
+                  0
+                ],
+                "modelId": "1002",
+                "subscribe": []
+              }
+            ]
+          }
+  
+        ],
+        "features": {
+          "friend": 1,
+          "lowPower": 2,
+          "proxy": 1,
+          "relay": 1
+        },
+        "name": "Common Node",
+        "netKeys": [
+          {
+            "index": 0,
+            "updated": false
+          }
+        ],
+        "pid": "0001",
+        "schedulers": [],
+        "secureNetworkBeacon": true,
+        "security": "secure",
+        "unicastAddress": "0006",
+        "vid": "3333"
+      }
+    ],
+    "provisioners": [
+      {
+        "UUID": "B7D77F5D55E8FAE655317D261BD39666",
+        "allocatedGroupRange": [
+          {
+            "highAddress": "C0FF",
+            "lowAddress": "C000"
+          }
+        ],
+        "allocatedSceneRange": [
+          {
+            "firstScene": "0001",
+            "lastScene": "000F"
+          }
+        ],
+        "allocatedUnicastRange": [
+          {
+            "highAddress": "0400",
+            "lowAddress": "0001"
+          }
+        ],
+        "provisionerName": "Telink Provisioner"
+      }
+    ],
+    "scenes": [],
+    "timestamp": "2022-05-04T18:38:56+05:30",
+    "version": "1.0.0"
+  }

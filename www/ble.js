@@ -350,5 +350,8 @@ module.exports.mesh = {
     },
     provAddDevice: function provAddDevice(params, success, failure) {
         cordova.exec(success, failure, pluginName, 'mesh_provAddDevice', []);
+    },
+    getMeshInfo: function getMeshInfo(params, success, failure){
+        return exec('mesh_getMeshInfo');
     }
 }
