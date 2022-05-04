@@ -30,9 +30,15 @@ import android.os.Handler;
 import android.os.Build;
 
 import android.provider.Settings;
+import android.util.Log;
+
+import com.telink.ble.mesh.foundation.MeshService;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PermissionHelper;
 import org.apache.cordova.PluginResult;
@@ -87,6 +93,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String START_STATE_NOTIFICATIONS = "startStateNotifications";
     private static final String STOP_STATE_NOTIFICATIONS = "stopStateNotifications";
 
+    private static final String MESH_PREFIX = "mesh_";
     // callbacks
     CallbackContext discoverCallback;
     private CallbackContext enableBluetoothCallback;
@@ -104,7 +111,10 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     // Android 23 requires new permissions for BluetoothLeScanner.startScan()
     private static final String ACCESS_COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
+    private static final String ACCESS_FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
+
     private static final int REQUEST_ACCESS_COARSE_LOCATION = 2;
+    private static final int REQUEST_ACCESS_FINE_LOCATION = 3;
     private CallbackContext permissionCallback;
     private UUID[] serviceUUIDs;
     private int scanSeconds;
@@ -118,6 +128,10 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         put(BluetoothAdapter.STATE_ON, "on");
         put(BluetoothAdapter.STATE_TURNING_ON, "turningOn");
     }};
+
+    private boolean meshSdkInitialized = false;
+    private TelinkBleMeshHandler meshHandler;
+    DeviceProvisioning dp;
 
     public void onDestroy() {
         removeStateListener();
@@ -331,7 +345,31 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
             getBondedDevices(callbackContext);
 
-        } else {
+        } else if(action.startsWith(MESH_PREFIX)){
+            java.lang.reflect.Method method;
+            try {
+                // method = this.getClass().getMethod(action);
+                method = BLECentralPlugin.class.getMethod(action, CordovaArgs.class, CallbackContext.class);
+            } catch (java.lang.SecurityException e) {
+                LOG.d(TAG, "getMethod SecurityException = %s", e.toString());
+                return false;
+
+            } catch (java.lang.NoSuchMethodException e) {
+                LOG.d(TAG, "getMethod NoSuchMethodException = %s", e.toString());
+                return false;
+            }
+
+            try {
+                method.invoke(this, args, callbackContext);
+            } catch (java.lang.IllegalArgumentException e) {
+                callbackContext.error(e.toString());
+            } catch (java.lang.IllegalAccessException e) {
+                callbackContext.error(e.toString());
+            } catch (java.lang.reflect.InvocationTargetException e) {
+                callbackContext.error(e.toString());
+            }
+
+        }else {
 
             validAction = false;
 
@@ -668,6 +706,14 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             PermissionHelper.requestPermission(this, REQUEST_ACCESS_COARSE_LOCATION, ACCESS_COARSE_LOCATION);
             return;
         }
+        if(!PermissionHelper.hasPermission(this, ACCESS_FINE_LOCATION)) {
+            // save info so we can call this method again after permissions are granted
+            permissionCallback = callbackContext;
+            this.serviceUUIDs = serviceUUIDs;
+            this.scanSeconds = scanSeconds;
+            PermissionHelper.requestPermission(this, REQUEST_ACCESS_FINE_LOCATION, ACCESS_FINE_LOCATION);
+            return;
+        }
 
         // return error if already scanning
         if (bluetoothAdapter.isDiscovering()) {
@@ -808,6 +854,10 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
                 this.serviceUUIDs = null;
                 this.scanSeconds = -1;
                 break;
+
+            case REQUEST_ACCESS_FINE_LOCATION:
+                Log.d(TAG, "User granted fine Location Access");
+                break;
         }
     }
 
@@ -822,4 +872,48 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         this.reportDuplicates = false;
     }
 
+    // =========================================================
+    //========================= Mesh Interface =================
+    // =========================================================
+
+    /**
+     *s
+     */
+    public void mesh_provScanDevices(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+        Log.d(TAG, "mesh_provScanDevices");
+        if(!PermissionHelper.hasPermission(this, ACCESS_FINE_LOCATION)) {
+            // save info so we can call this method again after permissions are granted
+            permissionCallback = callbackContext;
+            this.serviceUUIDs = serviceUUIDs;
+            this.scanSeconds = scanSeconds;
+            PermissionHelper.requestPermission(this, REQUEST_ACCESS_FINE_LOCATION, ACCESS_FINE_LOCATION);
+            return;
+        }
+        dp = new DeviceProvisioning();
+        dp.initialize(cordova.getActivity().getApplication(), cordova.getActivity(), callbackContext);
+        // TODO: we also have to destroy dp events we subscribed to.
+
+    }
+
+    public void mesh_initialize(CordovaArgs args, CallbackContext callbackContext) {
+        Log.d(TAG, "mesh_initialize: ");
+        if (!meshSdkInitialized) {
+            meshSdkInitialized = true;
+            meshHandler = new TelinkBleMeshHandler();
+            meshHandler.initialize(cordova.getActivity().getApplication());
+        }
+    }
+
+    public void mesh_provAddDevice(CordovaArgs args, CallbackContext callbackContext) {
+        Log.d(TAG, "mesh_provAddDevice: ");
+        if(dp == null){
+            dp = new DeviceProvisioning();
+            dp.initialize(cordova.getActivity().getApplication(), cordova.getActivity(), callbackContext);
+            // TODO: we also have to destroy dp events we subscribed to.
+        }
+        dp.setCallbackContext(callbackContext);
+
+
+
+    }
 }

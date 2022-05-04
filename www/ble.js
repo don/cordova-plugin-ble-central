@@ -48,7 +48,12 @@ function convertToNativeJS(object) {
 
 // set of auto-connected device ids
 var autoconnected = {};
-
+const pluginName = 'BLE';
+var exec = function exec(method, params) {
+    return new Promise(function (resolve, reject) {
+      return cordova.exec(resolve, reject, pluginName, method, params);
+    });
+};
 module.exports = {
 
     scan: function (services, seconds, success, failure) {
@@ -335,3 +340,15 @@ module.exports.withPromises = {
         });
     }
 };
+
+module.exports.mesh = {
+    initialize: function () {
+        return exec('mesh_initialize');
+    },
+    provScanDevices: function provScanDevices(params, success, failure) {
+        cordova.exec(success, failure, pluginName, 'mesh_provScanDevices', []);
+    },
+    provAddDevice: function provAddDevice(params, success, failure) {
+        cordova.exec(success, failure, pluginName, 'mesh_provAddDevice', []);
+    }
+}
