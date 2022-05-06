@@ -10,7 +10,7 @@
 ```bash
     ./gradlew build
 ```
-Then rename it to TelinkBleMeshLib.aar, and thats it!
+Then rename it to TelinkBleMeshLib.aar, and thats it!   
 
 ```
 ## initialize
