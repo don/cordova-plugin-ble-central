@@ -1,2 +1,10 @@
 .idea/
 *.DS_Store
+src/android/TelinkBleMeshLib/.gradle/*
+src/android/TelinkBleMeshLib/build/.transforms
+src/android/TelinkBleMeshLib/build/android-profile
+src/android/TelinkBleMeshLib/build/generated
+src/android/TelinkBleMeshLib/build/intermediates
+src/android/TelinkBleMeshLib/build/reports
+src/android/TelinkBleMeshLib/build/tmp
+src/android/TelinkBleMeshLib/build/outputs/logs

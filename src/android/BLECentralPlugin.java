@@ -912,6 +912,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             meshHandler = new TelinkBleMeshHandler();
             meshHandler.initialize(cordova.getActivity().getApplication());
         }
+        Util.sendPluginResult(callbackContext, true);
     }
 
     public void mesh_provAddDevice(CordovaArgs args, CallbackContext callbackContext) throws  JSONException {

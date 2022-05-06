@@ -6,6 +6,13 @@
 - [provAddDevice](#provadddevice)
 - [getMeshInfo](#getmeshinfo)
 
+## Build AAR
+```bash
+    ./gradlew build
+```
+Then rename it to TelinkBleMeshLib.aar, and thats it!
+
+```
 ## initialize
 Initialize Ble Mesh & its handlers. Call this before any other functions. 
 ```JavaScript

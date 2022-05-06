@@ -471,7 +471,7 @@ public class DeviceProvisioning implements EventListener<String> {
     MeshLogger.d("alloc address: " + address);
     if (!MeshUtils.validUnicastAddress(address)) {
 //      enableUI(true);
-      callbackContext.error(Util.makeError("1", "Invalid device to provision"));
+      this.callbackContext.error(Util.makeError("1", "Invalid device to provision"));
       return;
     }
 

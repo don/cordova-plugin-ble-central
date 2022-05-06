@@ -54,6 +54,8 @@
             </feature>
         </config-file>
 
+        <framework src="src/android/plugin.gradle" custom="true" type="gradleReference"/>
+
         <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
             <uses-permission android:name="android.permission.BLUETOOTH"/>
@@ -99,6 +101,9 @@
         <source-file src="src/android/model/json/MeshSecurity.java" target-dir="src/com/megster/cordova/ble/central/model/json" />
         <source-file src="src/android/model/json/MeshStorage.java" target-dir="src/com/megster/cordova/ble/central/model/json" />
         <source-file src="src/android/model/json/MeshStorageService.java" target-dir="src/com/megster/cordova/ble/central/model/json" />
+
+        <source-file src="src/android/TelinkBleMeshLib/build/outputs/aar/TelinkBleMeshLib.aar" target-dir="src/main/libs" />
+
 
     </platform>
 

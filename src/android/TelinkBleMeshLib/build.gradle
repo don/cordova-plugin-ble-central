@@ -1,0 +1,78 @@
+apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.1"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 26
+        versionCode 3
+        versionName "3.3.2"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    // implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation 'com.madgag.spongycastle:core:1.58.0.0'
+    implementation 'com.madgag.spongycastle:prov:1.58.0.0'
+
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    // testImplementation 'junit:junit:4.12'
+    // androidTestImplementation 'com.android.support.test:runner:0.5'
+    // androidTestImplementation 'com.android.support.test.espresso:espresso-core:2.2.2'
+}
+
+repositories {
+    mavenCentral()
+    google()
+}
+
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.5.0'
+        classpath 'com.madgag.spongycastle:core:1.58.0.0'
+        classpath 'com.madgag.spongycastle:prov:1.58.0.0'
+        classpath 'androidx.appcompat:appcompat:1.1.0'
+    }
+}
+
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "sources"
+}
+
+publishing {
+    publications {
+        bar(MavenPublication) {
+            groupId 'com.telink.ble'
+            artifactId 'telink-ble-mesh-lib'
+            version '0.1'
+            artifact(sourceJar)
+            artifact("$buildDir/outputs/aar/telink-ble-mesh-release.aar")
+        }
+    }
+    repositories {
+        maven {
+            url "$buildDir/src"
+        }
+    }
+}
