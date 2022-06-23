@@ -1,6 +1,7 @@
   
-function notSupported() {
+function notSupported(failure) {
     console.log('BLE is not supported on the browser');
+    if (failure) failure(new Error("not supported"));
 }
 
 function formatUUID(uuid) {
@@ -174,8 +175,7 @@ module.exports = {
         }
     },
     isEnabled: function(success, failure) {
-        notSupported();
-        if (failure) failure(new Error("not supported"));
+        notSupported(failure);
     },
     isConnected: function(deviceId, success, failure) {
         if (this.deviceInfos.has(deviceId)) {
@@ -190,19 +190,15 @@ module.exports = {
         }
     },
     showBluetoothSettings: function(success, failure) {
-        notSupported();
-        if (failure) failure(new Error("not supported"));
+        notSupported(failure);
     },
     enable: function(success, failure) {
-        notSupported();
-        if (failure) failure(new Error("not supported"));
+        notSupported(failure);
     },
     startStateNotifications: function(success, failure) {
-        notSupported();
-        if (failure) failure(new Error("not supported"));
+        notSupported(failure);
     },
     stopStateNotifications: function(success, failure) {
-        notSupported();
-        if (failure) failure(new Error("not supported"));
+        notSupported(failure);
     }
 };
