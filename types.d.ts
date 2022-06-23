@@ -31,6 +31,42 @@ declare namespace BLECentralPlugin {
         reportDuplicates?: boolean | undefined;
     }
 
+    interface L2CAPOptions {
+        psm: number;
+        secureChannel?: boolean;
+    }
+
+    interface L2CAP {
+        close(device_id: string, psm: number, success?: () => any, failure?: (error: string | BLEError) => any);
+
+        open(
+            device_id: string,
+            psmOrOptions: number | L2CAPOptions,
+            connectCallback?: () => any,
+            disconnectCallback?: (error: string | BLEError) => any
+        );
+
+        receiveData(device_id: string, psm: number, data: (data: ArrayBuffer) => any);
+
+        write(
+            device_id: string,
+            psm: number,
+            data: ArrayBuffer,
+            success?: () => {},
+            failure?: (error: string | BLEError) => any
+        );
+    }
+
+    interface L2CAPPromises {
+        open(
+            device_id: string,
+            psmOrOptions: number | L2CAPOptions,
+            disconnectCallback?: (error: string | BLEError) => any
+        ): Promise<void>;
+        close(device_id: string, psm: number): Promise<void>;
+        write(device_id: string, psm: number, data: ArrayBuffer): Promise<void>;
+    }
+
     interface RestoredState {
         peripherals?: PeripheralDataExtended[];
         scanServiceUUIDs?: string[];
@@ -77,6 +113,8 @@ declare namespace BLECentralPlugin {
     }
 
     export interface BLECentralPluginPromises extends BLECentralPluginCommon {
+        l2cap: L2CAPPromises;
+
         stopScan(): Promise<void>;
         disconnect(device_id: string): Promise<void>;
         read(device_id: string, service_uuid: string, characteristic_uuid: string): Promise<ArrayBuffer>;
@@ -104,6 +142,8 @@ declare namespace BLECentralPlugin {
     }
 
     export interface BLECentralPluginStatic extends BLECentralPluginCommon {
+        l2cap: L2CAP;
+
         /* sets the pin when device requires it.
            [iOS] setPin is not supported on iOS. */
         setPin(pin: string, success?: () => any, failure?: (error: string | BLEError) => any): void;
