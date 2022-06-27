@@ -348,10 +348,13 @@ module.exports.mesh = {
     provScanDevices: function provScanDevices(params, success, failure) {
         cordova.exec(success, failure, pluginName, 'mesh_provScanDevices', []);
     },
-    provAddDevice: function provAddDevice(params, success, failure) {
-        cordova.exec(success, failure, pluginName, 'mesh_provAddDevice', []);
+    provAddDevice: function provAddDevice(uuid, success, failure) {
+        cordova.exec(success, failure, pluginName, 'mesh_provAddDevice', [uuid]);
     },
     getMeshInfo: function getMeshInfo(params, success, failure){
         return exec('mesh_getMeshInfo');
+    },
+    importMeshInfo: function importMeshInfo(meshInfo){
+        return exec('mesh_importMeshInfo', [meshInfo]);
     }
 }

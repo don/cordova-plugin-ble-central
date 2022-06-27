@@ -4,7 +4,9 @@ package com.megster.cordova.ble.central;
 import android.content.Context;
 import android.util.Log;
 
+import com.google.gson.Gson;
 import com.megster.cordova.ble.central.model.MeshInfo;
+import com.megster.cordova.ble.central.model.json.MeshStorageService;
 import com.telink.ble.mesh.foundation.Event;
 import com.telink.ble.mesh.foundation.EventBus;
 import com.telink.ble.mesh.foundation.EventHandler;
@@ -53,6 +55,7 @@ public class TelinkBleMeshHandler implements EventHandler {
       meshInfo = (MeshInfo) configObj;
     }
   }
+
   public void setupMesh(MeshInfo mesh) {
     MeshLogger.d("setup mesh info: " + meshInfo.toString());
     this.meshInfo = mesh;
@@ -62,6 +65,11 @@ public class TelinkBleMeshHandler implements EventHandler {
   public MeshInfo getMeshInfo() {
     return meshInfo;
   }
+
+  public void setMeshInfo(MeshInfo newMeshInfo) {
+    meshInfo = newMeshInfo;
+  }
+
   public static TelinkBleMeshHandler getInstance() {
     return mThis;
   }

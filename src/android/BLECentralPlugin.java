@@ -34,11 +34,14 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.megster.cordova.ble.central.model.AppSettings;
 import com.megster.cordova.ble.central.model.MeshInfo;
 import com.megster.cordova.ble.central.model.MeshNetKey;
 import com.megster.cordova.ble.central.model.NetworkingDevice;
 import com.megster.cordova.ble.central.model.json.MeshStorage;
 import com.megster.cordova.ble.central.model.json.MeshStorageService;
+import com.telink.ble.mesh.core.message.generic.OnOffSetMessage;
+import com.telink.ble.mesh.entity.ProvisioningDevice;
 import com.telink.ble.mesh.foundation.MeshService;
 
 import org.apache.cordova.CallbackContext;
@@ -936,6 +939,10 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             return;
         }
         dp.startProvision(device);
+        MeshInfo meshInfo = meshHandler.getMeshInfo();
+        List<MeshNetKey> selectedNetKeys = new ArrayList<MeshNetKey>(meshInfo.meshNetKeyList);
+        String meshInfoStr = MeshStorageService.getInstance().meshToJsonString(meshInfo, selectedNetKeys);
+        Util.sendPluginResult(callbackContext, meshInfoStr);
     }
 
     public void mesh_getMeshInfo(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
@@ -943,5 +950,24 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         List<MeshNetKey> selectedNetKeys = new ArrayList<MeshNetKey>(meshInfo.meshNetKeyList);
         String meshInfoStr = MeshStorageService.getInstance().meshToJsonString(meshInfo, selectedNetKeys);
         Util.sendPluginResult(callbackContext, meshInfoStr);
+    }
+
+    public void mesh_blinkDevice(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+//        int address = Integer.parseInt(args.getString(0));
+//        int appKeyIndex = meshHandler.getMeshInfo().getDefaultAppKeyIndex();
+//        OnOffSetMessage onOffSetMessage = OnOffSetMessage.getSimple(address, appKeyIndex, 1, !AppSettings.ONLINE_STATUS_ENABLE, !AppSettings.ONLINE_STATUS_ENABLE ? 1 : 0);
+//        MeshService.getInstance().sendMeshMessage(onOffSetMessage);
+
+    }
+
+    public void mesh_importMeshInfo(CordovaArgs args, CallbackContext callbackContext) throws Exception {
+        try {
+            String inMeshInfo = args.getString(0);
+            MeshInfo meshInfo = meshHandler.getMeshInfo();
+            meshHandler.setMeshInfo(MeshStorageService.getInstance().importExternal(inMeshInfo, meshInfo));
+            Util.sendPluginResult(callbackContext, true);
+        } catch (Exception e) {
+            Util.sendPluginResult(callbackContext, e.getMessage());
+        }
     }
 }
