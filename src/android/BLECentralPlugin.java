@@ -38,6 +38,7 @@ import android.os.Handler;
 import android.os.Build;
 
 import android.provider.Settings;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaPlugin;
@@ -49,6 +50,8 @@ import org.json.JSONObject;
 import org.json.JSONException;
 
 import java.util.*;
+
+import io.cordova.plugin.ble.central.tester.devapp.BuildConfig;
 
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_DUAL;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_LE;
@@ -629,8 +632,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     }
 
     private void connect(CallbackContext callbackContext, String macAddress) {
-
-        if (Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
+        if (BuildConfig.COMPILE_SDK_VERSION_BLE >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
             if (!PermissionHelper.hasPermission(this, Manifest.permission.BLUETOOTH_CONNECT)) {
                 permissionCallback = callbackContext;
                 deviceMacAddress = macAddress;
@@ -658,7 +660,7 @@ public class BLECentralPlugin extends CordovaPlugin {
 
     private void autoConnect(CallbackContext callbackContext, String macAddress) {
 
-        if (Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
+        if (BuildConfig.COMPILE_SDK_VERSION_BLE >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
             if (!PermissionHelper.hasPermission(this, Manifest.permission.BLUETOOTH_CONNECT)) {
                 permissionCallback = callbackContext;
                 deviceMacAddress = macAddress;
@@ -945,7 +947,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             LOG.w(TAG, "Location Services are disabled");
         }
 
-        if (Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
+        if (BuildConfig.COMPILE_SDK_VERSION_BLE >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
             if (!PermissionHelper.hasPermission(this, Manifest.permission.BLUETOOTH_SCAN) || !PermissionHelper.hasPermission(this, Manifest.permission.BLUETOOTH_CONNECT)) {
                 permissionCallback = callbackContext;
                 this.serviceUUIDs = serviceUUIDs;
@@ -958,7 +960,7 @@ public class BLECentralPlugin extends CordovaPlugin {
                 PermissionHelper.requestPermissions(this, REQUEST_BLUETOOTH_SCAN, permissionsList.toArray(permissionsArray));
                 return;
             }
-        } else if (Build.VERSION.SDK_INT >= 29) { // (API 29) Build.VERSION_CODES.Q
+        } else if (BuildConfig.COMPILE_SDK_VERSION_BLE >= 29 && Build.VERSION.SDK_INT >= 29) { // (API 29) Build.VERSION_CODES.Q
             if (!PermissionHelper.hasPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 permissionCallback = callbackContext;
                 this.serviceUUIDs = serviceUUIDs;

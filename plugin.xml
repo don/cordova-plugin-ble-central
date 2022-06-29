@@ -93,6 +93,7 @@
         <source-file src="src/android/UUIDHelper.java"
             target-dir="src/com/megster/cordova/ble/central"/>
 
+        <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
     </platform>
 
     <platform name="browser">
