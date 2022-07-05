@@ -28,6 +28,7 @@ import android.content.pm.PackageManager;
 import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Build;
+import com.telink.ble.mesh.TelinkMeshApplication;
 
 import android.provider.Settings;
 import android.util.Log;
@@ -939,6 +940,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             return;
         }
         dp.startProvision(device);
+        // TODO: getting the mesh info too early.
         MeshInfo meshInfo = meshHandler.getMeshInfo();
         List<MeshNetKey> selectedNetKeys = new ArrayList<MeshNetKey>(meshInfo.meshNetKeyList);
         String meshInfoStr = MeshStorageService.getInstance().meshToJsonString(meshInfo, selectedNetKeys);
@@ -966,6 +968,35 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             MeshInfo meshInfo = meshHandler.getMeshInfo();
             meshHandler.setMeshInfo(MeshStorageService.getInstance().importExternal(inMeshInfo, meshInfo));
             Util.sendPluginResult(callbackContext, true);
+        } catch (Exception e) {
+            Util.sendPluginResult(callbackContext, e.getMessage());
+        }
+    }
+
+    private boolean kickDirect;
+    private int meshAddress;
+    private Handler handler = new Handler();
+
+    private void kickOut(CordovaArgs args, CallbackContext callbackContext) throws Exception {
+        try {
+            meshAddress = args.getInt(0);
+            // send reset message
+            boolean cmdSent = MeshService.getInstance().sendMeshMessage(new NodeResetMessage(meshAddress));
+            kickDirect = meshAddress == (MeshService.getInstance().getDirectConnectedNodeAddress());
+            if (!cmdSent || !kickDirect) {
+
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        handler.removeCallbacksAndMessages(null);
+                        MeshService.getInstance().removeDevice(meshAddress);
+                        TelinkMeshApplication.getInstance().getMeshInfo().removeDeviceByMeshAddress(meshAddress);
+                        Activity activity = cordova.getActivity();
+                        TelinkMeshApplication.getInstance().getMeshInfo().saveOrUpdate(activity.getApplicationContext());
+                        finish();
+                    }
+                }, 3 * 1000);
+            }
         } catch (Exception e) {
             Util.sendPluginResult(callbackContext, e.getMessage());
         }
