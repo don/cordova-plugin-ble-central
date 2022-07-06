@@ -72,10 +72,6 @@
             <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
         </config-file>
 
-        <config-file target="AndroidManifest.xml" parent="/manifest/application">
-            <meta-data android:value="${BLE_SDK_VERSION}" android:name="com.megster.cordova.ble.central.COMPILE_SDK_INT" />
-        </config-file>
-
         <config-file target="res/xml/config.xml" parent="/*">
             <preference name="accessBackgroundLocation" value="$ACCESS_BACKGROUND_LOCATION"/>
         </config-file>
@@ -94,8 +90,6 @@
             target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/UUIDHelper.java"
             target-dir="src/com/megster/cordova/ble/central"/>
-
-        <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
     </platform>
 
     <platform name="browser">

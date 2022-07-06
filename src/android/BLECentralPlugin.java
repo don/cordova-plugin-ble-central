@@ -148,14 +148,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     protected void pluginInitialize() {
         if (COMPILE_SDK_VERSION == -1) {
             Context context = cordova.getContext();
-            try {
-                COMPILE_SDK_VERSION = context.getPackageManager()
-                        .getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA)
-                        .metaData
-                        .getInt("com.megster.cordova.ble.central.COMPILE_SDK_INT", -1);
-            } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
-            }
+            COMPILE_SDK_VERSION = context.getApplicationContext().getApplicationInfo().targetSdkVersion;
         }
     }
 

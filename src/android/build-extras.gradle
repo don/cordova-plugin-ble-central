@@ -1,5 +1,0 @@
-android {
-  defaultConfig {
-      manifestPlaceholders = [BLE_SDK_VERSION:"$cordovaConfig.SDK_VERSION"]
-  }
-}
