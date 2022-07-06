@@ -120,10 +120,9 @@ public class BLECentralPlugin extends CordovaPlugin {
     // scan options
     boolean reportDuplicates = false;
 
-    private static final int REQUEST_ACCESS_LOCATION = 2;
-    private static final int REQUEST_BLUETOOTH_SCAN = 3;
-    private static final int REQUEST_BLUETOOTH_CONNECT = 4;
-    private static final int REQUEST_BLUETOOTH_CONNECT_AUTO = 5;
+    private static final int REQUEST_BLUETOOTH_SCAN = 2;
+    private static final int REQUEST_BLUETOOTH_CONNECT = 3;
+    private static final int REQUEST_BLUETOOTH_CONNECT_AUTO = 4;
     private static int COMPILE_SDK_VERSION = -1;
     private CallbackContext permissionCallback;
     private String deviceMacAddress;
@@ -961,47 +960,36 @@ public class BLECentralPlugin extends CordovaPlugin {
             LOG.w(TAG, "Location Services are disabled");
         }
 
+        List<String> missingPermissions = new ArrayList<String>();
         if (COMPILE_SDK_VERSION >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
-            if (!PermissionHelper.hasPermission(this, BLUETOOTH_SCAN) || !PermissionHelper.hasPermission(this, BLUETOOTH_CONNECT)) {
-                permissionCallback = callbackContext;
-                this.serviceUUIDs = serviceUUIDs;
-                this.scanSeconds = scanSeconds;
-
-                List<String> permissionsList = new ArrayList<String>();
-                permissionsList.add(BLUETOOTH_SCAN);
-                permissionsList.add(BLUETOOTH_CONNECT);
-                String[] permissionsArray = new String[permissionsList.size()];
-                PermissionHelper.requestPermissions(this, REQUEST_BLUETOOTH_SCAN, permissionsList.toArray(permissionsArray));
-                return;
+            if (!PermissionHelper.hasPermission(this, BLUETOOTH_SCAN)) {
+                missingPermissions.add(BLUETOOTH_SCAN);
             }
         } else if (COMPILE_SDK_VERSION >= 29 && Build.VERSION.SDK_INT >= 29) { // (API 29) Build.VERSION_CODES.Q
             if (!PermissionHelper.hasPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                permissionCallback = callbackContext;
-                this.serviceUUIDs = serviceUUIDs;
-                this.scanSeconds = scanSeconds;
-                this.scanSettings = scanSettings;
+                missingPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            }
 
-                List<String> permissionsList = new ArrayList<String>();
-                permissionsList.add(Manifest.permission.ACCESS_FINE_LOCATION);
-                String accessBackgroundLocation = this.preferences.getString("accessBackgroundLocation", "false");
-                if(accessBackgroundLocation == "true") {
-                    LOG.w(TAG, "ACCESS_BACKGROUND_LOCATION is being requested");
-                    permissionsList.add(ACCESS_BACKGROUND_LOCATION);
-                }
-                String[] permissionsArray = new String[permissionsList.size()];
-                PermissionHelper.requestPermissions(this, REQUEST_ACCESS_LOCATION, permissionsList.toArray(permissionsArray));
-                return;
+            String accessBackgroundLocation = this.preferences.getString("accessBackgroundLocation", "false");
+            if (accessBackgroundLocation == "true" && 
+                    !PermissionHelper.hasPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+                LOG.w(TAG, "ACCESS_BACKGROUND_LOCATION is being requested");
+                missingPermissions.add(ACCESS_BACKGROUND_LOCATION);
             }
         } else {
             if(!PermissionHelper.hasPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
-                // save info so we can call this method again after permissions are granted
-                permissionCallback = callbackContext;
-                this.serviceUUIDs = serviceUUIDs;
-                this.scanSeconds = scanSeconds;
-                this.scanSettings = scanSettings;
-                PermissionHelper.requestPermission(this, REQUEST_ACCESS_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION);
-                return;
+                missingPermissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
             }
+        }
+
+        if (missingPermissions.size() > 0) {
+            // save info so we can call this method again after permissions are granted
+            permissionCallback = callbackContext;
+            this.serviceUUIDs = serviceUUIDs;
+            this.scanSeconds = scanSeconds;
+            this.scanSettings = scanSettings;
+            PermissionHelper.requestPermissions(this, REQUEST_BLUETOOTH_SCAN, missingPermissions.toArray(new String[0]));
+            return;
         }
 
 
@@ -1131,20 +1119,13 @@ public class BLECentralPlugin extends CordovaPlugin {
         }
 
         switch(requestCode) {
-            case REQUEST_ACCESS_LOCATION:
-                LOG.d(TAG, "User granted Location Access");
+            case REQUEST_BLUETOOTH_SCAN:
+                LOG.d(TAG, "User granted Bluetooth Scan Access");
                 findLowEnergyDevices(permissionCallback, serviceUUIDs, scanSeconds, scanSettings);
                 this.permissionCallback = null;
                 this.serviceUUIDs = null;
                 this.scanSeconds = -1;
                 this.scanSettings = null;
-                break;
-            case REQUEST_BLUETOOTH_SCAN:
-                LOG.d(TAG, "User granted Bluetooth Scan Access");
-                findLowEnergyDevices(permissionCallback, serviceUUIDs, scanSeconds);
-                this.permissionCallback = null;
-                this.serviceUUIDs = null;
-                this.scanSeconds = -1;
                 break;
             case REQUEST_BLUETOOTH_CONNECT:
                 LOG.d(TAG, "User granted Bluetooth Connect Access");
