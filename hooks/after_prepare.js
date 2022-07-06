@@ -4,9 +4,6 @@
 const fs = require('fs');
 const path = require('path');
 
-const ACCESS_BACKGROUND_LOCATION = /\n.*?android\.permission\.ACCESS_BACKGROUND_LOCATION.*?\n/;
-const USES_PERMISSION_FLAGS = /\s*android:usesPermissionFlags="neverForLocation"\s*/;
-
 module.exports = function (context) {
     const { projectRoot, plugin } = context.opts;
     const { ConfigParser } = context.requireCordovaModule('cordova-common');
@@ -27,16 +24,24 @@ module.exports = function (context) {
 
     let manifestChanged = false;
     let androidManifest = fs.readFileSync(manifestPath).toString();
-    if (accessBackgroundLocation != 'true' && androidManifest.search(ACCESS_BACKGROUND_LOCATION) != -1) {
-        console.log(plugin.id + ': ACCESS_BACKGROUND_LOCATION permission removed from ' + manifestPath);
-        androidManifest = androidManifest.replace(ACCESS_BACKGROUND_LOCATION, '\n');
+    if (accessBackgroundLocation != 'true') {
+        androidManifest = stripPermission(androidManifest, 'ACCESS_BACKGROUND_LOCATION');
         manifestChanged = true;
     }
 
-    if (targetSdkVersion < 31 && androidManifest.search(USES_PERMISSION_FLAGS) != -1) {
-        // (API 31) Build.VERSION_CODE.S Android 12
-        console.log(plugin.id + ': Stripping Android 12-only attributes from ' + manifestPath);
-        androidManifest = androidManifest.replace(USES_PERMISSION_FLAGS, ' ');
+    if (targetSdkVersion <= 30) {
+        // Strip out Android 12+ changes
+        androidManifest = stripPermission(androidManifest, 'BLUETOOTH_SCAN');
+        androidManifest = stripPermission(androidManifest, 'BLUETOOTH_CONNECT');
+        androidManifest = stripMaxSdkVersion(androidManifest, '30');
+        manifestChanged = true;
+    }
+
+    if (targetSdkVersion <= 28) {
+        // Strip out Android 10+ changes
+        androidManifest = stripPermission(androidManifest, 'ACCESS_FINE_LOCATION');
+        androidManifest = stripPermission(androidManifest, 'ACCESS_BACKGROUND_LOCATION');
+        androidManifest = stripMaxSdkVersion(androidManifest, '28');
         manifestChanged = true;
     }
 
@@ -63,4 +68,17 @@ function getTargetSdkVersion(platformPath) {
     }
 
     return Number(sdkVersion || 0);
+}
+
+function stripPermission(androidManifest, permission) {
+    const replacer = new RegExp(
+        '\\n\\s*?<uses-permission.*? android:name="android\\.permission\\.' + permission + '".*?\\/>\\n',
+        'g'
+    );
+    return androidManifest.replace(replacer, '\n');
+}
+
+function stripMaxSdkVersion(androidManifest, level) {
+    const replacer = new RegExp('\\s*android:maxSdkVersion="' + level + '"\\s*', 'g');
+    return androidManifest.replace(replacer, ' ');
 }
