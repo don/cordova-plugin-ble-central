@@ -12,13 +12,13 @@ module.exports = function (context) {
     const { ConfigParser } = context.requireCordovaModule('cordova-common');
 
     const platformPath = path.resolve(projectRoot, 'platforms/android');
-    const gradleConfig = JSON.parse(fs.readFileSync(path.resolve(platformPath, 'cdv-gradle-config.json')).toString());
-    if (gradleConfig.SDK_VERSION == undefined) {
+    const config = new ConfigParser(path.resolve(platformPath, 'app/src/main/res/xml/config.xml'));
+    const accessBackgroundLocation = config.getPreference('accessBackgroundLocation', 'android');
+
+    const targetSdkVersion = getTargetSdkVersion(platformPath);
+    if (!targetSdkVersion) {
         console.log(plugin.id + ': WARNING - unable to find Android SDK version');
     }
-    const config = new ConfigParser(path.resolve(platformPath, 'app/src/main/res/xml/config.xml'));
-
-    const accessBackgroundLocation = config.getPreference('accessBackgroundLocation', 'android');
 
     const manifestPath = path.resolve(platformPath, 'app/src/main/AndroidManifest.xml');
     if (!fs.existsSync(manifestPath)) {
@@ -33,7 +33,7 @@ module.exports = function (context) {
         manifestChanged = true;
     }
 
-    if (gradleConfig.SDK_VERSION < 31 && androidManifest.search(USES_PERMISSION_FLAGS) != -1) {
+    if (targetSdkVersion < 31 && androidManifest.search(USES_PERMISSION_FLAGS) != -1) {
         // (API 31) Build.VERSION_CODE.S Android 12
         console.log(plugin.id + ': Stripping Android 12-only attributes from ' + manifestPath);
         androidManifest = androidManifest.replace(USES_PERMISSION_FLAGS, ' ');
@@ -44,3 +44,23 @@ module.exports = function (context) {
         fs.writeFileSync(manifestPath, androidManifest);
     }
 };
+
+function getTargetSdkVersion(platformPath) {
+    let sdkVersion;
+    const gradleConfigJson = path.resolve(platformPath, 'cdv-gradle-config.json');
+    const gradleConfigProperties = path.resolve(platformPath, 'gradle.properties');
+
+    if (fs.existsSync(gradleConfigJson)) {
+        const gradleConfig = JSON.parse(fs.readFileSync(gradleConfigJson).toString());
+        sdkVersion = gradleConfig.SDK_VERSION;
+    } else if (fs.existsSync(gradleConfigProperties)) {
+        const gradleConfig = fs.readFileSync(gradleConfigProperties).toString();
+        sdkVersion = gradleConfig
+            .split('\n')
+            .map((l) => l.split('='))
+            .filter(([key]) => key == 'cdvTargetSdkVersion')
+            .map(([_, value]) => value);
+    }
+
+    return Number(sdkVersion || 0);
+}
