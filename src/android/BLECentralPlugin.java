@@ -965,6 +965,9 @@ public class BLECentralPlugin extends CordovaPlugin {
             if (!PermissionHelper.hasPermission(this, BLUETOOTH_SCAN)) {
                 missingPermissions.add(BLUETOOTH_SCAN);
             }
+            if (!PermissionHelper.hasPermission(this, BLUETOOTH_CONNECT)) {
+                missingPermissions.add(BLUETOOTH_CONNECT);
+            }
         } else if (COMPILE_SDK_VERSION >= 29 && Build.VERSION.SDK_INT >= 29) { // (API 29) Build.VERSION_CODES.Q
             if (!PermissionHelper.hasPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 missingPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
