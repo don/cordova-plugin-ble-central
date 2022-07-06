@@ -51,8 +51,6 @@ import org.json.JSONException;
 
 import java.util.*;
 
-import io.cordova.plugin.ble.central.tester.devapp.BuildConfig;
-
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_DUAL;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_LE;
 
@@ -126,6 +124,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     private static final int REQUEST_BLUETOOTH_SCAN = 3;
     private static final int REQUEST_BLUETOOTH_CONNECT = 4;
     private static final int REQUEST_BLUETOOTH_CONNECT_AUTO = 5;
+    private static int COMPILE_SDK_VERSION = -1;
     private CallbackContext permissionCallback;
     private String deviceMacAddress;
     private UUID[] serviceUUIDs;
@@ -145,6 +144,22 @@ public class BLECentralPlugin extends CordovaPlugin {
     CallbackContext locationStateCallback;
     BroadcastReceiver locationStateReceiver;
 
+    @Override
+    protected void pluginInitialize() {
+        if (COMPILE_SDK_VERSION == -1) {
+            Context context = cordova.getContext();
+            try {
+                COMPILE_SDK_VERSION = context.getPackageManager()
+                        .getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA)
+                        .metaData
+                        .getInt("com.megster.cordova.ble.central.COMPILE_SDK_INT", -1);
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
     public void onDestroy() {
         removeStateListener();
         removeLocationStateListener();
@@ -153,6 +168,7 @@ public class BLECentralPlugin extends CordovaPlugin {
         }
     }
 
+    @Override
     public void onReset() {
         removeStateListener();
         removeLocationStateListener();
@@ -637,7 +653,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     }
 
     private void connect(CallbackContext callbackContext, String macAddress) {
-        if (BuildConfig.COMPILE_SDK_VERSION_BLE >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
+        if (COMPILE_SDK_VERSION >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
             if (!PermissionHelper.hasPermission(this, BLUETOOTH_CONNECT)) {
                 permissionCallback = callbackContext;
                 deviceMacAddress = macAddress;
@@ -665,7 +681,7 @@ public class BLECentralPlugin extends CordovaPlugin {
 
     private void autoConnect(CallbackContext callbackContext, String macAddress) {
 
-        if (BuildConfig.COMPILE_SDK_VERSION_BLE >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
+        if (COMPILE_SDK_VERSION >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
             if (!PermissionHelper.hasPermission(this, BLUETOOTH_CONNECT)) {
                 permissionCallback = callbackContext;
                 deviceMacAddress = macAddress;
@@ -952,7 +968,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             LOG.w(TAG, "Location Services are disabled");
         }
 
-        if (BuildConfig.COMPILE_SDK_VERSION_BLE >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
+        if (COMPILE_SDK_VERSION >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
             if (!PermissionHelper.hasPermission(this, BLUETOOTH_SCAN) || !PermissionHelper.hasPermission(this, BLUETOOTH_CONNECT)) {
                 permissionCallback = callbackContext;
                 this.serviceUUIDs = serviceUUIDs;
@@ -965,7 +981,7 @@ public class BLECentralPlugin extends CordovaPlugin {
                 PermissionHelper.requestPermissions(this, REQUEST_BLUETOOTH_SCAN, permissionsList.toArray(permissionsArray));
                 return;
             }
-        } else if (BuildConfig.COMPILE_SDK_VERSION_BLE >= 29 && Build.VERSION.SDK_INT >= 29) { // (API 29) Build.VERSION_CODES.Q
+        } else if (COMPILE_SDK_VERSION >= 29 && Build.VERSION.SDK_INT >= 29) { // (API 29) Build.VERSION_CODES.Q
             if (!PermissionHelper.hasPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 permissionCallback = callbackContext;
                 this.serviceUUIDs = serviceUUIDs;

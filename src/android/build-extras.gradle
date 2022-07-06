@@ -1,5 +1,5 @@
 android {
   defaultConfig {
-    buildConfigField "int", "COMPILE_SDK_VERSION_BLE", "$cordovaConfig.SDK_VERSION"
+      manifestPlaceholders = [BLE_SDK_VERSION:"$cordovaConfig.SDK_VERSION"]
   }
 }
