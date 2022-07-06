@@ -63,17 +63,6 @@ declare namespace BLECentralPlugin {
             connectCallback: (data: PeripheralDataExtended) => any,
             disconnectCallback: (error: string | BLEError) => any
         ): void;
-
-        /* Register to be notified when the value of a characteristic changes. */
-        startNotification(
-            device_id: string,
-            service_uuid: string,
-            characteristic_uuid: string,
-            success: (rawData: ArrayBuffer) => any,
-            failure?: (error: string | BLEError) => any
-        ): void;
-
-        startStateNotifications(success: (state: string) => any, failure?: (error: string) => any): void;
     }
 
     export interface BLECentralPluginPromises extends BLECentralPluginCommon {
@@ -87,6 +76,15 @@ declare namespace BLECentralPlugin {
             characteristic_uuid: string,
             value: ArrayBuffer
         ): Promise<void>;
+
+        /* Register to be notified when the value of a characteristic changes. */
+        startNotification(
+            device_id: string,
+            service_uuid: string,
+            characteristic_uuid: string,
+            success: (rawData: ArrayBuffer) => any,
+            failure?: (error: string | BLEError) => any
+        ): Promise<void>;
         stopNotification(device_id: string, service_uuid: string, characteristic_uuid: string): Promise<void>;
 
         /* Returns a rejected promise if the device is not connected */
@@ -97,8 +95,20 @@ declare namespace BLECentralPlugin {
 
         enable(): Promise<void>;
         showBluetoothSettings(): Promise<void>;
+
+        /** Registers a change listener for Bluetooth adapter state changes */
+        startStateNotifications(success: (state: string) => any, failure?: (error: string) => any): Promise<void>;
+
         stopStateNotifications(): Promise<void>;
+
+        /* Registers a change listener for location-related services.
+           [iOS] startLocationStateNotifications is not supported on iOS. */
+        startLocationStateNotifications(
+            change: (isLocationEnabled: boolean) => any,
+            failure?: (error: string) => any
+        ): Promise<void>;
         stopLocationStateNotifications(): Promise<void>;
+
         readRSSI(device_id: string): Promise<number>;
         restoredBluetoothState(): Promise<RestoredState | undefined>;
     }
@@ -108,8 +118,7 @@ declare namespace BLECentralPlugin {
            [iOS] setPin is not supported on iOS. */
         setPin(pin: string, success?: () => any, failure?: (error: string | BLEError) => any): void;
 
-        stopScan(): void;
-        stopScan(success: () => any, failure?: () => any): void;
+        stopScan(success?: () => any, failure?: () => any): void;
 
         /* Automatically connect to a device when it is in range of the phone
            [iOS] background notifications on ios must be enabled if you want to run in the background
@@ -149,6 +158,28 @@ declare namespace BLECentralPlugin {
             data: ArrayBuffer,
             success?: () => any,
             failure?: (error: string) => any
+        ): void;
+
+        /* Start notifications on the given characteristic
+           - options
+               emitOnRegistered     Default is false. Emit "registered" to success callback 
+                                    when peripheral confirms notifications are active
+          */
+        startNotification(
+            device_id: string,
+            service_uuid: string,
+            characteristic_uuid: string,
+            success: (rawData: ArrayBuffer | 'registered') => any,
+            failure: (error: string | BLEError) => any,
+            options: { emitOnRegistered: boolean }
+        ): void;
+
+        startNotification(
+            device_id: string,
+            service_uuid: string,
+            characteristic_uuid: string,
+            success: (rawData: ArrayBuffer) => any,
+            failure?: (error: string | BLEError) => any
         ): void;
 
         stopNotification(
@@ -191,6 +222,9 @@ declare namespace BLECentralPlugin {
             success?: (data: PeripheralDataExtended) => any,
             failure?: (error: string | BLEError) => any
         ): void;
+
+        /** Registers a change listener for Bluetooth adapter state changes */
+        startStateNotifications(success: (state: string) => any, failure?: (error: string) => any): void;
 
         stopStateNotifications(success?: () => any, failure?: () => any): void;
 

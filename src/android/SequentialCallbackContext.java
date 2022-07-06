@@ -14,14 +14,16 @@
 
 package com.megster.cordova.ble.central;
 
+import android.bluetooth.BluetoothGatt;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.PluginResult;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SequentialCallbackContext {
+    private boolean subscribed;
     private int sequence;
-    private CallbackContext context;
+    private final CallbackContext context;
 
     public SequentialCallbackContext(CallbackContext context) {
         this.context = context;
@@ -34,7 +36,7 @@ public class SequentialCallbackContext {
         }
     }
 
-    public PluginResult createSequentialResult(byte data[]) {
+    private PluginResult createSequentialResult(byte[] data) {
         List<PluginResult> resultList = new ArrayList<PluginResult>(2);
 
         PluginResult dataResult = new PluginResult(PluginResult.Status.OK, data);
@@ -46,10 +48,28 @@ public class SequentialCallbackContext {
         return new PluginResult(PluginResult.Status.OK, resultList);
     }
 
-    public void sendSequentialResult(byte data[]) {
+    public void sendSequentialResult(byte[] data) {
         PluginResult result = this.createSequentialResult(data);
         result.setKeepCallback(true);
 
         this.context.sendPluginResult(result);
+    }
+
+    public boolean completeSubscription(int status) {
+        if (subscribed) {
+            return true;
+        }
+
+        subscribed = true;
+        boolean success = status == BluetoothGatt.GATT_SUCCESS;
+        PluginResult result;
+        if (success) {
+            result = new PluginResult(PluginResult.Status.OK, "registered");
+            result.setKeepCallback(true);
+        } else {
+            result = new PluginResult(PluginResult.Status.ERROR, "Write descriptor failed: " + status);
+        }
+        this.context.sendPluginResult(result);
+        return success;
     }
 }
