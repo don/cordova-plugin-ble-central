@@ -356,5 +356,11 @@ module.exports.mesh = {
     },
     importMeshInfo: function importMeshInfo(meshInfo){
         return exec('mesh_importMeshInfo', [meshInfo]);
+    },
+    kickOutDevice: function kickOutDevice(unicastAddress) {
+        return exec('mesh_kickOutDevice', [unicastAddress]);
+    },
+    bindDevice: function bindDevice(unicastAddress) {
+        return exec('mesh_bindDevice', [unicastAddress]);
     }
 }

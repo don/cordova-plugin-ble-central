@@ -28,7 +28,6 @@ import android.content.pm.PackageManager;
 import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Build;
-import com.telink.ble.mesh.TelinkMeshApplication;
 
 import android.provider.Settings;
 import android.util.Log;
@@ -39,11 +38,26 @@ import com.megster.cordova.ble.central.model.AppSettings;
 import com.megster.cordova.ble.central.model.MeshInfo;
 import com.megster.cordova.ble.central.model.MeshNetKey;
 import com.megster.cordova.ble.central.model.NetworkingDevice;
+import com.megster.cordova.ble.central.model.NetworkingState;
+import com.megster.cordova.ble.central.model.NodeInfo;
+import com.megster.cordova.ble.central.model.PrivateDevice;
 import com.megster.cordova.ble.central.model.json.MeshStorage;
 import com.megster.cordova.ble.central.model.json.MeshStorageService;
+import com.telink.ble.mesh.core.access.BindingBearer;
+import com.telink.ble.mesh.core.message.config.NodeResetMessage;
+import com.telink.ble.mesh.core.message.config.NodeResetStatusMessage;
 import com.telink.ble.mesh.core.message.generic.OnOffSetMessage;
+import com.telink.ble.mesh.entity.BindingDevice;
+import com.telink.ble.mesh.entity.CompositionData;
 import com.telink.ble.mesh.entity.ProvisioningDevice;
+import com.telink.ble.mesh.foundation.Event;
+import com.telink.ble.mesh.foundation.EventListener;
 import com.telink.ble.mesh.foundation.MeshService;
+import com.telink.ble.mesh.foundation.event.BindingEvent;
+import com.telink.ble.mesh.foundation.event.MeshEvent;
+import com.telink.ble.mesh.foundation.event.ProvisioningEvent;
+import com.telink.ble.mesh.foundation.parameter.BindingParameters;
+import com.telink.ble.mesh.util.MeshLogger;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
@@ -62,7 +76,7 @@ import java.util.*;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_DUAL;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_LE;
 
-public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.LeScanCallback {
+public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.LeScanCallback, EventListener<String> {
     // actions
     private static final String SCAN = "scan";
     private static final String START_SCAN = "startScan";
@@ -915,36 +929,45 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             meshSdkInitialized = true;
             meshHandler = new TelinkBleMeshHandler();
             meshHandler.initialize(cordova.getActivity().getApplication());
+            meshHandler.addEventListener(BindingEvent.EVENT_TYPE_BIND_SUCCESS, this);
+            meshHandler.addEventListener(BindingEvent.EVENT_TYPE_BIND_FAIL, this);
+            meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_SUCCESS, this);
+            meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_FAIL, this);
+            meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_BEGIN, this);
         }
         Util.sendPluginResult(callbackContext, true);
     }
 
-    public void mesh_provAddDevice(CordovaArgs args, CallbackContext callbackContext) throws  JSONException {
-        Log.d(TAG, "mesh_provAddDevice: ");
-        String deviceId = args.getString(0);
-        if(deviceId == null){
-            callbackContext.error(Util.makeError("1", "Deviceid not preent"));
-            return;
-        }
+    CallbackContext meshStartProvisionCallbackContext;
+    NetworkingDevice pvDevice;
+    public void mesh_provAddDevice(CordovaArgs args, CallbackContext callbackContext) throws Exception {
+        try {
+            pvDevice = null;
+            Log.d(TAG, "mesh_provAddDevice: ");
+            meshStartProvisionCallbackContext = null;
+            String deviceId = args.getString(0);
+            if (deviceId == null) {
+                callbackContext.error(Util.makeError("1", "Deviceid not preent"));
+                return;
+            }
 
-        if(dp == null){
-            dp = new DeviceProvisioning();
-            dp.initialize(cordova.getActivity().getApplication(), cordova.getActivity(), callbackContext);
-            // TODO: we also have to destroy dp events we subscribed to.
-        }
-        dp.setCallbackContext(callbackContext);
+            if (dp == null) {
+                dp = new DeviceProvisioning();
+                dp.initialize(cordova.getActivity().getApplication(), cordova.getActivity(), callbackContext);
+                // TODO: we also have to destroy dp events we subscribed to.
+            }
+//            dp.setCallbackContext(callbackContext);
 
-        NetworkingDevice device = dp.getDevicebyUUID(deviceId);
-        if(device == null){
-            callbackContext.error(Util.makeError("1", "Device with given uuid not found"));
-            return;
+            pvDevice = dp.getDevicebyUUID(deviceId);
+            if (pvDevice == null) {
+                callbackContext.error(Util.makeError("1", "Device with given uuid not found"));
+                return;
+            }
+            dp.startProvision(pvDevice);
+            meshStartProvisionCallbackContext = callbackContext;
+        } catch (Exception e) {
+            Util.sendPluginResult(callbackContext, e.getMessage());
         }
-        dp.startProvision(device);
-        // TODO: getting the mesh info too early.
-        MeshInfo meshInfo = meshHandler.getMeshInfo();
-        List<MeshNetKey> selectedNetKeys = new ArrayList<MeshNetKey>(meshInfo.meshNetKeyList);
-        String meshInfoStr = MeshStorageService.getInstance().meshToJsonString(meshInfo, selectedNetKeys);
-        Util.sendPluginResult(callbackContext, meshInfoStr);
     }
 
     public void mesh_getMeshInfo(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
@@ -973,32 +996,159 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         }
     }
 
-    private boolean kickDirect;
-    private int meshAddress;
-    private Handler handler = new Handler();
-
-    private void kickOut(CordovaArgs args, CallbackContext callbackContext) throws Exception {
+    CallbackContext meshBindDeviceCallbackContext;
+    public void mesh_bindDevice(CordovaArgs args, CallbackContext callbackContext) throws Exception {
         try {
-            meshAddress = args.getInt(0);
+            int meshAddress = args.getInt(0);
+            meshBindDeviceCallbackContext = null;
+            targetDevice = meshHandler.getMeshInfo().getDeviceByMeshAddress(meshAddress);
+            BindingDevice bindingDevice = new BindingDevice(targetDevice.meshAddress, targetDevice.deviceUUID,
+                    meshHandler.getMeshInfo().getDefaultAppKeyIndex());
+            MeshService.getInstance().startBinding(new BindingParameters(bindingDevice));
+            meshBindDeviceCallbackContext = callbackContext;
+        } catch (Exception e) {
+            Util.sendPluginResult(callbackContext, e.getMessage());
+        }
+    }
+
+    boolean kickDirect;
+    NodeInfo targetDevice;
+    public void mesh_kickOutDevice(CordovaArgs args, CallbackContext callbackContext) throws Exception {
+        try {
+            int meshAddress = args.getInt(0);
+            targetDevice = meshHandler.getMeshInfo().getDeviceByMeshAddress(meshAddress);
+            Handler handler = new Handler();
             // send reset message
-            boolean cmdSent = MeshService.getInstance().sendMeshMessage(new NodeResetMessage(meshAddress));
+            boolean cmdSent = MeshService.getInstance().sendMeshMessage(new NodeResetMessage(targetDevice.meshAddress));
             kickDirect = meshAddress == (MeshService.getInstance().getDirectConnectedNodeAddress());
             if (!cmdSent || !kickDirect) {
-
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         handler.removeCallbacksAndMessages(null);
-                        MeshService.getInstance().removeDevice(meshAddress);
-                        TelinkMeshApplication.getInstance().getMeshInfo().removeDeviceByMeshAddress(meshAddress);
-                        Activity activity = cordova.getActivity();
-                        TelinkMeshApplication.getInstance().getMeshInfo().saveOrUpdate(activity.getApplicationContext());
-                        finish();
+                        onKickOutFinish();
+//                        finish();
                     }
                 }, 3 * 1000);
             }
         } catch (Exception e) {
             Util.sendPluginResult(callbackContext, e.getMessage());
+        }
+    }
+
+    private void onKickOutFinish() {
+        if (targetDevice != null) {
+            MeshService.getInstance().removeDevice(targetDevice.meshAddress);
+            meshHandler.getMeshInfo().removeDeviceByMeshAddress(targetDevice.meshAddress);
+            meshHandler.getMeshInfo().saveOrUpdate(cordova.getContext());
+            targetDevice = null;
+        }
+    }
+
+    @Override
+    public void performed(Event<String> event) {
+        if (event.getType().equals(BindingEvent.EVENT_TYPE_BIND_SUCCESS)) {
+            onBindSuccess((BindingEvent) event);
+        } else if (event.getType().equals(BindingEvent.EVENT_TYPE_BIND_FAIL)) {
+            onBindFail((BindingEvent) event);
+        } else if (event.getType().equals(MeshEvent.EVENT_TYPE_DISCONNECTED)) {
+            if (kickDirect) {
+                onKickOutFinish();
+//                finish();
+            }
+        } else if (event.getType().equals(NodeResetStatusMessage.class.getName())) {
+            if (!kickDirect) {
+                onKickOutFinish();
+            }
+        } else if (event.getType().equals(ProvisioningEvent.EVENT_TYPE_PROVISION_SUCCESS)) {
+            onProvisionSuccess((ProvisioningEvent) event);
+        } else if (event.getType().equals(ProvisioningEvent.EVENT_TYPE_PROVISION_FAIL)) {
+            onProvisionFail((ProvisioningEvent) event);
+        }
+    }
+
+    private void onBindSuccess(BindingEvent event) {
+        BindingDevice remote = event.getBindingDevice();
+        MeshInfo mesh = meshHandler.getMeshInfo();
+        NodeInfo local = mesh.getDeviceByUUID(remote.getDeviceUUID());
+        if (local == null) return;
+
+        local.bound = true;
+//        local. = remote.boundModels;
+        local.compositionData = remote.getCompositionData();
+        mesh.saveOrUpdate(cordova.getContext());
+        if (meshBindDeviceCallbackContext != null) {
+            meshBindDeviceCallbackContext.success();
+            meshBindDeviceCallbackContext = null;
+        }
+    }
+
+    private void onBindFail(BindingEvent event) {
+        if (meshBindDeviceCallbackContext != null) {
+            meshBindDeviceCallbackContext.error(event.toString());
+            meshBindDeviceCallbackContext = null;
+        }
+    }
+
+    private void onProvisionSuccess(ProvisioningEvent event) {
+        if (pvDevice != null) {
+            ProvisioningDevice remote = event.getProvisioningDevice();
+            pvDevice.state = NetworkingState.BINDING;
+            pvDevice.addLog(NetworkingDevice.TAG_PROVISION, "success");
+            NodeInfo nodeInfo = pvDevice.nodeInfo;
+            int elementCnt = remote.getDeviceCapability().eleNum;
+            nodeInfo.elementCnt = elementCnt;
+            nodeInfo.deviceKey = remote.getDeviceKey();
+            nodeInfo.netKeyIndexes.add(meshHandler.getMeshInfo().getDefaultNetKey().index);
+
+            //remove the device if it already existing in the mesh with same UUID - safety
+            meshHandler.getMeshInfo().removeDeviceByUUID(nodeInfo.deviceUUID);
+
+            meshHandler.getMeshInfo().insertDevice(nodeInfo);
+            meshHandler.getMeshInfo().increaseProvisionIndex(elementCnt);
+            meshHandler.getMeshInfo().saveOrUpdate(cordova.getContext());
+
+            // check if private mode opened
+            final boolean privateMode = SharedPreferenceHelper.isPrivateMode(cordova.getContext());
+
+            // check if device support fast bind
+            boolean defaultBound = false;
+            if (privateMode && remote.getDeviceUUID() != null) {
+                PrivateDevice device = PrivateDevice.filter(remote.getDeviceUUID());
+                if (device != null) {
+                    MeshLogger.d("private device");
+                    final byte[] cpsData = device.getCpsData();
+                    nodeInfo.compositionData = CompositionData.from(cpsData);
+                    defaultBound = true;
+                } else {
+                    MeshLogger.d("private device null");
+                }
+            }
+
+            nodeInfo.setDefaultBind(defaultBound);
+            pvDevice.addLog(NetworkingDevice.TAG_BIND, "action start");
+            int appKeyIndex = meshHandler.getMeshInfo().getDefaultAppKeyIndex();
+            BindingDevice bindingDevice = new BindingDevice(nodeInfo.meshAddress, nodeInfo.deviceUUID, appKeyIndex);
+            bindingDevice.setDefaultBound(defaultBound);
+            bindingDevice.setBearer(BindingBearer.GattOnly);
+//        bindingDevice.setDefaultBound(false);
+            MeshService.getInstance().startBinding(new BindingParameters(bindingDevice));
+        }
+        if (meshStartProvisionCallbackContext != null) {
+
+            MeshInfo meshInfo = meshHandler.getMeshInfo();
+            List<MeshNetKey> selectedNetKeys = new ArrayList<MeshNetKey>(meshInfo.meshNetKeyList);
+            String meshInfoStr = MeshStorageService.getInstance().meshToJsonString(meshInfo, selectedNetKeys);
+
+            meshStartProvisionCallbackContext.success(meshInfoStr);
+            meshStartProvisionCallbackContext = null;
+        }
+    }
+
+    private void onProvisionFail(ProvisioningEvent event) {
+        if (meshStartProvisionCallbackContext != null) {
+            meshStartProvisionCallbackContext.error(event.toString());
+            meshStartProvisionCallbackContext = null;
         }
     }
 }
