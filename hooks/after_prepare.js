@@ -48,7 +48,26 @@ module.exports = function (context) {
     if (manifestChanged) {
         fs.writeFileSync(manifestPath, androidManifest);
     }
+
+    checkForDuplicatePermissions(plugin, androidManifest);
 };
+
+function checkForDuplicatePermissions(plugin, androidManifest) {
+    const permissionsRegex = /<uses-permission.*?android:name="(?<permission>android\.permission\..*?)".*?\/>/gm;
+    const permissions = {};
+    let capture;
+    while ((capture = permissionsRegex.exec(androidManifest)) !== null) {
+        const permission = capture.groups && capture.groups.permission;
+        if (permission && permissions[permission]) {
+            console.log(plugin.id + ': !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+            console.log(plugin.id + ': WARNING - duplicate android permissions found: ' + permission);
+            console.log(plugin.id + ': See https://github.com/don/cordova-plugin-ble-central/issues/925');
+            console.log(plugin.id + ': !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+            break;
+        }
+        permissions[permission] = true;
+    }
+}
 
 function getTargetSdkVersion(platformPath) {
     let sdkVersion;
@@ -73,7 +92,7 @@ function getTargetSdkVersion(platformPath) {
 function stripPermission(androidManifest, permission) {
     const replacer = new RegExp(
         '\\n\\s*?<uses-permission.*? android:name="android\\.permission\\.' + permission + '".*?\\/>\\n',
-        'g'
+        'gm'
     );
     return androidManifest.replace(replacer, '\n');
 }
