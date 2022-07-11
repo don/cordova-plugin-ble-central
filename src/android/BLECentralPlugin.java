@@ -95,6 +95,11 @@ public class BLECentralPlugin extends CordovaPlugin {
     private static final String START_STATE_NOTIFICATIONS = "startStateNotifications";
     private static final String STOP_STATE_NOTIFICATIONS = "stopStateNotifications";
 
+    private static final String OPEN_L2CAP = "openL2Cap";
+    private static final String CLOSE_L2CAP = "closeL2Cap";
+    private static final String RECEIVE_L2CAP = "receiveDataL2Cap";
+    private static final String WRITE_L2CAP = "writeL2Cap";
+
     private static final String START_LOCATION_STATE_NOTIFICATIONS = "startLocationStateNotifications";
     private static final String STOP_LOCATION_STATE_NOTIFICATIONS = "stopLocationStateNotifications";
 
@@ -478,6 +483,33 @@ public class BLECentralPlugin extends CordovaPlugin {
 
             getBondedDevices(callbackContext);
 
+        } else if (action.equals(OPEN_L2CAP)) {
+
+            String macAddress = args.getString(0);
+            int psm = args.getInt(1);
+            JSONObject options = args.optJSONObject(2);
+            boolean secureChannel = options != null && options.optBoolean("secureChannel", false);
+            connectL2cap(callbackContext, macAddress, psm, secureChannel);
+
+        } else if (action.equals(CLOSE_L2CAP)) {
+
+            String macAddress = args.getString(0);
+            int psm = args.getInt(1);
+            disconnectL2cap(callbackContext, macAddress, psm);
+
+        } else if (action.equals(WRITE_L2CAP)) {
+
+            String macAddress = args.getString(0);
+            int psm = args.getInt(1);
+            byte[] data = args.getArrayBuffer(2);
+            writeL2cap(callbackContext, macAddress, psm, data);
+
+        } else if (action.equals(RECEIVE_L2CAP)) {
+
+            String macAddress = args.getString(0);
+            int psm = args.getInt(1);
+            registerL2CapReceiver(callbackContext, macAddress, psm);
+
         } else {
 
             validAction = false;
@@ -822,6 +854,63 @@ public class BLECentralPlugin extends CordovaPlugin {
 
         //peripheral.writeCharacteristic(callbackContext, serviceUUID, characteristicUUID, data, writeType);
         peripheral.queueWrite(callbackContext, serviceUUID, characteristicUUID, data, writeType);
+
+    }
+
+    private void connectL2cap(CallbackContext callbackContext, String macAddress, int psm, boolean secureChannel) {
+        Peripheral peripheral = peripherals.get(macAddress);
+        if (peripheral == null) {
+            callbackContext.error("Peripheral " + macAddress + " not found.");
+            return;
+        }
+
+        if (!peripheral.isConnected()) {
+            callbackContext.error("Peripheral " + macAddress + " is not connected.");
+            return;
+        }
+
+        peripheral.connectL2cap(callbackContext, psm, secureChannel);
+    }
+
+    private void disconnectL2cap(CallbackContext callbackContext, String macAddress, int psm) {
+
+        Peripheral peripheral = peripherals.get(macAddress);
+        if (peripheral != null) {
+            peripheral.disconnectL2Cap(callbackContext, psm);
+        }
+
+        callbackContext.success();
+
+    }
+
+    private void writeL2cap(CallbackContext callbackContext, String macAddress, int psm, byte[] data) {
+
+        Peripheral peripheral = peripherals.get(macAddress);
+
+        if (peripheral == null) {
+            callbackContext.error("Peripheral " + macAddress + " not found.");
+            return;
+        }
+
+        if (!peripheral.isL2capConnected(psm)) {
+            callbackContext.error("Peripheral " + macAddress + " L2Cap is not connected.");
+            return;
+        }
+
+        cordova.getThreadPool().execute(() -> peripheral.writeL2CapChannel(callbackContext, psm, data));
+
+    }
+
+    private void registerL2CapReceiver(CallbackContext callbackContext, String macAddress, int psm) {
+
+        Peripheral peripheral = peripherals.get(macAddress);
+
+        if (peripheral == null) {
+            callbackContext.error("Peripheral " + macAddress + " not found.");
+            return;
+        }
+
+        peripheral.registerL2CapReceiver(callbackContext, psm);
 
     }
 

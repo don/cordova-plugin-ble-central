@@ -22,6 +22,7 @@
 #import <Cordova/CDV.h>
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "BLECommandContext.h"
+#import "BLEStreamContext.h"
 #import "CBPeripheral+Extensions.h"
 
 @interface BLECentralPlugin : CDVPlugin <CBCentralManagerDelegate, CBPeripheralDelegate> {
@@ -36,6 +37,7 @@
     NSMutableDictionary *connectCallbackLatches;
     NSMutableDictionary *readRSSICallbacks;
     NSDictionary<NSString*,id> *restoredState;
+    NSMutableDictionary *l2CapContexts;
 }
 
 @property (strong, nonatomic) NSMutableSet *peripherals;
@@ -70,6 +72,11 @@
 - (void)readRSSI:(CDVInvokedUrlCommand *)command;
 
 - (void)restoredBluetoothState:(CDVInvokedUrlCommand *)command;
+
+- (void)closeL2Cap:(CDVInvokedUrlCommand*)command;
+- (void)openL2Cap:(CDVInvokedUrlCommand*)command;
+- (void)receiveDataL2Cap:(CDVInvokedUrlCommand*)command;
+- (void)writeL2Cap:(CDVInvokedUrlCommand*)command;
 
 @end
 
