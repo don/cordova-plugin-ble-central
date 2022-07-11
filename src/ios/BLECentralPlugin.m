@@ -61,6 +61,7 @@
     notificationCallbacks = [NSMutableDictionary new];
     startNotificationCallbacks = [NSMutableDictionary new];
     stopNotificationCallbacks = [NSMutableDictionary new];
+    l2CapContexts = [NSMutableDictionary new];
     bluetoothStates = [NSDictionary dictionaryWithObjectsAndKeys:
                        @"unknown", @(CBCentralManagerStateUnknown),
                        @"resetting", @(CBCentralManagerStateResetting),
@@ -556,6 +557,83 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void)closeL2Cap:(CDVInvokedUrlCommand*)command {
+    NSLog(@"closeL2Cap");
+
+    NSString *uuid = [command argumentAtIndex:0];
+    NSNumber *psm = [command argumentAtIndex:1];
+    CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
+
+    if (peripheral) {
+        NSString *key = [self keyForPeripheral:peripheral andPSM:psm.unsignedShortValue];
+        BLEStreamContext *context = [l2CapContexts objectForKey:key];
+        if (context) {
+            [context closeWithReason:@"L2CAP channel closed"];
+            [l2CapContexts removeObjectForKey:key];
+        }
+        NSLog(@"Cleared callbacks for L2CAP channel key %@", key);
+    }
+    
+    CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+}
+
+- (void)openL2Cap:(CDVInvokedUrlCommand*)command {
+    NSLog(@"openL2Cap");
+
+    NSString *uuid = [command argumentAtIndex:0];
+    NSNumber *psm = [command argumentAtIndex:1];
+    CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
+
+    if (!peripheral) {
+        NSString *message = [NSString stringWithFormat:@"Peripheral %@ not found", uuid];
+        NSLog(@"%@", message);
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:message];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+
+    } else {
+        BLEStreamContext *context = [self findStreamContextFromPeripheral:peripheral andPSM:[psm unsignedShortValue]];
+        [context setConnectionStateCallbackId:[command.callbackId copy]];
+        [peripheral openL2CAPChannel:psm.unsignedShortValue];
+    }
+}
+
+- (void)receiveDataL2Cap:(CDVInvokedUrlCommand*)command {
+    NSLog(@"receiveDataL2Cap");
+
+    NSString *uuid = [command argumentAtIndex:0];
+    NSNumber *psm = [command argumentAtIndex:1];
+    CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
+
+    if (!peripheral) {
+        NSString *message = [NSString stringWithFormat:@"Peripheral %@ not found", uuid];
+        NSLog(@"%@", message);
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:message];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    } else {
+        BLEStreamContext *context = [self findStreamContextFromPeripheral:peripheral andPSM:[psm unsignedShortValue]];
+        [context setReadCallbackId:[command.callbackId copy]];
+    }
+}
+
+- (void)writeL2Cap:(CDVInvokedUrlCommand *)command {
+    NSLog(@"writeL2Cap");
+
+    NSString *uuid = [command argumentAtIndex:0];
+    NSNumber *psm = [command argumentAtIndex:1];
+    NSData *message = [command argumentAtIndex:2]; // This is binary
+    CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
+
+    if (!peripheral) {
+        NSString *message = [NSString stringWithFormat:@"Peripheral %@ not found", uuid];
+        NSLog(@"%@", message);
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:message];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    } else {
+        BLEStreamContext *context = [self findStreamContextFromPeripheral:peripheral andPSM:[psm unsignedShortValue]];
+        [context write:message callbackId:[command.callbackId copy]];
+    }
+}
 
 #pragma mark - timers
 
@@ -852,6 +930,24 @@
     }
 }
 
+- (void)peripheral:(CBPeripheral *)peripheral didOpenL2CAPChannel:(CBL2CAPChannel*)channel error:(NSError*)error {
+    NSLog(@"didOpenL2CAPChannel %@", channel);
+    BLEStreamContext *context = [self findStreamContextFromPeripheral:peripheral andPSM:[channel PSM]];
+    if (error) {
+        [context closeWithReason:[error localizedDescription]];
+    } else if (channel) {
+        [channel.inputStream setDelegate:context];
+        [channel.outputStream setDelegate:context];
+        [channel.inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        [channel.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        [channel.inputStream open];
+        [channel.outputStream open];
+        [context setChannel:channel];
+    } else {
+        [context closeWithReason:@"No L2CAP channel provided"];
+    }
+}
+
 #pragma mark - internal implemetation
 
 - (CBPeripheral*)findPeripheralByUUID:(NSString*)uuid {
@@ -915,6 +1011,17 @@
         }
     }
    return nil; //Characteristic not found on this service
+}
+
+-(BLEStreamContext*) findStreamContextFromPeripheral:(CBPeripheral*)peripheral andPSM:(UInt16)psm {
+    NSString *key = [self keyForPeripheral:peripheral andPSM:psm];
+    BLEStreamContext *context = [l2CapContexts objectForKey:key];
+    if (!context) {
+        context = [BLEStreamContext alloc];
+        [context setCommandDelegate:self.commandDelegate];
+        [l2CapContexts setObject:context forKey:key];
+    }
+    return context;
 }
 
 // RedBearLab
@@ -1015,6 +1122,11 @@
     return [NSString stringWithFormat:@"%@|%@|%@", [peripheral uuidAsString], [characteristic.service UUID], [characteristic UUID]];
 }
 
+-(NSString *) keyForPeripheral: (CBPeripheral *)peripheral andPSM:(UInt16)psm {
+    return [NSString stringWithFormat:@"%@|%hu", [peripheral uuidAsString], psm];
+}
+
+
 +(BOOL) isKey: (NSString *)key forPeripheral:(CBPeripheral *)peripheral {
     NSArray *keyArray = [key componentsSeparatedByString: @"|"];
     return [[peripheral uuidAsString] compare:keyArray[0]] == NSOrderedSame;
@@ -1059,6 +1171,14 @@
             [self.commandDelegate sendPluginResult:result callbackId:callbackId];
             [notificationCallbacks removeObjectForKey:key];
             NSLog(@"Cleared notification callback %@ for key %@", callbackId, key);
+        }
+    }
+    for(id key in l2CapContexts.allKeys) {
+        if([BLECentralPlugin isKey:key forPeripheral:peripheral]) {
+            BLEStreamContext *context = [l2CapContexts valueForKey:key];
+            [context closeWithResult:result];
+            [l2CapContexts removeObjectForKey:key];
+            NSLog(@"Cleared L2CAP context for key %@", key);
         }
     }
 }
