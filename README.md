@@ -24,7 +24,7 @@ See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master
 ## Supported Platforms
 
 -   iOS
--   Android (4.3 or greater)
+-   Android (likely supports 6+, but 8.1 or greater recommended)
 -   Browser (where navigator.bluetooth is supported)
 
 # Installing
@@ -33,22 +33,11 @@ See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master
 
     $ cordova plugin add cordova-plugin-ble-central
 
-### PhoneGap
+It's recommended to always use the latest cordova and cordova platform packages in order to enusre correct function. This plugin generally best supports the following platforms and version ranges:
 
-    $ phonegap plugin add cordova-plugin-ble-central
-
-### PhoneGap Build
-
-Edit config.xml to install the plugin for [PhoneGap Build](http://build.phonegap.com).
-
-    <gap:plugin name="cordova-plugin-ble-central" source="npm" />
-    <preference name="phonegap-version" value="cli-6.1.0" />
-
-### PhoneGap Developer App
-
-This plugin is included in iOS and Android versions of the [PhoneGap Developer App](http://app.phonegap.com/).
-
-Note that this plugin's id changed from `com.megster.cordova.ble` to `cordova-plugin-ble-central` as part of the migration from the [Cordova plugin repo](http://plugins.cordova.io/) to [npm](https://www.npmjs.com/).
+| cordova | cordova-ios | cordova-android | cordova-browser |
+| ------- | ----------- | --------------- | --------------- |
+| 9+      | 6.2.0+      | 9.1.0+          | not tested      |
 
 ### iOS
 
@@ -70,9 +59,11 @@ For more information about background operation, see [Background Scanning and No
 
 ### Android
 
-If your app targets Android 10 (API level 29) or higher, you have also the option of requesting the ACCESS_BACKGROUND_LOCATION permission. If your app has a feature that requires it, set `ACCESS_BACKGROUND_LOCATION ` to true when installing.
+If your app targets Android 10 (API level 29) or higher, you may need the ACCESS_BACKGROUND_LOCATION permission on Android 10 & Android 11 in order for scanning to function when your app is not visible. To enable this permission and feature, set `ACCESS_BACKGROUND_LOCATION ` to true when installing:
 
     --variable ACCESS_BACKGROUND_LOCATION=true
+
+For the best understanding about which permissions are needed for which combinations of target SDK version & OS version, see [Android Bluetooth permissions](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions)
 
 # API
 
