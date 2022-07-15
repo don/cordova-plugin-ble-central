@@ -1013,15 +1013,18 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
     boolean kickDirect;
     NodeInfo targetDevice;
+    CallbackContext nodeKickCallback;
     public void mesh_kickOutDevice(CordovaArgs args, CallbackContext callbackContext) throws Exception {
         try {
+            nodeKickCallback = null;
             int meshAddress = args.getInt(0);
             targetDevice = meshHandler.getMeshInfo().getDeviceByMeshAddress(meshAddress);
             Handler handler = new Handler();
             // send reset message
             boolean cmdSent = MeshService.getInstance().sendMeshMessage(new NodeResetMessage(targetDevice.meshAddress));
             kickDirect = meshAddress == (MeshService.getInstance().getDirectConnectedNodeAddress());
-            if (!cmdSent || !kickDirect) {
+            nodeKickCallback = callbackContext;
+            if (!cmdSent || !kickDirect || true) {
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -1042,6 +1045,11 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
             meshHandler.getMeshInfo().removeDeviceByMeshAddress(targetDevice.meshAddress);
             meshHandler.getMeshInfo().saveOrUpdate(cordova.getContext());
             targetDevice = null;
+
+            if (nodeKickCallback != null) {
+                nodeKickCallback.success();
+                nodeKickCallback = null;
+            }
         }
     }
 
