@@ -118,6 +118,7 @@ public class Peripheral extends BluetoothGattCallback {
     public void disconnect() {
         connected = false;
         connecting = false;
+        autoconnect = false;
 
         closeGatt();
         queueCleanup();
