@@ -37,16 +37,16 @@ declare namespace BLECentralPlugin {
     }
 
     interface L2CAP {
-        close(device_id: string, psm: number, success?: () => any, failure?: (error: string | BLEError) => any);
+        close(device_id: string, psm: number, success?: () => any, failure?: (error: string | BLEError) => any): void;
 
         open(
             device_id: string,
             psmOrOptions: number | L2CAPOptions,
             connectCallback?: () => any,
             disconnectCallback?: (error: string | BLEError) => any
-        );
+        ): void;
 
-        receiveData(device_id: string, psm: number, data: (data: ArrayBuffer) => any);
+        receiveData(device_id: string, psm: number, data: (data: ArrayBuffer) => any): void;
 
         write(
             device_id: string,
@@ -54,7 +54,7 @@ declare namespace BLECentralPlugin {
             data: ArrayBuffer,
             success?: () => {},
             failure?: (error: string | BLEError) => any
-        );
+        ): void;
     }
 
     interface L2CAPPromises {
@@ -104,6 +104,14 @@ declare namespace BLECentralPlugin {
     export interface BLECentralPluginPromises extends BLECentralPluginCommon {
         l2cap: L2CAPPromises;
 
+        /* Lists all peripherals discovered by the plugin due to scanning or connecting since app launch.
+           [iOS] list is not supported on iOS. */
+        list(): Promise<PeripheralData>;
+
+        /* Find the bonded devices.
+           [iOS] bondedDevices is not supported on iOS. */
+        bondedDevices(): Promise<PeripheralData>;
+
         stopScan(): Promise<void>;
         disconnect(device_id: string): Promise<void>;
         read(device_id: string, service_uuid: string, characteristic_uuid: string): Promise<ArrayBuffer>;
@@ -148,6 +156,11 @@ declare namespace BLECentralPlugin {
         stopLocationStateNotifications(): Promise<void>;
 
         readRSSI(device_id: string): Promise<number>;
+
+        /* When Connecting to a peripheral android can request for the connection priority for faster communication.
+           [iOS] requestConnectionPriority is not supported on iOS. */
+        requestConnectionPriority(device_id: string, priority: 'high' | 'balanced' | 'low'): Promise<void>;
+
         restoredBluetoothState(): Promise<RestoredState | undefined>;
     }
 
@@ -210,7 +223,7 @@ declare namespace BLECentralPlugin {
             service_uuid: string,
             characteristic_uuid: string,
             success: (rawData: ArrayBuffer | 'registered') => any,
-            failure: (error: string | BLEError) => any,
+            failure?: (error: string | BLEError) => any,
             options: { emitOnRegistered: boolean }
         ): void;
 
@@ -231,11 +244,11 @@ declare namespace BLECentralPlugin {
         ): void;
 
         /* Reports if bluetooth is enabled. */
-        isEnabled(success: () => any, failure: (error: string) => any): void;
+        isEnabled(success: () => any, failure?: (error: string) => any): void;
 
         /* Reports if location services are enabled.
            [iOS] isLocationEnabled is not supported on iOS. */
-        isLocationEnabled(success: () => any, failure: (error: string) => any): void;
+        isLocationEnabled(success: () => any, failure?: (error: string) => any): void;
 
         /* Calls the success callback when the peripheral is connected and the failure callback when not connected. */
         isConnected(device_id: string, success: () => any, failure?: (error: string) => any): void;
@@ -244,7 +257,7 @@ declare namespace BLECentralPlugin {
            [iOS] requestMtu is not supported on iOS. */
         requestMtu(device_id: string, mtu: number, success?: () => any, failure?: () => any): void;
 
-        /* When Connecting to a peripheral android can request for the connection priority for better communication.
+        /* When Connecting to a peripheral android can request for the connection priority for faster communication.
            [iOS] requestConnectionPriority is not supported on iOS. */
         requestConnectionPriority(
             device_id: string,
@@ -279,11 +292,11 @@ declare namespace BLECentralPlugin {
 
         /* Opens the Bluetooth settings for the operating systems.
            [iOS] showBluetoothSettings is not supported on iOS. */
-        showBluetoothSettings(success: () => any, failure: () => any): void;
+        showBluetoothSettings(success: () => any, failure?: (error: string) => any): void;
 
         /* Enable Bluetooth on the device.
            [iOS] enable is not supported on iOS. */
-        enable(success: () => any, failure: (error: string) => any): void;
+        enable(success: () => any, failure?: (error: string) => any): void;
 
         readRSSI(device_id: string, success: (rssi: number) => any, failure?: (error: string) => any): void;
 
@@ -293,7 +306,7 @@ declare namespace BLECentralPlugin {
         connectedPeripheralsWithServices(
             services: string[],
             success: (data: PeripheralData[]) => any,
-            failure: () => any
+            failure?: (error: string) => any
         ): void;
 
         /* Find known (but not necessarily connected) peripherals offering the listed device UUIDs.
@@ -302,18 +315,22 @@ declare namespace BLECentralPlugin {
         peripheralsWithIdentifiers(
             device_ids: string[],
             success: (data: PeripheralData[]) => any,
-            failure: () => any
+            failure?: (error: string) => any
         ): void;
+
+        /* Lists all peripherals discovered by the plugin due to scanning or connecting since app launch.
+            [iOS] list is not supported on iOS. */
+        list(success: (data: PeripheralData[]) => any, failure?: (error: string) => any): void;
 
         /* Find the bonded devices.
                    [iOS] bondedDevices is not supported on iOS. */
-        bondedDevices(success: (data: PeripheralData[]) => any, failure: () => any): void;
+        bondedDevices(success: (data: PeripheralData[]) => any, failure?: (error: string) => any): void;
 
         /* Reports the BLE restoration status if the app was restarted by iOS
            as a result of a BLE event.
            See https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW10
             [Android] restoredBluetoothState is not supported on Android. */
-        restoredBluetoothState(success: (data: RestoredState) => any, failure: () => any): void;
+        restoredBluetoothState(success: (data: RestoredState) => any, failure?: (error: string) => any): void;
 
         withPromises: BLECentralPluginPromises;
     }

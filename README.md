@@ -100,6 +100,7 @@ For the best understanding about which permissions are needed for which combinat
 -   [ble.connectedPeripheralsWithServices](#connectedperipheralswithservices)
 -   [ble.peripheralsWithIdentifiers](#peripheralswithidentifiers)
 -   [ble.restoredBluetoothState](#restoredbluetoothstate)
+-   [ble.list](#list)
 -   [ble.bondedDevices](#bondeddevices)
 -   [ble.l2cap.open](#l2capopen)
 -   [ble.l2cap.close](#l2capclose)
@@ -244,6 +245,8 @@ See the [location permission notes](#location-permission-notes) above for inform
 Stop scanning for BLE peripherals.
 
     ble.stopScan(success, failure);
+    // Or using await with promises
+    await ble.withPromises.stopScan()
 
 ### Description
 
@@ -280,6 +283,8 @@ Function `stopScan` stops scanning for BLE devices.
 Set device pin
 
     ble.setPin(pin, [success], [failure]);
+    // Or using await with promises
+    await ble.withPromises.setPin(pin)
 
 ### Description
 
@@ -344,6 +349,8 @@ See notes about [scanning before connecting](#scanning-before-connecting)
 Disconnect.
 
     ble.disconnect(device_id, [success], [failure]);
+    // Or using await with promises
+    await ble.withPromises.disconnect(device_id)
 
 ### Description
 
@@ -394,6 +401,8 @@ The resulting MTU size is sent to the success callback. The requested and result
 requestConnectionPriority
 
     ble.requestConnectionPriority(device_id, priority, [success], [failure]);
+    // Or using await with promises
+    await ble.withPromises.requestConnectionPriority(device_id, priority)
 
 ### Description
 
@@ -401,9 +410,9 @@ When Connecting to a peripheral android can request for the connection priority 
 
 Connection priority can be one of:
 
--   `0` - [CONNECTION_PRIORITY_BALANCED](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_BALANCED)
--   `1` - [CONNECTION_PRIORITY_HIGH](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_HIGH)
--   `2` - [CONNECTION_PRIORITY_LOW_POWER](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER)
+-   `"balanced"` - [CONNECTION_PRIORITY_BALANCED](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_BALANCED)
+-   `"high"` - [CONNECTION_PRIORITY_HIGH](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_HIGH)
+-   `"low"` - [CONNECTION_PRIORITY_LOW_POWER](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER)
 
 ### Supported Platforms
 
@@ -412,13 +421,13 @@ Connection priority can be one of:
 ### Parameters
 
 -   **device_id**: UUID or MAC address of the peripheral
--   **priority**: high or balanced or low
+-   **priority**: `"high"`, `"balanced"` or `"low"`
 -   **success**: Success callback function that is invoked when the connection is successful. [optional]
 -   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
 
-    ble.requestConnectionPriority(device_id, 0,
+    ble.requestConnectionPriority(device_id, "high",
         function() {
             alert("success");
         },
@@ -457,6 +466,8 @@ _NOTE_ Since this uses an undocumented API it's not guaranteed to work.
 Reads the value of a characteristic.
 
     ble.read(device_id, service_uuid, characteristic_uuid, success, failure);
+    // Or using await with promises
+    const data = await ble.withPromises.read(device_id, service_uuid, characteristic_uuid)
 
 ### Description
 
@@ -492,6 +503,8 @@ Retrieves an [ArrayBuffer](#typed-arrays) when reading data.
 Writes data to a characteristic.
 
     ble.write(device_id, service_uuid, characteristic_uuid, data, success, failure);
+    // Or using await with promises
+    await ble.withPromises.write(device_id, service_uuid, characteristic_uuid, data)
 
 ### Description
 
@@ -532,6 +545,8 @@ Use an [ArrayBuffer](#typed-arrays) when writing data.
 Writes data to a characteristic without confirmation from the peripheral.
 
     ble.writeWithoutResponse(device_id, service_uuid, characteristic_uuid, data, success, failure);
+    // Or using await with promises
+    await ble.withPromises.writeWithoutResponse(device_id, service_uuid, characteristic_uuid, data)
 
 ### Description
 
@@ -551,6 +566,9 @@ Function `writeWithoutResponse` writes data to a characteristic without a respon
 Register to be notified when the value of a characteristic changes.
 
     ble.startNotification(device_id, service_uuid, characteristic_uuid, success, failure);
+    // Or using await with promises
+    // Note, initial promise resolves or rejects depending on whether the subscribe was successful
+    await ble.withPromises.startNotification(device_id, success, failure)
 
 ### Description
 
@@ -583,6 +601,8 @@ See [Background Notifications on iOS](#background-notifications-on-ios)
 Stop being notified when the value of a characteristic changes.
 
     ble.stopNotification(device_id, service_uuid, characteristic_uuid, success, failure);
+    // Or using await with promises
+    await ble.withPromises.stopNotification(device_id)
 
 ### Description
 
@@ -601,6 +621,8 @@ Function `stopNotification` stops a previously registered notification callback.
 Reports the connection status.
 
     ble.isConnected(device_id, success, failure);
+    // Or using await with promises
+    await ble.withPromises.isConnected(device_id)
 
 ### Description
 
@@ -687,6 +709,9 @@ Function `isLocationEnabled` calls the success callback when location services a
 Registers to be notified when Location service state changes on the device.
 
     ble.startLocationStateNotifications(success, failure);
+    // Or using await with promises
+    // Note, initial promise resolves or rejects depending on whether the subscribe was successful
+    await ble.withPromises.startLocationStateNotifications(success, failure)
 
 ### Description
 
@@ -714,6 +739,8 @@ Function `startLocationStateNotifications` calls the success callback when the L
 Stops state notifications.
 
     ble.stopLocationStateNotifications(success, failure);
+    // Or using await with promises
+    await ble.withPromises.stopLocationStateNotifications()
 
 ### Description
 
@@ -728,6 +755,9 @@ Function `stopLocationStateNotifications` calls the success callback when Locati
 Registers to be notified when Bluetooth state changes on the device.
 
     ble.startStateNotifications(success, failure);
+    // Or using await with promises
+    // Note, initial promise resolves or rejects depending on whether the subscribe was successful
+    await ble.withPromises.startStateNotifications(success, failure)
 
 ### Description
 
@@ -767,6 +797,8 @@ Function `startStateNotifications` calls the success callback when the Bluetooth
 Stops state notifications.
 
     ble.stopStateNotifications(success, failure);
+    // Or using await with promises
+    await ble.withPromises.stopStateNotifications()
 
 ### Description
 
@@ -782,6 +814,8 @@ Function `stopStateNotifications` calls the success callback when Bluetooth stat
 Show the Bluetooth settings on the device.
 
     ble.showBluetoothSettings(success, failure);
+    // Or using await with promises
+    await ble.withPromises.showBluetoothSettings()
 
 ### Description
 
@@ -807,6 +841,8 @@ Function `showBluetoothSettings` opens the Bluetooth settings for the operating 
 Enable Bluetooth on the device.
 
     ble.enable(success, failure);
+    // Or using await with promises
+    ble.withPromises.enable();
 
 ### Description
 
@@ -914,6 +950,7 @@ Sends a list of known peripherals by their identifiers to the success callback. 
 Retrieve the CBManager restoration state (if applicable)
 
     ble.restoredBluetoothState(success, failure);
+    // Or using await with promises
     await ble.withPromises.restoredBluetoothState();
 
 ### Description
@@ -933,11 +970,34 @@ If the application has no state restored, this will return an empty object.
 -   **success**: Success callback function, invoked with the restored Bluetooth state (if any)
 -   **failure**: Error callback function
 
+## list
+
+Lists all peripherals discovered by the plugin due to scanning or connecting since app launch.
+
+    ble.list(success, failure);
+    // Or using await with promises
+    await ble.withPromises.list();
+
+### Description
+
+Sends a list of bonded low energy peripherals to the success callback.
+
+### Supported Platforms
+
+-   Android
+
+### Parameters
+
+-   **success**: Success callback function, invoked with a list of peripheral objects
+-   **failure**: Error callback function
+
 ## bondedDevices
 
 Find the bonded devices.
 
     ble.bondedDevices(success, failure);
+    // Or using await with promises
+    await ble.withPromises.bondedDevices();
 
 ### Description
 
@@ -957,16 +1017,14 @@ Sends a list of bonded low energy peripherals to the success callback.
 Open an L2CAP channel with a connected peripheral. The PSM is assigned by the peripheral, or possibly defined by the Bluetooth standard.
 
     ble.l2cap.open(device_id, psm, connectCallback, disconnectCallback);
-
-Using await with promises
-
+    // Or using await with promises
     await ble.withPromises.l2cap.open(device_id, psm, disconnectCallback);
 
 Android supports additional arguments in the psm flag to select whether the L2CAP channel is insecure or secure (iOS does this automatically):
 
-ble.l2cap.open(device_id, { psm: psm, secureChannel: true }, connectCallback, disconnectCallback);
-// or with promises
-await ble.withPromises.l2cap.open(device_id, { psm: psm, secureChannel: true }, disconnectCallback);
+    ble.l2cap.open(device_id, { psm: psm, secureChannel: true }, connectCallback, disconnectCallback);
+    // Or using await with promises
+    await ble.withPromises.l2cap.open(device_id, { psm: psm, secureChannel: true }, disconnectCallback);
 
 ### Description
 
@@ -991,9 +1049,7 @@ The PSM (protocol/service multiplexer) is specified by the peripheral when it op
 Close an L2CAP channel.
 
     ble.l2cap.close(device_id, psm, success, failure);
-
-Using await with promises
-
+    // Or using await with promises
     await ble.withPromises.l2cap.close(device_id, psm);
 
 ### Description
@@ -1038,9 +1094,7 @@ Sets the function to be called whenever bytes are received on the L2CAP channel.
 Write data to an L2CAP channel.
 
     ble.l2cap.write(device_id, psm, data, success, failure);
-
-Using await with promises
-
+    // Or using await with promises
     await ble.withPromises.l2cap.write(device_id, psm, data);
 
 ### Description

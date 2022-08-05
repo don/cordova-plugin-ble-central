@@ -118,6 +118,7 @@ public class Peripheral extends BluetoothGattCallback {
     public void disconnect() {
         connected = false;
         connecting = false;
+        autoconnect = false;
 
         closeGatt();
         queueCleanup();
@@ -377,7 +378,9 @@ public class Peripheral extends BluetoothGattCallback {
             if (refreshCallback != null) {
                 refreshCallback.sendPluginResult(result);
                 refreshCallback = null;
-            } else {
+            }
+            
+            if (connectCallback != null) {
                 connectCallback.sendPluginResult(result);
             }
         } else {
@@ -385,10 +388,9 @@ public class Peripheral extends BluetoothGattCallback {
             if (refreshCallback != null) {
                 refreshCallback.error(this.asJSONObject("Service discovery failed"));
                 refreshCallback = null;
-            } else {
-                connectCallback.error(this.asJSONObject("Service discovery failed"));
-                disconnect();
             }
+
+            peripheralDisconnected("Service discovery failed");
         }
     }
 
