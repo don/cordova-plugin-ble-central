@@ -1235,12 +1235,14 @@ public class BLECentralPlugin extends CordovaPlugin {
                 this.scanSeconds = -1;
                 this.scanSettings = null;
                 break;
+
             case REQUEST_BLUETOOTH_CONNECT:
                 LOG.d(TAG, "User granted Bluetooth Connect Access");
                 connect(permissionCallback, deviceMacAddress);
                 this.permissionCallback = null;
                 this.deviceMacAddress = null;
                 break;
+
             case REQUEST_BLUETOOTH_CONNECT_AUTO:
                 LOG.d(TAG, "User granted Bluetooth Auto Connect Access");
                 autoConnect(permissionCallback, deviceMacAddress);
