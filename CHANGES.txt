@@ -1,3 +1,8 @@
+= 1.5.1 =
+Android: Request BLUETOOTH_CONNECT on Android 12+ when device name is requested #924
+Android: Avoid Null reference exceptions in service discovery callbacks
+Documentation & type fixes
+
 = 1.5.0 =
 Android: Add support for target SDK version 31 (Android 12) #923 #879 #875 Thanks LDLCLid3
 Add L2CAP support (minimum iOS 11 & Android 10 required) for connection-oriented Bluetooth streams #812
