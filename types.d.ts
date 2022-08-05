@@ -104,6 +104,14 @@ declare namespace BLECentralPlugin {
     export interface BLECentralPluginPromises extends BLECentralPluginCommon {
         l2cap: L2CAPPromises;
 
+        /* Lists all peripherals discovered by the plugin due to scanning or connecting since app launch.
+           [iOS] list is not supported on iOS. */
+        list(): Promise<PeripheralData>;
+
+        /* Find the bonded devices.
+           [iOS] bondedDevices is not supported on iOS. */
+        bondedDevices(): Promise<PeripheralData>;
+
         stopScan(): Promise<void>;
         disconnect(device_id: string): Promise<void>;
         read(device_id: string, service_uuid: string, characteristic_uuid: string): Promise<ArrayBuffer>;
@@ -148,6 +156,11 @@ declare namespace BLECentralPlugin {
         stopLocationStateNotifications(): Promise<void>;
 
         readRSSI(device_id: string): Promise<number>;
+
+        /* When Connecting to a peripheral android can request for the connection priority for faster communication.
+           [iOS] requestConnectionPriority is not supported on iOS. */
+        requestConnectionPriority(device_id: string, priority: 'high' | 'balanced' | 'low'): Promise<void>;
+
         restoredBluetoothState(): Promise<RestoredState | undefined>;
     }
 
@@ -244,7 +257,7 @@ declare namespace BLECentralPlugin {
            [iOS] requestMtu is not supported on iOS. */
         requestMtu(device_id: string, mtu: number, success?: () => any, failure?: () => any): void;
 
-        /* When Connecting to a peripheral android can request for the connection priority for better communication.
+        /* When Connecting to a peripheral android can request for the connection priority for faster communication.
            [iOS] requestConnectionPriority is not supported on iOS. */
         requestConnectionPriority(
             device_id: string,
@@ -304,6 +317,10 @@ declare namespace BLECentralPlugin {
             success: (data: PeripheralData[]) => any,
             failure: () => any
         ): void;
+
+        /* Lists all peripherals discovered by the plugin due to scanning or connecting since app launch.
+            [iOS] list is not supported on iOS. */
+        list(success: (data: PeripheralData[]) => any, failure: () => any): void;
 
         /* Find the bonded devices.
                    [iOS] bondedDevices is not supported on iOS. */

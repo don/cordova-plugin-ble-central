@@ -94,7 +94,6 @@ module.exports = {
         cordova.exec(success, failure, 'BLE', 'bondedDevices', []);
     },
 
-    // this will probably be removed
     list: function (success, failure) {
         cordova.exec(success, failure, 'BLE', 'list', []);
     },
@@ -291,6 +290,18 @@ module.exports.withPromises = {
         });
     },
 
+    bondedDevices: function () {
+        return new Promise(function (resolve, reject) {
+            module.exports.bondedDevices(resolve, reject);
+        });
+    },
+
+    list: function () {
+        return new Promise(function (resolve, reject) {
+            module.exports.list(resolve, reject);
+        });
+    },
+
     queueCleanup: function (device_id) {
         return new Promise(function (resolve, reject) {
             module.exports.queueCleanup(device_id, resolve, reject);
@@ -416,6 +427,12 @@ module.exports.withPromises = {
     readRSSI: function (device_id) {
         return new Promise(function (resolve, reject) {
             module.exports.readRSSI(device_id, resolve, reject);
+        });
+    },
+
+    requestConnectionPriority: function (device_id, priority) {
+        return new Promise(function (resolve, reject) {
+            module.exports.requestConnectionPriority(device_id, priority, resolve, reject);
         });
     },
 
