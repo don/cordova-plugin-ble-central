@@ -223,7 +223,7 @@ declare namespace BLECentralPlugin {
             service_uuid: string,
             characteristic_uuid: string,
             success: (rawData: ArrayBuffer | 'registered') => any,
-            failure: (error: string | BLEError) => any,
+            failure?: (error: string | BLEError) => any,
             options: { emitOnRegistered: boolean }
         ): void;
 
@@ -244,11 +244,11 @@ declare namespace BLECentralPlugin {
         ): void;
 
         /* Reports if bluetooth is enabled. */
-        isEnabled(success: () => any, failure: (error: string) => any): void;
+        isEnabled(success: () => any, failure?: (error: string) => any): void;
 
         /* Reports if location services are enabled.
            [iOS] isLocationEnabled is not supported on iOS. */
-        isLocationEnabled(success: () => any, failure: (error: string) => any): void;
+        isLocationEnabled(success: () => any, failure?: (error: string) => any): void;
 
         /* Calls the success callback when the peripheral is connected and the failure callback when not connected. */
         isConnected(device_id: string, success: () => any, failure?: (error: string) => any): void;
@@ -292,11 +292,11 @@ declare namespace BLECentralPlugin {
 
         /* Opens the Bluetooth settings for the operating systems.
            [iOS] showBluetoothSettings is not supported on iOS. */
-        showBluetoothSettings(success: () => any, failure: () => any): void;
+        showBluetoothSettings(success: () => any, failure?: (error: string) => any): void;
 
         /* Enable Bluetooth on the device.
            [iOS] enable is not supported on iOS. */
-        enable(success: () => any, failure: (error: string) => any): void;
+        enable(success: () => any, failure?: (error: string) => any): void;
 
         readRSSI(device_id: string, success: (rssi: number) => any, failure?: (error: string) => any): void;
 
@@ -306,7 +306,7 @@ declare namespace BLECentralPlugin {
         connectedPeripheralsWithServices(
             services: string[],
             success: (data: PeripheralData[]) => any,
-            failure: () => any
+            failure?: (error: string) => any
         ): void;
 
         /* Find known (but not necessarily connected) peripherals offering the listed device UUIDs.
@@ -315,22 +315,22 @@ declare namespace BLECentralPlugin {
         peripheralsWithIdentifiers(
             device_ids: string[],
             success: (data: PeripheralData[]) => any,
-            failure: () => any
+            failure?: (error: string) => any
         ): void;
 
         /* Lists all peripherals discovered by the plugin due to scanning or connecting since app launch.
             [iOS] list is not supported on iOS. */
-        list(success: (data: PeripheralData[]) => any, failure: () => any): void;
+        list(success: (data: PeripheralData[]) => any, failure?: (error: string) => any): void;
 
         /* Find the bonded devices.
                    [iOS] bondedDevices is not supported on iOS. */
-        bondedDevices(success: (data: PeripheralData[]) => any, failure: () => any): void;
+        bondedDevices(success: (data: PeripheralData[]) => any, failure?: (error: string) => any): void;
 
         /* Reports the BLE restoration status if the app was restarted by iOS
            as a result of a BLE event.
            See https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW10
             [Android] restoredBluetoothState is not supported on Android. */
-        restoredBluetoothState(success: (data: RestoredState) => any, failure: () => any): void;
+        restoredBluetoothState(success: (data: RestoredState) => any, failure?: (error: string) => any): void;
 
         withPromises: BLECentralPluginPromises;
     }
