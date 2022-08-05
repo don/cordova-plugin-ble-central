@@ -128,6 +128,8 @@ public class BLECentralPlugin extends CordovaPlugin {
     private static final int REQUEST_BLUETOOTH_SCAN = 2;
     private static final int REQUEST_BLUETOOTH_CONNECT = 3;
     private static final int REQUEST_BLUETOOTH_CONNECT_AUTO = 4;
+    private static final int REQUEST_GET_BONDED_DEVICES = 5;
+    private static final int REQUEST_LIST_KNOWN_DEVICES = 6;
     private static int COMPILE_SDK_VERSION = -1;
     private CallbackContext permissionCallback;
     private String deviceMacAddress;
@@ -540,6 +542,14 @@ public class BLECentralPlugin extends CordovaPlugin {
     }
 
     private void getBondedDevices(CallbackContext callbackContext) {
+        if (COMPILE_SDK_VERSION >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
+            if (!PermissionHelper.hasPermission(this, BLUETOOTH_CONNECT)) {
+                permissionCallback = callbackContext;
+                PermissionHelper.requestPermission(this, REQUEST_GET_BONDED_DEVICES, BLUETOOTH_CONNECT);
+                return;
+            }
+        }
+
         JSONArray bonded = new JSONArray();
         Set<BluetoothDevice> bondedDevices =  bluetoothAdapter.getBondedDevices();
 
@@ -1143,6 +1153,13 @@ public class BLECentralPlugin extends CordovaPlugin {
     }
 
     private void listKnownDevices(CallbackContext callbackContext) {
+        if (COMPILE_SDK_VERSION >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
+            if (!PermissionHelper.hasPermission(this, BLUETOOTH_CONNECT)) {
+                permissionCallback = callbackContext;
+                PermissionHelper.requestPermission(this, REQUEST_LIST_KNOWN_DEVICES, BLUETOOTH_CONNECT);
+                return;
+            }
+        }
 
         JSONArray json = new JSONArray();
 
@@ -1229,6 +1246,18 @@ public class BLECentralPlugin extends CordovaPlugin {
                 autoConnect(permissionCallback, deviceMacAddress);
                 this.permissionCallback = null;
                 this.deviceMacAddress = null;
+                break;
+
+            case REQUEST_GET_BONDED_DEVICES:
+                LOG.d(TAG, "User granted permissions for bonded devices");
+                getBondedDevices(permissionCallback);
+                this.permissionCallback = null;
+                break;
+
+            case REQUEST_LIST_KNOWN_DEVICES:
+                LOG.d(TAG, "User granted permissions for list known devices");
+                listKnownDevices(permissionCallback);
+                this.permissionCallback = null;
                 break;
         }
     }
