@@ -37,16 +37,16 @@ declare namespace BLECentralPlugin {
     }
 
     interface L2CAP {
-        close(device_id: string, psm: number, success?: () => any, failure?: (error: string | BLEError) => any);
+        close(device_id: string, psm: number, success?: () => any, failure?: (error: string | BLEError) => any): void;
 
         open(
             device_id: string,
             psmOrOptions: number | L2CAPOptions,
             connectCallback?: () => any,
             disconnectCallback?: (error: string | BLEError) => any
-        );
+        ): void;
 
-        receiveData(device_id: string, psm: number, data: (data: ArrayBuffer) => any);
+        receiveData(device_id: string, psm: number, data: (data: ArrayBuffer) => any): void;
 
         write(
             device_id: string,
@@ -54,7 +54,7 @@ declare namespace BLECentralPlugin {
             data: ArrayBuffer,
             success?: () => {},
             failure?: (error: string | BLEError) => any
-        );
+        ): void;
     }
 
     interface L2CAPPromises {
