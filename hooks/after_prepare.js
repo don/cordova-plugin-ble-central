@@ -24,8 +24,11 @@ module.exports = function (context) {
 
     let manifestChanged = false;
     let androidManifest = fs.readFileSync(manifestPath).toString();
-    if (accessBackgroundLocation != 'true') {
-        androidManifest = stripPermission(androidManifest, 'ACCESS_BACKGROUND_LOCATION');
+    if (accessBackgroundLocation == 'true' && androidManifest.indexOf('ACCESS_BACKGROUND_LOCATION') == -1) {
+        androidManifest = insertPermission(
+            androidManifest,
+            ' android:maxSdkVersion="30" android:name="android.permission.ACCESS_BACKGROUND_LOCATION"'
+        );
         manifestChanged = true;
     }
 
@@ -87,6 +90,17 @@ function getTargetSdkVersion(platformPath) {
     }
 
     return Number(sdkVersion || 0);
+}
+
+function insertPermission(androidManifest, text) {
+    const permissionMatcher = /\n\s*?<uses-permission/;
+    const template = permissionMatcher.exec(androidManifest);
+    const toInsert = template + text + ' />\n';
+    return (
+        androidManifest.substring(0, template.index + 1) +
+        toInsert +
+        androidManifest.substring(template.index, androidManifest.length)
+    );
 }
 
 function stripPermission(androidManifest, permission) {
