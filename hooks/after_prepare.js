@@ -61,14 +61,14 @@ function checkForDuplicatePermissions(plugin, androidManifest) {
     let capture;
     while ((capture = permissionsRegex.exec(androidManifest)) !== null) {
         const permission = capture.groups && capture.groups.permission;
-        if (permission && permissions[permission]) {
+        if (permission && permissions[permission] && permissions[permission] != capture[0]) {
             console.log(plugin.id + ': !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
             console.log(plugin.id + ': WARNING - duplicate android permissions found: ' + permission);
             console.log(plugin.id + ': See https://github.com/don/cordova-plugin-ble-central/issues/925');
             console.log(plugin.id + ': !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
             break;
         }
-        permissions[permission] = true;
+        permissions[permission] = capture[0];
     }
 }
 
