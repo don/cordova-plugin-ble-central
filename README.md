@@ -39,7 +39,7 @@ It's recommended to always use the latest cordova and cordova platform packages 
 
 | cordova | cordova-ios | cordova-android | cordova-browser |
 | ------- | ----------- | --------------- | --------------- |
-| 9+      | 6.2.0+      | 9.1.0+          | not tested      |
+| 10+     | 6.2.0+      | 10.0+           | not tested      |
 
 ### iOS
 
