@@ -1081,6 +1081,19 @@ public class BLECentralPlugin extends CordovaPlugin {
             if (!PermissionHelper.hasPermission(this, BLUETOOTH_CONNECT)) {
                 missingPermissions.add(BLUETOOTH_CONNECT);
             }
+        } else if (COMPILE_SDK_VERSION >= 30 && Build.VERSION.SDK_INT >= 30) { // (API 30) Build.VERSION_CODES.R
+            // Android 11 specifically requires FINE location access to be granted first before
+            // the app is allowed to ask for ACCESS_BACKGROUND_LOCATION
+            // Source: https://developer.android.com/about/versions/11/privacy/location
+            if (!PermissionHelper.hasPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                missingPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            } else {
+                String accessBackgroundLocation = this.preferences.getString("accessBackgroundLocation", "false");
+                if (accessBackgroundLocation == "true" &&  !PermissionHelper.hasPermission(this, ACCESS_BACKGROUND_LOCATION)) {
+                    LOG.w(TAG, "ACCESS_BACKGROUND_LOCATION is being requested");
+                    missingPermissions.add(ACCESS_BACKGROUND_LOCATION);
+                }
+            }
         } else if (COMPILE_SDK_VERSION >= 29 && Build.VERSION.SDK_INT >= 29) { // (API 29) Build.VERSION_CODES.Q
             if (!PermissionHelper.hasPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 missingPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
