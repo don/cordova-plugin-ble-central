@@ -5,7 +5,7 @@ declare namespace BLECentralPlugin {
         service: string;
         characteristic: string;
         properties: string[];
-        descriptors?: any[] | undefined;
+        descriptors?: any[];
     }
 
     interface PeripheralData {
@@ -28,7 +28,22 @@ declare namespace BLECentralPlugin {
     }
 
     interface StartScanOptions {
-        reportDuplicates?: boolean | undefined;
+        /* Android only */
+        scanMode?: 'lowPower' | 'balanced' | 'lowLatency' | 'opportunistic';
+        /* Android only */
+        callbackType?: 'all' | 'first' | 'lost';
+        /* Android only */
+        matchMode?: 'aggressive' | 'sticky';
+        /* Android only */
+        numOfMatches?: 'one' | 'few' | 'max';
+        /* Android only */
+        phy?: '1m' | 'coded' | 'all';
+        /* Android only */
+        legacy?: boolean;
+        /* Android only */
+        reportDelay?: number;
+
+        reportDuplicates?: boolean;
     }
 
     interface L2CAPOptions {
@@ -223,7 +238,7 @@ declare namespace BLECentralPlugin {
             service_uuid: string,
             characteristic_uuid: string,
             success: (rawData: ArrayBuffer | 'registered') => any,
-            failure?: (error: string | BLEError) => any,
+            failure: (error: string | BLEError) => any,
             options: { emitOnRegistered: boolean }
         ): void;
 
