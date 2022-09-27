@@ -1,0 +1,60 @@
+/********************************************************************************************************
+ * @file     TelinkSigMeshLibPrefixHeader.pch
+ *
+ * @brief    for TLSR chips
+ *
+ * @author   Telink, 梁家誌
+ * @date     2019/10/22
+ *
+ * @par     Copyright (c) [2021], Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ *
+ *          Licensed under the Apache License, Version 2.0 (the "License");
+ *          you may not use this file except in compliance with the License.
+ *          You may obtain a copy of the License at
+ *
+ *              http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *          Unless required by applicable law or agreed to in writing, software
+ *          distributed under the License is distributed on an "AS IS" BASIS,
+ *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *          See the License for the specific language governing permissions and
+ *          limitations under the License.
+ *******************************************************************************************************/
+
+#ifndef TelinkSigMeshLibPrefixHeader_pch
+#define TelinkSigMeshLibPrefixHeader_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+#import <CoreBluetooth/CoreBluetooth.h>
+
+#import "BackgroundTimer.h"
+#import "SigLogger.h"
+#import "SigEnumeration.h"
+#import "SigModel.h"
+#import "LibTools.h"
+#import "SigConst.h"
+#import "SigStruct.h"
+#import "SigPdu.h"
+#import "SigBluetooth.h"
+#import "SigDataSource.h"
+#import "SigBearer.h"
+#import "SDKLibCommand.h"
+#import "SigProvisioningManager.h"
+#import "SigAddDeviceManager.h"
+#import "SigMeshMessage.h"
+#import "SigNetworkManager.h"
+#import "SigKeySet.h"
+#import "SigMeshLib.h"
+#import "SigHelper.h"
+#import "SigConfigMessage.h"
+#import "SigUpperTransportPdu.h"
+#import "SigMessageHandle.h"
+#import "SigProxyConfigurationMessage.h"
+#import "SigGenericMessage.h"
+#import "OTAManager.h"
+#import "SigPublishManager.h"
+
+
+#endif /* TelinkSigMeshLibPrefixHeader_pch */
