@@ -50,6 +50,23 @@ static NSDictionary *dataToArrayBuffer(NSData* data) {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
     [dictionary setObject: uuidString forKey: @"id"];
 
+    NSString *state;
+    switch ([self state]) {
+        case CBPeripheralStateDisconnected:
+            state = @"disconnected";
+            break;
+        case CBPeripheralStateConnecting:
+            state = @"connecting";
+            break;
+        case CBPeripheralStateConnected:
+            state = @"connected";
+            break;
+        case CBPeripheralStateDisconnecting:
+            state = @"disconnecting";
+            break;
+    }
+    [dictionary setObject: state forKey:@"state"];
+
     if ([self name]) {
         [dictionary setObject: [self name] forKey: @"name"];
     }
