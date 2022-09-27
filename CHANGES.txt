@@ -1,3 +1,52 @@
+= 1.5.2 =
+Android: Exclude ACCESS_BACKGROUND_LOCATION from plugin.xml to avoid complications with Capacitor #928
+
+= 1.5.1 =
+Android: Request BLUETOOTH_CONNECT on Android 12+ when device name is requested #924
+Android: Avoid Null reference exceptions in service discovery callbacks
+Documentation & type fixes
+
+= 1.5.0 =
+Android: Add support for target SDK version 31 (Android 12) #923 #879 #875 Thanks LDLCLid3
+Add L2CAP support (minimum iOS 11 & Android 10 required) for connection-oriented Bluetooth streams #812
+Add ble.withPromises.startNotification variant to indicate when notifications are successfully subscribed #903 #95
+
+= 1.4.4 =
+Browser: Add support via navigator.Bluetooth #907 #231 Thanks joeferner
+iOS: More explicitly handle edge cases when starting/stopping notifications on iOS #577 #893
+iOS: Improve ble.write handling when given non-ArrayBuffer types #897 #900
+Android: Report peripherals as disconnected when BLE is turned off #894 #896
+Android: Properly dispose of connected gatts on plugin reset #825 #845
+
+= 1.4.3 =
+iOS: Make BLUETOOTH_RESTORE_STATE variable optional
+Android Synchronise access to the gatt during cleanup to avoid null ref errors #799
+Android: Ensure scan settings are correctly applied when permissions are requested
+Android: Correctly set match mode rather than callback type for scanWithOptions
+Android: Align "Not connected" message with iOS #784
+
+= 1.4.2 =
+Add typescript definitions for all methods
+Add location state notifications on Android (similar to Bluetooth state notifications)
+Add support for iOS state restoration. This is opt-in, see README for usage details #717
+Turn API misuse warnings on iOS into reported errors to prevent dead scans #828
+
+= 1.4.1 =
+Add additional options to startScanWithOptions() on Android #835 Thanks helllamer 
+Fix some instances where the Android command loop locks up #847 #830 Thanks doug-a-brunner
+Improve documentation around requestConnectionPriority usage #877
+
+= 1.4.0 =
+Android has new plugin variable ACCESS_BACKGROUND_LOCATION enable or disable background scanning permissions. Defaults to false. #844 #821 #870 Thanks marioshtika
+
+= 1.3.1 =
+Android updated to BluetoothLeScanner removing deprecated LeScanCallback #796 Thanks pentabarf
+Android updated to work with android-cordova@8 and android-cordova@9 #819
+iOS has new plugin variable IOS_INIT_ON_LOAD to delay plugin initialization. Defaults to false. #739 #769 Thanks josoete
+
+= 1.3.0 =
+Add new location permssions Android 10 (API29) #771 Thanks tiagoblackcode, subratpalhar92, & QuentinFarizon
+
 = 1.2.5 =
 Add setPin method for Android #718 Thanks untilbit
 Give the user feedback after an MTU size request #715 Thanks agren

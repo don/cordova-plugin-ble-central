@@ -22,6 +22,7 @@ class BLECommand {
     private UUID characteristicUUID;
     private byte[] data;
     private int type;
+    private int psm;
 
 
     public BLECommand(CallbackContext callbackContext, UUID serviceUUID, UUID characteristicUUID, int type) {
@@ -42,6 +43,19 @@ class BLECommand {
     {
         BLECommand c = new BLECommand(this.callbackContext, this.serviceUUID, this.characteristicUUID, this.type);
         return c;
+    }
+
+    public BLECommand(CallbackContext callbackContext, int psm, int type) {
+        this.callbackContext = callbackContext;
+        this.psm = psm;
+        this.type = type;
+    }
+
+    public BLECommand(CallbackContext callbackContext, int psm, byte[] data, int type) {
+        this.callbackContext = callbackContext;
+        this.psm = psm;
+        this.data = data;
+        this.type = type;
     }
 
     public int getType() {
@@ -67,4 +81,5 @@ class BLECommand {
     public void setData(byte[] data) { this.data = data;}
 
     public int getDataLength() { if(this.data != null  ) return data.length; else return 0; }
+    public int getPSM() { return psm; }
 }
