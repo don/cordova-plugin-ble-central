@@ -9,7 +9,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 26
         versionCode 3
-        versionName "3.3.2"
+        versionName "3.3.3.5"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 

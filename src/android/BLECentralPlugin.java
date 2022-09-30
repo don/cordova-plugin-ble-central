@@ -84,7 +84,7 @@ import java.util.*;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_DUAL;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_LE;
 
-public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.LeScanCallback, EventListener<String> {
+public class BLECentralPlugin extends CordovaPlugin implements EventListener<String> {
     // permissions
     private static final String ACCESS_BACKGROUND_LOCATION = "android.permission.ACCESS_BACKGROUND_LOCATION"; // API 29
     private static final String BLUETOOTH_CONNECT =  "android.permission.BLUETOOTH_CONNECT" ; // API 31
@@ -1335,10 +1335,6 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
                 LOG.d(TAG, "User granted permissions for list known devices");
                 listKnownDevices(permissionCallback);
                 this.permissionCallback = null;
-                break;
-
-            case REQUEST_ACCESS_FINE_LOCATION:
-                Log.d(TAG, "User granted fine Location Access");
                 break;
         }
     }
