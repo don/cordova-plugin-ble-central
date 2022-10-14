@@ -1,3 +1,23 @@
+= 1.5.2 =
+Android: Exclude ACCESS_BACKGROUND_LOCATION from plugin.xml to avoid complications with Capacitor #928
+
+= 1.5.1 =
+Android: Request BLUETOOTH_CONNECT on Android 12+ when device name is requested #924
+Android: Avoid Null reference exceptions in service discovery callbacks
+Documentation & type fixes
+
+= 1.5.0 =
+Android: Add support for target SDK version 31 (Android 12) #923 #879 #875 Thanks LDLCLid3
+Add L2CAP support (minimum iOS 11 & Android 10 required) for connection-oriented Bluetooth streams #812
+Add ble.withPromises.startNotification variant to indicate when notifications are successfully subscribed #903 #95
+
+= 1.4.4 =
+Browser: Add support via navigator.Bluetooth #907 #231 Thanks joeferner
+iOS: More explicitly handle edge cases when starting/stopping notifications on iOS #577 #893
+iOS: Improve ble.write handling when given non-ArrayBuffer types #897 #900
+Android: Report peripherals as disconnected when BLE is turned off #894 #896
+Android: Properly dispose of connected gatts on plugin reset #825 #845
+
 = 1.4.3 =
 iOS: Make BLUETOOTH_RESTORE_STATE variable optional
 Android Synchronise access to the gatt during cleanup to avoid null ref errors #799

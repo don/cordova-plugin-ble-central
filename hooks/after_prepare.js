@@ -1,107 +1,117 @@
 #!/usr/bin/env node
 'use strict';
 
-var fs = require('fs');
-
-var ACCESS_BACKGROUND_LOCATION_PERMISSION =
-    '<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />';
+const fs = require('fs');
+const path = require('path');
 
 module.exports = function (context) {
-    const accessBackgroundLocationVariable = getAccessBackgroundLocationVariable();
-    const manifestPath = getAndroidManifestFilePath(context);
-    const androidManifest = fs.readFileSync(manifestPath).toString();
-    if (accessBackgroundLocationVariable === 'true') {
-        if (!accessBackgroundLocationExists(androidManifest)) {
-            addAccessBackgroundLocationToManifest(manifestPath, androidManifest);
-            console.log(context.opts.plugin.id + ': ACCESS_BACKGROUND_LOCATION permission added to ' + manifestPath);
-        } else {
-            console.log(
-                context.opts.plugin.id + ': ACCESS_BACKGROUND_LOCATION permission already exists in ' + manifestPath
-            );
-        }
-    } else {
-        if (accessBackgroundLocationExists(androidManifest)) {
-            removeAccessBackgroundLocationToManifest(manifestPath, androidManifest);
-            console.log(
-                context.opts.plugin.id + ': ACCESS_BACKGROUND_LOCATION permission removed from ' + manifestPath
-            );
-        } else {
-            console.log(
-                context.opts.plugin.id + ': ACCESS_BACKGROUND_LOCATION permission does not exists in ' + manifestPath
-            );
-        }
-    }
-};
+    const { projectRoot, plugin } = context.opts;
+    const { ConfigParser } = context.requireCordovaModule('cordova-common');
 
-var getAccessBackgroundLocationVariable = function () {
-    if (process.argv.join('|').indexOf('ACCESS_BACKGROUND_LOCATION=') > -1) {
-        return process.argv.join('|').match(/ACCESS_BACKGROUND_LOCATION=(.*?)(\||$)/)[1];
-    } else {
-        return getPreferenceValue('ACCESS_BACKGROUND_LOCATION');
-    }
-};
+    const platformPath = path.resolve(projectRoot, 'platforms/android');
+    const config = new ConfigParser(path.resolve(platformPath, 'app/src/main/res/xml/config.xml'));
+    const accessBackgroundLocation = config.getPreference('accessBackgroundLocation', 'android');
 
-var getPreferenceValue = function (name) {
-    const config = fs.readFileSync('config.xml').toString();
-    var preferenceValue = getPreferenceValueFromConfig(config, name);
-    if (!preferenceValue) {
-        const packageJson = fs.readFileSync('package.json').toString();
-        preferenceValue = getPreferenceValueFromPackageJson(packageJson, name);
+    const targetSdkVersion = getTargetSdkVersion(platformPath);
+    if (!targetSdkVersion) {
+        console.log(plugin.id + ': WARNING - unable to find Android SDK version');
     }
-    return preferenceValue;
-};
 
-var getPreferenceValueFromConfig = function (config, name) {
-    const value = config.match(new RegExp('name="' + name + '" value="(.*?)"', 'i'));
-    if (value && value[1]) {
-        return value[1];
-    } else {
-        return null;
-    }
-};
-
-var getPreferenceValueFromPackageJson = function (packageJson, name) {
-    const value = packageJson.match(new RegExp('"' + name + '":\\s"(.*?)"', 'i'));
-    if (value && value[1]) {
-        return value[1];
-    } else {
-        return null;
-    }
-};
-
-var getAndroidManifestFilePath = function (context) {
-    const manifestPath = {
-        cordovaAndroid6: context.opts.projectRoot + '/platforms/android/AndroidManifest.xml',
-        cordovaAndroid7: context.opts.projectRoot + '/platforms/android/app/src/main/AndroidManifest.xml',
-    };
-    if (fs.existsSync(manifestPath.cordovaAndroid7)) {
-        return manifestPath.cordovaAndroid7;
-    } else if (fs.existsSync(manifestPath.cordovaAndroid6)) {
-        return manifestPath.cordovaAndroid6;
-    } else {
+    const manifestPath = path.resolve(platformPath, 'app/src/main/AndroidManifest.xml');
+    if (!fs.existsSync(manifestPath)) {
         throw "Can't find AndroidManifest.xml in platforms/Android";
     }
-};
 
-var accessBackgroundLocationExists = function (manifest) {
-    const value = manifest.search(ACCESS_BACKGROUND_LOCATION_PERMISSION);
-    if (value === -1) {
-        return false;
-    } else {
-        return true;
+    let manifestChanged = false;
+    let androidManifest = fs.readFileSync(manifestPath).toString();
+    if (accessBackgroundLocation == 'true' && androidManifest.indexOf('ACCESS_BACKGROUND_LOCATION') == -1) {
+        androidManifest = insertPermission(
+            androidManifest,
+            ' android:maxSdkVersion="30" android:name="android.permission.ACCESS_BACKGROUND_LOCATION"'
+        );
+        manifestChanged = true;
     }
+
+    if (targetSdkVersion <= 30) {
+        // Strip out Android 12+ changes
+        androidManifest = stripPermission(androidManifest, 'BLUETOOTH_SCAN');
+        androidManifest = stripPermission(androidManifest, 'BLUETOOTH_CONNECT');
+        androidManifest = stripMaxSdkVersion(androidManifest, '30');
+        manifestChanged = true;
+    }
+
+    if (targetSdkVersion <= 28) {
+        // Strip out Android 10+ changes
+        androidManifest = stripPermission(androidManifest, 'ACCESS_FINE_LOCATION');
+        androidManifest = stripPermission(androidManifest, 'ACCESS_BACKGROUND_LOCATION');
+        androidManifest = stripMaxSdkVersion(androidManifest, '28');
+        manifestChanged = true;
+    }
+
+    if (manifestChanged) {
+        fs.writeFileSync(manifestPath, androidManifest);
+    }
+
+    checkForDuplicatePermissions(plugin, androidManifest);
 };
 
-var addAccessBackgroundLocationToManifest = function (manifestPath, androidManifest) {
-    const index = androidManifest.search('</manifest>');
-    const accessBackgroundLocationPermissionLine = '    ' + ACCESS_BACKGROUND_LOCATION_PERMISSION + '\n';
-    const updatedManifest =
-        androidManifest.substring(0, index) + accessBackgroundLocationPermissionLine + androidManifest.substring(index);
-    fs.writeFileSync(manifestPath, updatedManifest);
-};
+function checkForDuplicatePermissions(plugin, androidManifest) {
+    const permissionsRegex = /<uses-permission.*?android:name="(?<permission>android\.permission\..*?)".*?\/>/gm;
+    const permissions = {};
+    let capture;
+    while ((capture = permissionsRegex.exec(androidManifest)) !== null) {
+        const permission = capture.groups && capture.groups.permission;
+        if (permission && permissions[permission] && permissions[permission] != capture[0]) {
+            console.log(plugin.id + ': !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+            console.log(plugin.id + ': WARNING - duplicate android permissions found: ' + permission);
+            console.log(plugin.id + ': See https://github.com/don/cordova-plugin-ble-central/issues/925');
+            console.log(plugin.id + ': !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+            break;
+        }
+        permissions[permission] = capture[0];
+    }
+}
 
-var removeAccessBackgroundLocationToManifest = function (manifestPath, androidManifest) {
-    const accessBackgroundLocationPermissionLine = '    ' + ACCESS_BACKGROUND_LOCATION_PERMISSION + '\n';
-    const updatedManifest = androidManifest.replace(accessBackgroundLocationPermissionLine, '');
-    fs.writeFileSync(manifestPath, updatedManifest);
-};
+function getTargetSdkVersion(platformPath) {
+    let sdkVersion;
+    const gradleConfigJson = path.resolve(platformPath, 'cdv-gradle-config.json');
+    const gradleConfigProperties = path.resolve(platformPath, 'gradle.properties');
+
+    if (fs.existsSync(gradleConfigJson)) {
+        const gradleConfig = JSON.parse(fs.readFileSync(gradleConfigJson).toString());
+        sdkVersion = gradleConfig.SDK_VERSION;
+    } else if (fs.existsSync(gradleConfigProperties)) {
+        const gradleConfig = fs.readFileSync(gradleConfigProperties).toString();
+        sdkVersion = gradleConfig
+            .split('\n')
+            .map((l) => l.split('='))
+            .filter(([key]) => key == 'cdvTargetSdkVersion')
+            .map(([_, value]) => value);
+    }
+
+    return Number(sdkVersion || 0);
+}
+
+function insertPermission(androidManifest, text) {
+    const permissionMatcher = /\n\s*?<uses-permission/;
+    const template = permissionMatcher.exec(androidManifest);
+    const toInsert = template + text + ' />\n';
+    return (
+        androidManifest.substring(0, template.index + 1) +
+        toInsert +
+        androidManifest.substring(template.index, androidManifest.length)
+    );
+}
+
+function stripPermission(androidManifest, permission) {
+    const replacer = new RegExp(
+        '\\n\\s*?<uses-permission.*? android:name="android\\.permission\\.' + permission + '".*?\\/>\\n',
+        'gm'
+    );
+    return androidManifest.replace(replacer, '\n');
+}
+
+function stripMaxSdkVersion(androidManifest, level) {
+    const replacer = new RegExp('\\s*android:maxSdkVersion="' + level + '"\\s*', 'g');
+    return androidManifest.replace(replacer, ' ');
+}

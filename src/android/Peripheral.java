@@ -52,6 +52,7 @@ public class Peripheral extends BluetoothGattCallback {
     private boolean connected = false;
     private boolean connecting = false;
     private ConcurrentLinkedQueue<BLECommand> commandQueue = new ConcurrentLinkedQueue<BLECommand>();
+    private final Map<Integer, L2CAPContext> l2capContexts = new HashMap<Integer, L2CAPContext>();
     private final AtomicBoolean bleProcessing = new AtomicBoolean();
 
     BluetoothGatt gatt;
@@ -117,6 +118,7 @@ public class Peripheral extends BluetoothGattCallback {
     public void disconnect() {
         connected = false;
         connecting = false;
+        autoconnect = false;
 
         closeGatt();
         queueCleanup();
@@ -227,11 +229,17 @@ public class Peripheral extends BluetoothGattCallback {
                     if (success) {
                         this.refreshCallback = callback;
                         Handler handler = new Handler();
+                        LOG.d(TAG, "Waiting " + timeoutMillis + " milliseconds before discovering services");
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                LOG.d(TAG, "Waiting " + timeoutMillis + " milliseconds before discovering services");
-                                gatt.discoverServices();
+                                if (gatt != null) {
+                                    try {
+                                        gatt.discoverServices();
+                                    } catch(Exception e) {
+                                        LOG.e(TAG, "refreshDeviceCache Failed after delay", e);
+                                    }
+                                }
                             }
                         }, timeoutMillis);
                     }
@@ -376,7 +384,9 @@ public class Peripheral extends BluetoothGattCallback {
             if (refreshCallback != null) {
                 refreshCallback.sendPluginResult(result);
                 refreshCallback = null;
-            } else {
+            }
+            
+            if (connectCallback != null) {
                 connectCallback.sendPluginResult(result);
             }
         } else {
@@ -384,10 +394,9 @@ public class Peripheral extends BluetoothGattCallback {
             if (refreshCallback != null) {
                 refreshCallback.error(this.asJSONObject("Service discovery failed"));
                 refreshCallback = null;
-            } else {
-                connectCallback.error(this.asJSONObject("Service discovery failed"));
-                disconnect();
             }
+
+            peripheralDisconnected("Service discovery failed");
         }
     }
 
@@ -467,6 +476,18 @@ public class Peripheral extends BluetoothGattCallback {
     public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
         super.onDescriptorWrite(gatt, descriptor, status);
         LOG.d(TAG, "onDescriptorWrite %s", descriptor);
+        if (descriptor.getUuid().equals(CLIENT_CHARACTERISTIC_CONFIGURATION_UUID)) {
+            BluetoothGattCharacteristic characteristic = descriptor.getCharacteristic();
+            String key = generateHashKey(characteristic);
+            SequentialCallbackContext callback = notificationCallbacks.get(key);
+
+            if (callback != null) {
+                boolean success = callback.completeSubscription(status);
+                if (!success) {
+                    notificationCallbacks.remove(key);
+                }
+            }
+        }
         commandCompleted();
     }
 
@@ -532,6 +553,7 @@ public class Peripheral extends BluetoothGattCallback {
 
         if (!gatt.setCharacteristicNotification(characteristic, true)) {
             callbackContext.error("Failed to register notification for " + characteristicUUID);
+            notificationCallbacks.remove(key);
             commandCompleted();
             return;
         }
@@ -540,6 +562,7 @@ public class Peripheral extends BluetoothGattCallback {
         BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIGURATION_UUID);
         if (descriptor == null) {
             callbackContext.error("Set notification failed for " + characteristicUUID);
+            notificationCallbacks.remove(key);
             commandCompleted();
             return;
         }
@@ -555,9 +578,9 @@ public class Peripheral extends BluetoothGattCallback {
 
         if (!gatt.writeDescriptor(descriptor)) {
             callbackContext.error("Failed to set client characteristic notification for " + characteristicUUID);
+            notificationCallbacks.remove(key);
             commandCompleted();
         }
-
     }
 
     private void removeNotifyCallback(CallbackContext callbackContext, UUID serviceUUID, UUID characteristicUUID) {
@@ -833,6 +856,19 @@ public class Peripheral extends BluetoothGattCallback {
             command.getCallbackContext().error("Peripheral Disconnected");
         }
         bleProcessing.set(false); // Now re-allow processing
+
+        Collection<L2CAPContext> contexts;
+        synchronized (l2capContexts) {
+            contexts = new ArrayList<>(l2capContexts.values());
+        }
+        for(L2CAPContext context : contexts) {
+            context.disconnectL2Cap();
+        }
+    }
+
+    public void writeL2CapChannel(CallbackContext callbackContext, int psm, byte[] data) {
+        LOG.d(TAG,"L2CAP Write %s", psm);
+        getOrAddL2CAPContext(psm).writeL2CapChannel(callbackContext, data);
     }
 
     private void callbackCleanup() {
@@ -915,4 +951,37 @@ public class Peripheral extends BluetoothGattCallback {
         return serviceUUID + "|" + characteristic.getUuid() + "|" + characteristic.getInstanceId();
     }
 
+    public void connectL2cap(CallbackContext callbackContext, int psm, boolean secureChannel) {
+        getOrAddL2CAPContext(psm).connectL2cap(callbackContext, secureChannel);
+    }
+
+    public void disconnectL2Cap(CallbackContext callbackContext, int psm) {
+        L2CAPContext context;
+        synchronized (l2capContexts) {
+            context = l2capContexts.get(psm);
+        };
+        if (context != null) {
+            context.disconnectL2Cap();
+        }
+        callbackContext.success();
+    }
+
+    public boolean isL2capConnected(int psm) {
+        return getOrAddL2CAPContext(psm).isConnected();
+    }
+
+    public void registerL2CapReceiver(CallbackContext callbackContext, int psm) {
+        getOrAddL2CAPContext(psm).registerL2CapReceiver(callbackContext);
+    }
+
+    private L2CAPContext getOrAddL2CAPContext(int psm) {
+        synchronized (l2capContexts) {
+            L2CAPContext context = l2capContexts.get(psm);
+            if (context == null) {
+                context = new L2CAPContext(this.device, psm);
+                l2capContexts.put(psm, context);
+            }
+            return context;
+        }
+    }
 }

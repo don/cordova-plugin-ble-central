@@ -3,7 +3,7 @@
     xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-plugin-ble-central"
-    version="1.4.4">
+    version="1.5.2">
 
     <name>BLE</name>
     <description>Bluetooth Low Energy (BLE) Central Plugin</description>
@@ -36,6 +36,9 @@
         <header-file src="src/ios/BLECommandContext.h" target-dir="BLECentralPlugin" />
         <source-file src="src/ios/BLECommandContext.m" target-dir="BLECentralPlugin" />
 
+        <header-file src="src/ios/BLEStreamContext.h" target-dir="BLECentralPlugin" />
+        <source-file src="src/ios/BLEStreamContext.m" target-dir="BLECentralPlugin" />
+
         <!-- frameworks -->
         <framework src="CoreBluetooth.framework" />
 
@@ -63,10 +66,12 @@
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/manifest">
-            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-            <uses-permission android:name="android.permission.BLUETOOTH" />
-            <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="28" />
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
+            <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+            <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+            <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+            <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
         </config-file>
 
         <config-file target="res/xml/config.xml" parent="/*">
@@ -87,7 +92,8 @@
             target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/UUIDHelper.java"
             target-dir="src/com/megster/cordova/ble/central"/>
-
+        <source-file src="src/android/L2CAPContext.java"
+            target-dir="src/com/megster/cordova/ble/central"/>
     </platform>
 
     <platform name="browser">
