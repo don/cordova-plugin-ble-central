@@ -709,6 +709,12 @@ public class BLECentralPlugin extends CordovaPlugin {
             }
         }
 
+        if (bluetoothAdapter.getState() != BluetoothAdapter.STATE_ON) {
+            LOG.w(TAG, "Tried to connect while Bluetooth is disabled.");
+            callbackContext.error("Bluetooth is disabled.");
+            return;
+        }
+
         if (!peripherals.containsKey(macAddress) && BLECentralPlugin.this.bluetoothAdapter.checkBluetoothAddress(macAddress)) {
             BluetoothDevice device = BLECentralPlugin.this.bluetoothAdapter.getRemoteDevice(macAddress);
             Peripheral peripheral = new Peripheral(device);
@@ -735,6 +741,12 @@ public class BLECentralPlugin extends CordovaPlugin {
                 PermissionHelper.requestPermission(this, REQUEST_BLUETOOTH_CONNECT_AUTO, BLUETOOTH_CONNECT);
                 return;
             }
+        }
+
+        if (bluetoothAdapter.getState() != BluetoothAdapter.STATE_ON) {
+            LOG.w(TAG, "Tried to connect while Bluetooth is disabled.");
+            callbackContext.error("Bluetooth is disabled.");
+            return;
         }
 
         Peripheral peripheral = peripherals.get(macAddress);
@@ -1119,6 +1131,12 @@ public class BLECentralPlugin extends CordovaPlugin {
             return;
         }
 
+
+        if (bluetoothAdapter.getState() != BluetoothAdapter.STATE_ON) {
+            LOG.w(TAG, "Tried to start scan while Bluetooth is disabled.");
+            callbackContext.error("Bluetooth is disabled.");
+            return;
+        }
 
         // return error if already scanning
         if (bluetoothAdapter.isDiscovering()) {
