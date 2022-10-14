@@ -229,11 +229,17 @@ public class Peripheral extends BluetoothGattCallback {
                     if (success) {
                         this.refreshCallback = callback;
                         Handler handler = new Handler();
+                        LOG.d(TAG, "Waiting " + timeoutMillis + " milliseconds before discovering services");
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                LOG.d(TAG, "Waiting " + timeoutMillis + " milliseconds before discovering services");
-                                gatt.discoverServices();
+                                if (gatt != null) {
+                                    try {
+                                        gatt.discoverServices();
+                                    } catch(Exception e) {
+                                        LOG.e(TAG, "refreshDeviceCache Failed after delay", e);
+                                    }
+                                }
                             }
                         }, timeoutMillis);
                     }
