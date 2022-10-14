@@ -1250,6 +1250,20 @@ public class BLECentralPlugin extends CordovaPlugin {
 
     /* @Override */
     public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) {
+        final CallbackContext callback = this.popPermissionsCallback();
+        if (callback == null) {
+            if (grantResults.length > 0) {
+                // There are some odd happenings if permission requests are made while booting up capacitor
+                LOG.w(TAG, "onRequestPermissionResult received with no pending callback");
+            }
+            return;
+        }
+
+        if (grantResults.length == 0) {
+            callback.error("No permissions not granted.");
+            return;
+        }
+
         //Android 12 (API 31) and higher
         // Users MUST accept BLUETOOTH_SCAN and BLUETOOTH_CONNECT
         // Android 10 (API 29) up to Android 11 (API 30)
@@ -1258,22 +1272,21 @@ public class BLECentralPlugin extends CordovaPlugin {
         // Android 9 (API 28) and lower
         // Users MUST accept ACCESS_COARSE_LOCATION
         for (int i = 0; i < permissions.length; i++) {
-
             if (permissions[i].equals(Manifest.permission.ACCESS_FINE_LOCATION) && grantResults[i] == PackageManager.PERMISSION_DENIED) {
                 LOG.d(TAG, "User *rejected* Fine Location Access");
-                this.permissionCallback.error("Location permission not granted.");
+                callback.error("Location permission not granted.");
                 return;
             } else if (permissions[i].equals(Manifest.permission.ACCESS_COARSE_LOCATION) && grantResults[i] == PackageManager.PERMISSION_DENIED) {
                 LOG.d(TAG, "User *rejected* Coarse Location Access");
-                this.permissionCallback.error("Location permission not granted.");
+                callback.error("Location permission not granted.");
                 return;
             } else if (permissions[i].equals(BLUETOOTH_SCAN) && grantResults[i] == PackageManager.PERMISSION_DENIED) {
                 LOG.d(TAG, "User *rejected* Bluetooth_Scan Access");
-                this.permissionCallback.error("Bluetooth scan permission not granted.");
+                callback.error("Bluetooth scan permission not granted.");
                 return;
             } else if (permissions[i].equals(BLUETOOTH_CONNECT) && grantResults[i] == PackageManager.PERMISSION_DENIED) {
                 LOG.d(TAG, "User *rejected* Bluetooth_Connect Access");
-                this.permissionCallback.error("Bluetooth Connect permission not granted.");
+                callback.error("Bluetooth Connect permission not granted.");
                 return;
             }
         }
@@ -1281,14 +1294,12 @@ public class BLECentralPlugin extends CordovaPlugin {
         switch(requestCode) {
             case REQUEST_ENABLE_BLUETOOTH:
                 LOG.d(TAG, "User granted Bluetooth Connect access for enable bluetooth");
-                enableBluetooth(permissionCallback);
-                this.permissionCallback = null;
+                enableBluetooth(callback);
                 break;
 
             case REQUEST_BLUETOOTH_SCAN:
                 LOG.d(TAG, "User granted Bluetooth Scan Access");
-                findLowEnergyDevices(permissionCallback, serviceUUIDs, scanSeconds, scanSettings);
-                this.permissionCallback = null;
+                findLowEnergyDevices(callback, serviceUUIDs, scanSeconds, scanSettings);
                 this.serviceUUIDs = null;
                 this.scanSeconds = -1;
                 this.scanSettings = null;
@@ -1296,30 +1307,32 @@ public class BLECentralPlugin extends CordovaPlugin {
 
             case REQUEST_BLUETOOTH_CONNECT:
                 LOG.d(TAG, "User granted Bluetooth Connect Access");
-                connect(permissionCallback, deviceMacAddress);
-                this.permissionCallback = null;
+                connect(callback, deviceMacAddress);
                 this.deviceMacAddress = null;
                 break;
 
             case REQUEST_BLUETOOTH_CONNECT_AUTO:
                 LOG.d(TAG, "User granted Bluetooth Auto Connect Access");
-                autoConnect(permissionCallback, deviceMacAddress);
-                this.permissionCallback = null;
+                autoConnect(callback, deviceMacAddress);
                 this.deviceMacAddress = null;
                 break;
 
             case REQUEST_GET_BONDED_DEVICES:
                 LOG.d(TAG, "User granted permissions for bonded devices");
-                getBondedDevices(permissionCallback);
-                this.permissionCallback = null;
+                getBondedDevices(callback);
                 break;
 
             case REQUEST_LIST_KNOWN_DEVICES:
                 LOG.d(TAG, "User granted permissions for list known devices");
-                listKnownDevices(permissionCallback);
-                this.permissionCallback = null;
+                listKnownDevices(callback);
                 break;
         }
+    }
+
+    private CallbackContext popPermissionsCallback() {
+        final CallbackContext callback = this.permissionCallback;
+        this.permissionCallback = null;
+        return callback;
     }
 
     private UUID uuidFromString(String uuid) {
