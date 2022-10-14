@@ -35,6 +35,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.IntentFilter;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Build;
 
 import android.provider.Settings;
@@ -135,6 +136,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     private UUID[] serviceUUIDs;
     private int scanSeconds;
     private ScanSettings scanSettings;
+    private final Handler stopScanHandler = new Handler(Looper.getMainLooper());
 
     // Bluetooth state notification
     CallbackContext stateCallback;
@@ -1148,16 +1150,11 @@ public class BLECentralPlugin extends CordovaPlugin {
                 filters.add(filter);
             }
         }
+        stopScanHandler.removeCallbacks(this::stopScan);
         bluetoothLeScanner.startScan(filters, scanSettings, leScanCallback);
 
         if (scanSeconds > 0) {
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    stopScan();
-                }
-            }, scanSeconds * 1000);
+            stopScanHandler.postDelayed(this::stopScan, scanSeconds * 1000);
         }
 
         PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
@@ -1166,6 +1163,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     }
 
     private void stopScan() {
+        stopScanHandler.removeCallbacks(this::stopScan);
         if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
             LOG.d(TAG, "Stopping Scan");
             try {
