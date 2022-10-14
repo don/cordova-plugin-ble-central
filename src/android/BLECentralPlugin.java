@@ -117,7 +117,6 @@ public class BLECentralPlugin extends CordovaPlugin {
     private static final int REQUEST_ENABLE_BLUETOOTH = 1;
 
     BluetoothAdapter bluetoothAdapter;
-    BluetoothLeScanner bluetoothLeScanner;
 
     // key is the MAC Address
     Map<String, Peripheral> peripherals = new LinkedHashMap<String, Peripheral>();
@@ -193,7 +192,6 @@ public class BLECentralPlugin extends CordovaPlugin {
             }
             BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
             bluetoothAdapter = bluetoothManager.getAdapter();
-            bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         }
 
         boolean validAction = true;
@@ -212,8 +210,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             findLowEnergyDevices(callbackContext, serviceUUIDs, -1);
 
         } else if (action.equals(STOP_SCAN)) {
-
-            bluetoothLeScanner.stopScan(leScanCallback);
+            stopScan();
             callbackContext.success();
 
         } else if (action.equals(LIST)) {
@@ -1142,7 +1139,7 @@ public class BLECentralPlugin extends CordovaPlugin {
         }
 
         discoverCallback = callbackContext;
-        bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+        final BluetoothLeScanner bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         List<ScanFilter> filters = new ArrayList<ScanFilter>();
         if (serviceUUIDs != null && serviceUUIDs.length > 0) {
             for (UUID uuid : serviceUUIDs) {
@@ -1158,8 +1155,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    LOG.d(TAG, "Stopping Scan");
-                    bluetoothLeScanner.stopScan(leScanCallback);
+                    stopScan();
                 }
             }, scanSeconds * 1000);
         }
@@ -1167,6 +1163,19 @@ public class BLECentralPlugin extends CordovaPlugin {
         PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
         result.setKeepCallback(true);
         callbackContext.sendPluginResult(result);
+    }
+
+    private void stopScan() {
+        if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
+            LOG.d(TAG, "Stopping Scan");
+            try {
+                final BluetoothLeScanner bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+                if (bluetoothLeScanner != null) 
+                    bluetoothLeScanner.stopScan(leScanCallback);
+            } catch (Exception e) {
+                LOG.e(TAG, "Exception stopping scan", e);
+            }
+        }
     }
 
     private boolean locationServicesEnabled() {
