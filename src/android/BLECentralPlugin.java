@@ -344,8 +344,19 @@ public class BLECentralPlugin extends CordovaPlugin {
         } else if (action.equals(ENABLE)) {
 
             enableBluetoothCallback = callbackContext;
-            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            cordova.startActivityForResult(this, intent, REQUEST_ENABLE_BLUETOOTH);
+
+          //check android12+ - perms should be asked in a bulk
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                String[] ANDROID_12_BLE_PERMISSIONS = new String[]{
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_CONNECT
+                };
+                cordova.requestPermissions(this, REQUEST_ENABLE_BLUETOOTH, ANDROID_12_BLE_PERMISSIONS);
+            }
+            else{
+                Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                cordova.startActivityForResult(this, intent, REQUEST_ENABLE_BLUETOOTH);
+            }
 
         } else if (action.equals(START_STATE_NOTIFICATIONS)) {
 
@@ -1227,6 +1238,12 @@ public class BLECentralPlugin extends CordovaPlugin {
         }
 
         switch(requestCode) {
+            case REQUEST_ENABLE_BLUETOOTH:
+                LOG.d(TAG, "User enabled Bluetooth");
+                if (enableBluetoothCallback != null) {
+                    enableBluetoothCallback.success();
+                }
+                break;
             case REQUEST_BLUETOOTH_SCAN:
                 LOG.d(TAG, "User granted Bluetooth Scan Access");
                 findLowEnergyDevices(permissionCallback, serviceUUIDs, scanSeconds, scanSettings);
