@@ -105,6 +105,10 @@ public class Peripheral extends BluetoothGattCallback {
         currentActivity = activity;
         autoconnect = auto;
         connectCallback = callbackContext;
+        if (refreshCallback != null) {
+            refreshCallback.error(this.asJSONObject("refreshDeviceCache aborted due to new connect call"));
+            refreshCallback = null;
+        }
 
         gattConnect();
 
