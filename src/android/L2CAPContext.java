@@ -110,9 +110,10 @@ class L2CAPContext {
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void readL2CapData() {
         try {
-            InputStream inputStream = socket.getInputStream();
-            byte[] buffer = new byte[socket.getMaxReceivePacketSize()];
-            while (socket.isConnected()) {
+            final BluetoothSocket lSocket = this.socket;
+            InputStream inputStream = lSocket.getInputStream();
+            byte[] buffer = new byte[lSocket.getMaxReceivePacketSize()];
+            while (lSocket.isConnected()) {
                 int readCount = inputStream.read(buffer);
                 CallbackContext receiver;
                 synchronized (updateLock) {
