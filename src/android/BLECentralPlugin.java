@@ -343,20 +343,7 @@ public class BLECentralPlugin extends CordovaPlugin {
 
         } else if (action.equals(ENABLE)) {
 
-            enableBluetoothCallback = callbackContext;
-
-          //check android12+ - perms should be asked in a bulk
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                String[] ANDROID_12_BLE_PERMISSIONS = new String[]{
-                Manifest.permission.BLUETOOTH_SCAN,
-                Manifest.permission.BLUETOOTH_CONNECT
-                };
-                cordova.requestPermissions(this, REQUEST_ENABLE_BLUETOOTH, ANDROID_12_BLE_PERMISSIONS);
-            }
-            else{
-                Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                cordova.startActivityForResult(this, intent, REQUEST_ENABLE_BLUETOOTH);
-            }
+            enableBluetooth(callbackContext);
 
         } else if (action.equals(START_STATE_NOTIFICATIONS)) {
 
@@ -550,6 +537,22 @@ public class BLECentralPlugin extends CordovaPlugin {
         }
 
         return validAction;
+    }
+
+    private void enableBluetooth(CallbackContext callbackContext) {
+        if (COMPILE_SDK_VERSION >= 31 && Build.VERSION.SDK_INT >= 31) {
+            // https://developer.android.com/reference/android/bluetooth/BluetoothAdapter#ACTION_REQUEST_ENABLE
+            // Android 12+ requires BLUETOOTH_CONNECT in order to trigger an enable request
+            if (!PermissionHelper.hasPermission(this, BLUETOOTH_CONNECT)) {
+                permissionCallback = callbackContext;
+                PermissionHelper.requestPermission(this, REQUEST_ENABLE_BLUETOOTH, BLUETOOTH_CONNECT);
+                return;
+            }
+        }
+
+        enableBluetoothCallback = callbackContext;
+        Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        cordova.startActivityForResult(this, intent, REQUEST_ENABLE_BLUETOOTH);
     }
 
     private void getBondedDevices(CallbackContext callbackContext) {
@@ -1239,11 +1242,11 @@ public class BLECentralPlugin extends CordovaPlugin {
 
         switch(requestCode) {
             case REQUEST_ENABLE_BLUETOOTH:
-                LOG.d(TAG, "User enabled Bluetooth");
-                if (enableBluetoothCallback != null) {
-                    enableBluetoothCallback.success();
-                }
+                LOG.d(TAG, "User granted Bluetooth Connect access for enable bluetooth");
+                enableBluetooth(permissionCallback);
+                this.permissionCallback = null;
                 break;
+
             case REQUEST_BLUETOOTH_SCAN:
                 LOG.d(TAG, "User granted Bluetooth Scan Access");
                 findLowEnergyDevices(permissionCallback, serviceUUIDs, scanSeconds, scanSettings);
