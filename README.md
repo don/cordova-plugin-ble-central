@@ -1322,6 +1322,21 @@ Run the app on your phone
 
     cordova run android --device
 
+# Release process
+
+## Pre-release
+
+1.  `npm version prepatch --preid=alpha`
+2.  Align `plugin.xml` version with npm version
+3.  `npm publish --tag alpha --registry=https://registry.npmjs.org`
+
+## Release
+
+1.  `npm version patch`
+2.  Align `plugin.xml` version with npm version
+3.  Update release notes
+4.  `npm publish --registry=https://registry.npmjs.org`
+
 # Nordic DFU
 
 If you need Nordic DFU capability, Tomáš Bedřich has a [fork](https://github.com/fxe-gear/cordova-plugin-ble-central) of this plugin that adds an `updateFirmware()` method that allows users to upgrade nRF5x based chips over the air. https://github.com/fxe-gear/cordova-plugin-ble-central
