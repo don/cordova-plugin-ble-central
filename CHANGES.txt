@@ -1,4 +1,5 @@
 = 1.6.0 =
+Android: Fix enable bluetooth permissions on Android 12+ #940 #941 Thanks samvimes01
 Android: Clear up time-based stopScan when new scan is started #902
 Android: Report if Bluetooth is disabled when scanning/connecting #826
 Android: Restore refreshDeviceCache to 1.3.X functionality (related to #936)
