@@ -5,5 +5,8 @@
   "json.format.enable": false,
   "javascript.format.enable": false,
   "typescript.format.enable": false,
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[java]": {
+    "editor.defaultFormatter": "redhat.java"
+  }
 }

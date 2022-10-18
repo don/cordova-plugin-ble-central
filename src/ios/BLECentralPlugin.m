@@ -658,8 +658,20 @@
     [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
     [self cleanupOperationCallbacks:peripheral withResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral disconnected"]];
 
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[peripheral asDictionary]];
+
+    // add error info
+    [dict setObject:@"Connection Failed" forKey:@"errorMessage"];
+    if (error) {
+        [dict setObject:[error localizedDescription] forKey:@"errorDescription"];
+    }
+    // remove extra junk
+    [dict removeObjectForKey:@"rssi"];
+    [dict removeObjectForKey:@"advertising"];
+    [dict removeObjectForKey:@"services"];
+
     CDVPluginResult *pluginResult = nil;
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[peripheral asDictionary]];
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:dict];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
 }
 
