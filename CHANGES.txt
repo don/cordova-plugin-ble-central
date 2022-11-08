@@ -1,3 +1,6 @@
+= 1.6.1 =
+No changes - republish only
+
 = 1.6.0 =
 Android: Fix enable bluetooth permissions on Android 12+ #940 #941 Thanks samvimes01
 Android: Clear up time-based stopScan when new scan is started #902
