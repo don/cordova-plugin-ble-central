@@ -11,6 +11,9 @@
       "wp8"
     ]
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/don/cordova-plugin-ble-central.git"
