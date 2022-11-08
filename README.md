@@ -11,6 +11,7 @@ The plugin provides a simple [JavaScript API](#api) for iOS and Android.
 -   Read the value of a characteristic
 -   Write new value to a characteristic
 -   Get notified when characteristic's value changes
+-   Transfer data via L2CAP channels
 
 Advertising information is returned when scanning for peripherals.
 Service, characteristic, and property info is returned when connecting to a peripheral.
@@ -60,6 +61,21 @@ If background scanning and operation is required, the [iOS restore state](https:
 For more information about background operation, see [Background Scanning and Notifications on iOS](#background-scanning-and-notifications-on-ios).
 
 ### Android
+
+If you are having Android permissions conflicts with other plugins, try using the `slim` variant of the plugin instead with `cordova plugin add cordova-plugin-ble-central@slim`. This variant excludes all Android permissions, leaving it to the developer to ensure the right entries are added manually to the `AndroidManifest.xml` (see below for an example).
+
+To include the default set of permissions the plugin installs on Android SDK v31+, add the following snippet in your `config.xml` file, in the `<platform name="android">` section:
+
+```
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+        <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="28" />
+        <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
+        <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+        <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+        <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+        <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    </config-file>
+```
 
 If your app targets Android 10 (API level 29) or higher, you may need the ACCESS_BACKGROUND_LOCATION permission on Android 10 & Android 11 in order for scanning to function when your app is not visible. To enable this permission and feature, set `ACCESS_BACKGROUND_LOCATION ` to true when installing:
 
@@ -1336,6 +1352,12 @@ Run the app on your phone
 2.  Align `plugin.xml` version with npm version
 3.  Update release notes
 4.  `npm publish --registry=https://registry.npmjs.org`
+
+## Release (lean)
+
+1.  `git merge master`
+2.  Align `package.json` and `plugin.xml` versions
+3.  `npm publish --tag lean --registry=https://registry.npmjs.org`
 
 # Nordic DFU
 
