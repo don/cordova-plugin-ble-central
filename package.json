@@ -7,8 +7,7 @@
     "platforms": [
       "ios",
       "android",
-      "browser",
-      "wp8"
+      "browser"
     ]
   },
   "publishConfig": {

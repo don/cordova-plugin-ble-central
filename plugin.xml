@@ -101,19 +101,4 @@
             <merges target="ble" />
         </js-module>
     </platform>
-
-    <platform name="wp8">
-        <config-file target="config.xml" parent="/*">
-            <feature name="BLE">
-                <param name="wp-package" value="BLECentralPlugin"/>
-            </feature>
-        </config-file>
-
-         <config-file target="Properties/WMAppManifest.xml" parent="/Deployment/App/Capabilities">
-             <Capability Name="ID_CAP_PROXIMITY" />
-         </config-file>
-
-         <source-file src="src/wp/BLECentralPlugin.cs" />
-
-    </platform>
 </plugin>
