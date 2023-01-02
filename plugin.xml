@@ -93,9 +93,7 @@
             <service android:name="com.megster.cordova.ble.central.DfuService" />
         </config-file>
 
-        <framework src="src/android/cordova-plugin-ble-central.gradle" custom="true" type="gradleReference"/>
-
-        <framework src="com.github.NordicSemiconductor:Android-DFU-Library:1.11.0"/>
+        <framework src="no.nordicsemi.android:dfu:2.3.0"/>
 
         <source-file src="src/android/BLECentralPlugin.java"
             target-dir="src/com/megster/cordova/ble/central"/>
