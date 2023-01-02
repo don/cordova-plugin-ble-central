@@ -46,7 +46,7 @@
                 <source url="https://cdn.cocoapods.org/"/>
             </config>
             <pods use-frameworks="true">
-                <pod name="iOSDFULibrary" spec="4.11.1"/>
+                <pod name="iOSDFULibrary" spec="4.13.0"/>
             </pods>
         </podspec>
 

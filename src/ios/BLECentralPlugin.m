@@ -524,10 +524,21 @@
         dfuCallbackId = [command.callbackId copy];
 
         // create firmware object from URL
+
+        // Doesn't build as-is :
+        // Incomprehensible error on do/catch, supposed to be supported from Swift 2+ :
+        // /Users/vagrant/git/platforms/ios/Boks preprod/Plugins/cordova-plugin-ble-central/BLECentralPlugin/BLECentralPlugin.m:556:11: error: expected 'while' in do/while loop
+        //         } catch {
+        //           ^
+        // /Users/vagrant/git/platforms/ios/Boks preprod/Plugins/cordova-plugin-ble-central/BLECentralPlugin/BLECentralPlugin.m:527:9: note: to match this 'do'
+        //         do {
+        //         ^
+
+        do {
         DFUFirmware *firmware = [[DFUFirmware alloc] initWithUrlToZipFile:url];
 
         // fail in case of invalid firmware
-        if (firmware == nil || !firmware.valid) {
+        if (!firmware.valid) {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid firmware"];
             [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
             return;
@@ -551,6 +562,12 @@
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
         [pluginResult setKeepCallbackAsBool:TRUE];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+
+        } catch {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid firmware"];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            return;
+        }
     }];
 }
 
