@@ -836,6 +836,14 @@
 
 - (void)addAndSaveNodeToMeshNetworkWithDeviceModel:(SigNodeModel *)model{
     @synchronized(self) {
+        NSArray *nodes = [NSArray arrayWithArray:_nodes];
+        for (int i=0; i<nodes.count; i++) {
+            SigNodeModel *oldmodel = nodes[i];
+            if ([oldmodel.macAddress isEqualToString:model.macAddress]) {
+                [_nodes removeObjectAtIndex:i];
+                break;
+            }
+        }
         if ([_nodes containsObject:model]) {
             NSInteger index = [_nodes indexOfObject:model];
             _nodes[index] = model;

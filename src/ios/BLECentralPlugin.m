@@ -280,7 +280,7 @@
             CBCharacteristic *characteristic = [context characteristic];
 
             int count = 0;
-            int dataLen = (int) message.length;
+            int dataLen = (int) sizeof(message);
             if(dataLen>20){
                 do{
                     [peripheral writeValue:[message subdataWithRange:NSMakeRange(count, dataLen-count<20?dataLen-count:20)] forCharacteristic:characteristic type:CBCharacteristicWriteWithoutResponse];
@@ -361,6 +361,258 @@
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:bluetoothState];
     }
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)mesh_initialize:(CDVInvokedUrlCommand*)command {
+    NSLog(@"mesh_initialize");
+    CDVPluginResult *pluginResult = nil;
+    [SDKLibCommand startMeshSDK];
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)mesh_provScanDevices:(CDVInvokedUrlCommand*)command {
+    NSLog(@"mesh_provScanDevices");
+    NSMutableArray<NSDictionary *> *connected = [NSMutableArray new];
+    [SDKLibCommand scanUnprovisionedDevicesWithResult:^(CBPeripheral * _Nonnull peripheral, NSDictionary<NSString *,id> * _Nonnull advertisementData, NSNumber * _Nonnull RSSI, BOOL unprovisioned){
+        if (unprovisioned) {
+            //自动添加新增逻辑：判断本地是否存在该UUID的OOB数据，存在则缓存到self.staticOOBData中。
+            SigScanRspModel *model = [SigMeshLib.share.dataSource getScanRspModelWithUUID:peripheral.identifier.UUIDString];
+            //SDK不支持CertificateBased添加时，自动扫描添加不会添加支持CertificateBased的设备。
+#if SUPPORTCARTIFICATEBASED
+#else
+            if (model.advOobInformation.supportForCertificateBasedProvisioning) {
+               
+            }
+#endif
+           // [self->peripherals addObject:peripheral];
+//            NSObject *device = [[NSObject alloc]init];
+//            device['nodeInfo'].macAddress = '';
+//            device['nodeInfo'].deviceUUID = '';
+            NSDictionary *device = [NSDictionary dictionaryWithObjectsAndKeys:
+            model.macAddress, @"macAddress",
+            model.uuid, @"deviceUUID",
+            nil];
+            NSDictionary *devicefinal = [NSDictionary dictionaryWithObjectsAndKeys:
+            device, @"nodeInfo",
+            nil];
+            [connected addObject:devicefinal];
+            NSLog(@"mesh_provScanDevices",connected);
+            NSDictionary *devices = [NSDictionary dictionaryWithObjectsAndKeys:
+            connected, @"devices",
+            nil];
+                CDVPluginResult *pluginResult = nil;
+                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:devices];
+            [pluginResult setKeepCallbackAsBool:true];
+//                NSLog(@"Connected peripherals with services %@ %@", serviceUUIDStrings, connected);
+//                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+//            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:device];
+              
+               [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+//            weakSelf.addStatus = SigAddStatusConnectFirst;
+//            [SigBluetooth.share stopScan];
+//            SigOOBModel *oobModel = [SigMeshLib.share.dataSource getSigOOBModelWithUUID:model.advUuid];
+//            if (oobModel && oobModel.OOBString && oobModel.OOBString.length == 32) {
+//                weakSelf.staticOOBData = [LibTools nsstringToHex:oobModel.OOBString];
+//            }
+//            weakSelf.isCertificateBasedProvision = model.advOobInformation.supportForCertificateBasedProvisioning;
+//            [weakSelf startAddPeripheral:peripheral];
+        }
+    }];
+    
+//    NSArray<CBPeripheral *> *connectedPeripherals = [manager retrieveConnectedPeripheralsWithServices:serviceUUIDs];
+//    NSMutableArray<NSDictionary *> *connected = [NSMutableArray new];
+//
+//    for (CBPeripheral *peripheral in connectedPeripherals) {
+//        [peripherals addObject:peripheral];
+//        [connected addObject:[peripheral asDictionary]];
+//    }
+    
+}
+
+- (void)mesh_provAddDevice:(CDVInvokedUrlCommand*)command {
+    NSLog(@"mesh_provAddDevice");
+    NSString *uuid = [command argumentAtIndex:0];
+    NSData *key = [SigDataSource.share curNetKey];
+    if (SigDataSource.share.curNetkeyModel.phase == 1) {
+        if (SigDataSource.share.curNetkeyModel.oldKey) {
+            key = [LibTools nsstringToHex:SigDataSource.share.curNetkeyModel.oldKey];
+        }
+    }
+    UInt16 provisionAddress = [SigDataSource.share provisionAddress];
+    if (provisionAddress == 0) {
+        TeLogDebug(@"warning: address has run out.");
+        //NSLog(@"%@", error);
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:(@"warning: address has run out.")];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+    //__weak typeof(self) weakSelf = self;
+    NSNumber *type = [NSNumber numberWithInteger:KeyBindType_Normal];
+    [SDKLibCommand stopMeshConnectWithComplete:^(BOOL successful) {
+        TeLogVerbose(@"successful=%d",successful);
+        if (successful) {
+            TeLogInfo(@"stop mesh success.");
+            __block UInt16 currentProvisionAddress = provisionAddress;
+            __block NSString *currentAddUUID = nil;
+            [SDKLibCommand scanUnprovisionedDevicesWithResult:^(CBPeripheral * _Nonnull curperipheral, NSDictionary<NSString *,id> * _Nonnull advertisementData, NSNumber * _Nonnull RSSI, BOOL unprovisioned){
+                if (unprovisioned) {
+                    if ([curperipheral.identifier.UUIDString isEqualToString:uuid]) {
+                        NSLog(@"mesh_provAddDevice");
+                        [SDKLibCommand startAddDeviceWithNextAddress:provisionAddress networkKey:key netkeyIndex:SigDataSource.share.curNetkeyModel.index appkeyModel:SigDataSource.share.curAppkeyModel
+                            //unicastAddress:0 uuid:uuid
+                            peripheral:curperipheral provisionType:ProvisionType_NoOOB
+                            staticOOBData:nil
+                            keyBindType:type.integerValue productID:0 cpsData:nil //isAutoAddNextDevice:NO
+                            provisionSuccess:^(NSString * _Nonnull identify, UInt16 address) {
+                            if (identify && address != 0) {
+                                currentAddUUID = identify;
+                                currentProvisionAddress = address;
+//                                [weakSelf updateDeviceProvisionSuccess:identify address:address];
+                                TeLogInfo(@"addDevice_provision success : %@->0X%X",identify,address);
+                               
+                            }
+                        } provisionFail:^(NSError * _Nonnull error) {
+//                            [weakSelf updateDeviceProvisionFail:SigBearer.share.getCurrentPeripheral.identifier.UUIDString];
+                            TeLogInfo(@"addDevice provision fail error:%@",error);
+                            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                                              messageAsString:(@"warning: device provision failed.")];
+                            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                        } keyBindSuccess:^(NSString * _Nonnull identify, UInt16 address) {
+                            if (identify && address != 0) {
+                                currentProvisionAddress = address;
+                                SigNodeModel *node = [SigDataSource.share getNodeWithAddress:address];
+                                if (node && node.isRemote) {
+                                    [node addDefaultPublicAddressToRemote];
+                                    [SigDataSource.share saveLocationData];
+                                }
+//                                [weakSelf updateDeviceKeyBind:currentAddUUID address:currentProvisionAddress isSuccess:YES];
+                                TeLogInfo(@"addDevice_provision success : %@->0X%X",identify,address);
+                                CDVPluginResult *pluginResult = nil;
+                                NSData *data = [SigDataSource.share getLocationMeshData];
+                                NSDictionary *meshDict = [LibTools getDictionaryWithJSONData:data];
+//                                [self setDictionaryToDataSource:meshDict];
+                                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:meshDict];
+                //                NSLog(@"Connected peripherals with services %@ %@", serviceUUIDStrings, connected);
+                //                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                //            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:device];
+                              
+                               [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                            }
+                        } keyBindFail:^(NSError * _Nonnull error) {
+//                            [weakSelf updateDeviceKeyBind:currentAddUUID address:currentProvisionAddress isSuccess:NO];
+                            TeLogInfo(@"addDevice keybind fail error:%@",error);
+                            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                                              messageAsString:(@"warning: device provision failed.")];
+                            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                        }
+//                                                              finish:^{
+//                            TeLogInfo(@"addDevice finish.");
+//                            [SDKLibCommand startMeshConnectWithComplete:nil];
+////                            dispatch_async(dispatch_get_main_queue(), ^{
+////                                [weakSelf addDeviceFinish];
+////                            });
+//                        }
+                        ];
+                        
+                    }
+                }
+            }];
+                      
+        }
+    }];
+}
+
+- (void)mesh_getMeshInfo:(CDVInvokedUrlCommand*)command {
+    NSLog(@"mesh_getMeshInfo");
+    CDVPluginResult *pluginResult = nil;
+    NSData *data = [SigDataSource.share getLocationMeshData];
+    NSDictionary *meshDict = [LibTools getDictionaryWithJSONData:data];
+    NSError * err;
+    NSData * jsonData = [NSJSONSerialization dataWithJSONObject:meshDict options:0 error:&err];
+    NSString * myString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+//                                [self setDictionaryToDataSource:meshDict];
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:myString];
+  
+   [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)mesh_importMeshInfo:(CDVInvokedUrlCommand*)command {
+    NSLog(@"mesh_importMeshInfo");
+    NSString *meshinfo = [command argumentAtIndex:0];
+    NSDictionary *dict = [LibTools getDictionaryWithJsonString:meshinfo];
+    BOOL result = dict != nil;
+    if (result) {
+       // TeLogDebug(@"%@",tipString);
+        NSString *oldMeshUUID = SigDataSource.share.meshUUID;
+        [SigDataSource.share setDictionaryToDataSource:dict];
+        BOOL needChangeProvisionerAddress = NO;//修改手机本地节点的地址
+        BOOL reStartSequenceNumber = NO;//修改手机本地节点使用的发包序列号sno
+        BOOL hasPhoneUUID = NO;
+        NSString *curPhoneUUID = [SigDataSource.share getCurrentProvisionerUUID];
+        NSArray *provisioners = [NSArray arrayWithArray:SigDataSource.share.provisioners];
+        for (SigProvisionerModel *provision in provisioners) {
+            if ([provision.UUID isEqualToString:curPhoneUUID]) {
+                hasPhoneUUID = YES;
+                break;
+            }
+        }
+        
+        [SigDataSource.share checkExistLocationProvisioner];
+        if (hasPhoneUUID) {
+            // v3.1.0, 存在
+            BOOL isSameMesh = [SigDataSource.share.meshUUID isEqualToString:oldMeshUUID];
+            if (isSameMesh) {
+                // v3.1.0, 存在，且为相同mesh网络，覆盖JSON，且使用本地的sno和ProvisionerAddress
+                needChangeProvisionerAddress = NO;
+                reStartSequenceNumber = NO;
+            } else {
+                // v3.1.0, 存在，但为不同mesh网络，获取provision，修改为新的ProvisionerAddress，sno从0开始
+                needChangeProvisionerAddress = YES;
+                reStartSequenceNumber = YES;
+            }
+        } else {
+            // v3.1.0, 不存在，覆盖并新建provisioner
+            needChangeProvisionerAddress = NO;
+            reStartSequenceNumber = YES;
+        }
+        //重新计算sno
+        if (reStartSequenceNumber) {
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:kCurrentMeshProvisionAddress_key];
+            [SigDataSource.share setLocationSno:0];
+        }
+        UInt16 maxAddr = SigDataSource.share.curProvisionerModel.allocatedUnicastRange.firstObject.lowIntAddress;
+        NSArray *nodes = [NSArray arrayWithArray:SigDataSource.share.nodes];
+        for (SigNodeModel *node in nodes) {
+            NSInteger curMax = node.address + node.elements.count - 1;
+            if (curMax > maxAddr) {
+                maxAddr = curMax;
+            }
+        }
+        if (needChangeProvisionerAddress) {
+            //修改手机的本地节点的地址
+            UInt16 newProvisionAddress = maxAddr + 1;
+            [SigDataSource.share changeLocationProvisionerNodeAddressToAddress:newProvisionAddress];
+            TeLogDebug(@"已经使用了address=0x%x作为本地地址",newProvisionAddress);
+            //修改已经使用的设备地址
+            [SigDataSource.share saveLocationProvisionAddress:newProvisionAddress];
+        } else {
+            //修改已经使用的设备地址
+            [SigDataSource.share saveLocationProvisionAddress:maxAddr];
+        }
+        TeLogDebug(@"下一次添加设备可以使用的地址address=0x%x",SigDataSource.share.provisionAddress);
+        
+    //    SigDataSource.share.curNetkeyModel = nil;
+    //    SigDataSource.share.curAppkeyModel = nil;
+        [SigDataSource.share saveLocationData];
+        [SigDataSource.share.scanList removeAllObjects];
+    } else {
+        NSString *tipString = [NSString stringWithFormat:@"import %@ fail!"];
+        TeLogDebug(@"%@",tipString);
+        return;
+    }
+
 }
 
 - (void)scan:(CDVInvokedUrlCommand*)command {

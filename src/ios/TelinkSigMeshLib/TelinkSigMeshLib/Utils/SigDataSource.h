@@ -189,6 +189,7 @@
 - (void)delectSceneModelWithModel:(SigSceneModel *)model;
 
 - (NSData *)getIvIndexData;
+- (NSData *)getLocationMeshData;
 - (void)updateIvIndexString:(NSString *)ivIndexString;
 
 - (int)getCurrentProvisionerIntSequenceNumber;

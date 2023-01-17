@@ -43,6 +43,12 @@
 @property (strong, nonatomic) NSMutableSet *peripherals;
 @property (strong, nonatomic) CBCentralManager *manager;
 
+
+- (void)mesh_initialize:(CDVInvokedUrlCommand *)command;
+- (void)mesh_provScanDevices: (CDVInvokedUrlCommand *)command;
+- (void)mesh_provAddDevice: (CDVInvokedUrlCommand *)command;
+- (void)mesh_getMeshInfo: (CDVInvokedUrlCommand *)command;
+- (void)mesh_importMeshInfo: (CDVInvokedUrlCommand *)command;
 - (void)scan:(CDVInvokedUrlCommand *)command;
 - (void)startScan:(CDVInvokedUrlCommand *)command;
 - (void)startScanWithOptions:(CDVInvokedUrlCommand *)command;
