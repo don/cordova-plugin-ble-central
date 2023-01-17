@@ -39,8 +39,18 @@
         <header-file src="src/ios/BLEStreamContext.h" target-dir="BLECentralPlugin" />
         <source-file src="src/ios/BLEStreamContext.m" target-dir="BLECentralPlugin" />
 
+        <!-- these hooks simply copy over deps/CoolProject into the app's platforms/ios dir without integrating the files into the app's XCode project -->
+<hook type="after_plugin_install" src="scripts/ios-install.sh" />
+<hook type="before_plugin_uninstall" src="scripts/ios-uninstall.sh" />
+<!-- and this links in the copied XCode project into the app's XCode project -->
+<framework src="TelinkSigMeshLib/TelinkSigMeshLib.xcodeproj" type="projectReference"/>
+
+        <!-- <header-file src="src/ios/TelinkSigMeshLib/TelinkSigMeshLib/TelinkSigMeshLib.h" target-dir="TelinkSigMeshLib" />
+        <source-file src="src/ios/TelinkSigMeshLib/TelinkSigMeshLib.xcodeproj" target-dir="TelinkSigMeshLib" /> -->
+
         <!-- frameworks -->
         <framework src="CoreBluetooth.framework" />
+        <!-- <framework src="src/ios/TelinkSigMeshLib" /> -->
 
         <!-- iOS Permissions -->
         <preference name="BLUETOOTH_USAGE_DESCRIPTION" default=" " />
