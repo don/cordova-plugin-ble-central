@@ -43,6 +43,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.megster.cordova.ble.central.model.AppSettings;
+import com.megster.cordova.ble.central.model.GroupInfo;
 import com.megster.cordova.ble.central.model.MeshInfo;
 import com.megster.cordova.ble.central.model.MeshNetKey;
 import com.megster.cordova.ble.central.model.NetworkingDevice;
@@ -52,19 +53,35 @@ import com.megster.cordova.ble.central.model.PrivateDevice;
 import com.megster.cordova.ble.central.model.json.MeshStorage;
 import com.megster.cordova.ble.central.model.json.MeshStorageService;
 import com.telink.ble.mesh.core.access.BindingBearer;
+import com.telink.ble.mesh.core.message.MeshMessage;
+import com.telink.ble.mesh.core.message.MeshSigModel;
+import com.telink.ble.mesh.core.message.NotificationMessage;
+import com.telink.ble.mesh.core.message.config.ConfigStatus;
+import com.telink.ble.mesh.core.message.config.ModelPublicationSetMessage;
+import com.telink.ble.mesh.core.message.config.ModelPublicationStatusMessage;
+import com.telink.ble.mesh.core.message.config.ModelSubscriptionSetMessage;
+import com.telink.ble.mesh.core.message.config.ModelSubscriptionStatusMessage;
 import com.telink.ble.mesh.core.message.config.NodeResetMessage;
 import com.telink.ble.mesh.core.message.config.NodeResetStatusMessage;
+import com.telink.ble.mesh.core.message.generic.OnOffGetMessage;
 import com.telink.ble.mesh.core.message.generic.OnOffSetMessage;
 import com.telink.ble.mesh.entity.BindingDevice;
 import com.telink.ble.mesh.entity.CompositionData;
+import com.telink.ble.mesh.entity.ConnectionFilter;
+import com.telink.ble.mesh.entity.ModelPublication;
 import com.telink.ble.mesh.entity.ProvisioningDevice;
 import com.telink.ble.mesh.foundation.Event;
 import com.telink.ble.mesh.foundation.EventListener;
+import com.telink.ble.mesh.foundation.MeshConfiguration;
 import com.telink.ble.mesh.foundation.MeshService;
+import com.telink.ble.mesh.foundation.event.AutoConnectEvent;
 import com.telink.ble.mesh.foundation.event.BindingEvent;
 import com.telink.ble.mesh.foundation.event.MeshEvent;
 import com.telink.ble.mesh.foundation.event.ProvisioningEvent;
+import com.telink.ble.mesh.foundation.event.StatusNotificationEvent;
+import com.telink.ble.mesh.foundation.parameter.AutoConnectParameters;
 import com.telink.ble.mesh.foundation.parameter.BindingParameters;
+import com.telink.ble.mesh.foundation.parameter.GattConnectionParameters;
 import com.telink.ble.mesh.util.MeshLogger;
 
 import org.apache.cordova.CallbackContext;
@@ -83,6 +100,8 @@ import java.util.*;
 
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_DUAL;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_LE;
+
+import androidx.annotation.RequiresApi;
 
 public class BLECentralPlugin extends CordovaPlugin implements EventListener<String> {
     // permissions
@@ -155,6 +174,7 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
 
     // scan options
     boolean reportDuplicates = false;
+    private boolean isPubSetting = false;
 
     // Android 23 requires new permissions for BluetoothLeScanner.startScan()
     private static final String ACCESS_COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
@@ -189,6 +209,8 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
     DeviceProvisioning dp;
     private Gson mGson;
 
+    private Handler mHandler = new Handler();
+
 
     CallbackContext locationStateCallback;
     BroadcastReceiver locationStateReceiver;
@@ -219,6 +241,7 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
         LOG.d(TAG, "action = %s", action);
@@ -1374,19 +1397,33 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
     }
 
     public void mesh_initialize(CordovaArgs args, CallbackContext callbackContext) {
-        Log.d(TAG, "mesh_initialize: ");
-        if (!meshSdkInitialized) {
-            mGson = new GsonBuilder().setPrettyPrinting().create();
-            meshSdkInitialized = true;
-            meshHandler = new TelinkBleMeshHandler();
-            meshHandler.initialize(cordova.getActivity().getApplication());
-            meshHandler.addEventListener(BindingEvent.EVENT_TYPE_BIND_SUCCESS, this);
-            meshHandler.addEventListener(BindingEvent.EVENT_TYPE_BIND_FAIL, this);
-            meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_SUCCESS, this);
-            meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_FAIL, this);
-            meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_BEGIN, this);
+        try {
+            Log.d(TAG, "mesh_initialize: ");
+            Boolean force = args.getBoolean(0);
+            if (!meshSdkInitialized || force) {
+                mGson = new GsonBuilder().setPrettyPrinting().create();
+                meshSdkInitialized = true;
+                meshHandler = new TelinkBleMeshHandler();
+                meshHandler.initialize(cordova.getActivity().getApplication());
+                meshHandler.addEventListener(BindingEvent.EVENT_TYPE_BIND_SUCCESS, this);
+                meshHandler.addEventListener(BindingEvent.EVENT_TYPE_BIND_FAIL, this);
+                meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_SUCCESS, this);
+                meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_FAIL, this);
+                meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_BEGIN, this);
+
+                meshHandler.addEventListener(ModelSubscriptionStatusMessage.class.getName(), this);
+
+                MeshService.getInstance().init(cordova.getContext(), meshHandler.getInstance());
+                MeshConfiguration meshConfiguration = meshHandler.getMeshInfo().convertToConfiguration();
+                MeshService.getInstance().setupMeshNetwork(meshConfiguration);
+
+                this.autoConnect();
+
+            }
+            Util.sendPluginResult(callbackContext, true);
+        } catch (Exception e) {
+            Util.sendPluginResult(callbackContext, e.getMessage());
         }
-        Util.sendPluginResult(callbackContext, true);
     }
 
     CallbackContext meshStartProvisionCallbackContext;
@@ -1415,6 +1452,7 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
                 return;
             }
             dp.startProvision(pvDevice);
+            pvDevice.state = NetworkingState.PROVISIONING;
             meshStartProvisionCallbackContext = callbackContext;
         } catch (Exception e) {
             Util.sendPluginResult(callbackContext, e.getMessage());
@@ -1490,6 +1528,117 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
         }
     }
 
+    public void mesh_sendOnOffCommand(CordovaArgs args, CallbackContext callbackContext) throws Exception {
+        try {
+            int meshAddress = args.getInt(0);
+            int appKeyIndex = args.getInt(1);
+            int OnOff = args.getInt(2);
+            appKeyIndex = meshHandler.getMeshInfo().getDefaultAppKeyIndex();
+            OnOffSetMessage offSetMessage = OnOffSetMessage.getSimple(meshAddress, appKeyIndex, OnOff == 1 ? OnOffSetMessage.ON : OnOffSetMessage.OFF, true, 0);
+//            offSetMessage.setComplete(true);
+            MeshService.getInstance().sendMeshMessage(offSetMessage);
+        } catch (Exception e) {
+            Util.sendPluginResult(callbackContext, e.getMessage());
+        }
+    }
+
+
+    CallbackContext addDeviceToGroupCallback;
+    List<Integer> addDeviceToGroupMeta;
+    public void mesh_addDeviceToGroup(CordovaArgs args, CallbackContext callbackContext) throws Exception {
+        try {
+            int meshAddress = args.getInt(0);
+            int opGroupAdr = args.getInt(1);
+            int addOrRemove = args.getInt(2);
+
+            int modelIndex = args.getInt(3);
+
+            addDeviceToGroupCallback = null;
+            MeshSigModel[] models = MeshSigModel.getDefaultSubList();
+            NodeInfo deviceInfo = meshHandler.getMeshInfo().getDeviceByMeshAddress(meshAddress);
+
+            if (deviceInfo != null && deviceInfo.compositionData.pid == AppSettings.PID_REMOTE) {
+                // if direct connected device is remote-control, disconnect
+                MeshService.getInstance().idle(true);
+            }
+
+            final int eleAdr = deviceInfo.getTargetEleAdr(models[modelIndex].modelId);
+            MeshMessage groupingMessage = ModelSubscriptionSetMessage.getSimple(meshAddress, addOrRemove, eleAdr, opGroupAdr, models[modelIndex].modelId, true);
+
+            if (!MeshService.getInstance().sendMeshMessage(groupingMessage)) {
+                Util.sendPluginResult(callbackContext, "failed");
+            }
+            addDeviceToGroupCallback = callbackContext;
+            if (addDeviceToGroupMeta != null) {
+                addDeviceToGroupMeta.clear();
+            } else {
+                addDeviceToGroupMeta = new ArrayList<Integer>();
+            }
+            addDeviceToGroupMeta.add(1); //means active
+            addDeviceToGroupMeta.add(meshAddress);
+            addDeviceToGroupMeta.add(opGroupAdr);
+            addDeviceToGroupMeta.add(addOrRemove);
+            addDeviceToGroupMeta.add(modelIndex);
+
+        } catch (Exception e) {
+            Util.sendPluginResult(callbackContext, e.getMessage());
+        }
+    }
+
+    public void mesh_groupControl(CordovaArgs args, CallbackContext callbackContext) throws Exception {
+        try {
+            int position = args.getInt(0);
+            int onOff = args.getInt(1);
+
+            boolean ack;
+            int rspMax;
+            List<GroupInfo> mGroups = meshHandler.getMeshInfo().groups;
+            MeshInfo meshInfo = meshHandler.getMeshInfo();
+            if (AppSettings.ONLINE_STATUS_ENABLE) {
+                ack = false;
+                rspMax = 0;
+            } else {
+                ack = true;
+                rspMax = meshInfo.getOnlineCountInGroup(mGroups.get(position).address);
+            }
+            OnOffSetMessage message = OnOffSetMessage.getSimple(mGroups.get(position).address,
+                    meshInfo.getDefaultAppKeyIndex(),
+                    (byte) onOff,
+                    ack,
+                    rspMax);
+            MeshService.getInstance().sendMeshMessage(message);
+        } catch (Exception e) {
+            Util.sendPluginResult(callbackContext, e.getMessage());
+        }
+    }
+
+    public void mesh_autoConnect(CordovaArgs args, CallbackContext callbackContext) throws Exception {
+      try {
+          this.autoConnect();
+      } catch (Exception e) {
+          Util.sendPluginResult(callbackContext, e.getMessage());
+      }
+    }
+
+    private void autoConnect() {
+        MeshLogger.log("main auto connect");
+        MeshInfo meshInfo = meshHandler.getMeshInfo();
+        if (meshInfo.nodes.size() == 0) {
+            MeshService.getInstance().idle(true);
+        } else {
+            int directAdr = MeshService.getInstance().getDirectConnectedNodeAddress();
+            NodeInfo nodeInfo = meshInfo.getDeviceByMeshAddress(directAdr);
+            if (nodeInfo != null && nodeInfo.compositionData != null && nodeInfo.compositionData.pid == AppSettings.PID_REMOTE) {
+                // if direct connected device is remote-control, disconnect
+                MeshService.getInstance().idle(true);
+            }
+            MeshService.getInstance().autoConnect(new AutoConnectParameters());
+        }
+
+    }
+
+
+
     private void onKickOutFinish() {
         if (targetDevice != null) {
             MeshService.getInstance().removeDevice(targetDevice.meshAddress);
@@ -1523,22 +1672,105 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
             onProvisionSuccess((ProvisioningEvent) event);
         } else if (event.getType().equals(ProvisioningEvent.EVENT_TYPE_PROVISION_FAIL)) {
             onProvisionFail((ProvisioningEvent) event);
+        } else if (event.getType().equals(ModelPublicationStatusMessage.class.getName())) {
+            MeshLogger.d("pub setting status: " + isPubSetting);
+            if (!isPubSetting) {
+                return;
+            }
+            mHandler.removeCallbacks(timePubSetTimeoutTask);
+            final ModelPublicationStatusMessage statusMessage = (ModelPublicationStatusMessage) ((StatusNotificationEvent) event).getNotificationMessage().getStatusMessage();
+
+            if (statusMessage.getStatus() == ConfigStatus.SUCCESS.code) {
+                onTimePublishComplete(true, "time pub set success");
+            } else {
+                onTimePublishComplete(false, "time pub set status err: " + statusMessage.getStatus());
+                MeshLogger.log("publication err: " + statusMessage.getStatus());
+            }
+        } else if (event.getType().equals(ModelSubscriptionStatusMessage.class.getName())) {
+            NotificationMessage notificationMessage = ((StatusNotificationEvent) event).getNotificationMessage();
+            ModelSubscriptionStatusMessage statusMessage = (ModelSubscriptionStatusMessage) notificationMessage.getStatusMessage();
+            if (statusMessage.getStatus() == ConfigStatus.SUCCESS.code) {
+                Log.d(TAG, "aindi");
+                if (addDeviceToGroupCallback != null) {
+                    if (addDeviceToGroupMeta != null && !addDeviceToGroupMeta.isEmpty() && addDeviceToGroupMeta.get(0) == 1) {
+                        MeshInfo meshInfo = meshHandler.getMeshInfo();
+                        NodeInfo deviceInfo = meshInfo.getDeviceByMeshAddress(addDeviceToGroupMeta.get(1));
+                        if (addDeviceToGroupMeta.get(3) == 0) {
+                            deviceInfo.subList.add(addDeviceToGroupMeta.get(2));
+                        } else {
+                            deviceInfo.subList.remove(addDeviceToGroupMeta.get(2));
+                        }
+                        meshHandler.getMeshInfo().saveOrUpdate(cordova.getContext());
+                    }
+                    addDeviceToGroupCallback.success();
+                }
+
+            } else {
+                Log.d(TAG, "kaale");
+                if (addDeviceToGroupCallback != null) {
+                    Util.sendPluginResult(addDeviceToGroupCallback, "failed");
+                }
+            }
+            addDeviceToGroupCallback = null;
+            addDeviceToGroupMeta.clear();
+
+        } else if (event.getType().equals(AutoConnectEvent.EVENT_TYPE_AUTO_CONNECT_LOGIN)) {
+            // get all device on off status when auto connect success
+            AppSettings.ONLINE_STATUS_ENABLE = MeshService.getInstance().getOnlineStatus();
+            if (!AppSettings.ONLINE_STATUS_ENABLE) {
+                MeshService.getInstance().getOnlineStatus();
+                int rspMax = meshHandler.getMeshInfo().getOnlineCountInAll();
+                int appKeyIndex = meshHandler.getMeshInfo().getDefaultAppKeyIndex();
+                OnOffGetMessage message = OnOffGetMessage.getSimple(0xFFFF, appKeyIndex, rspMax);
+                MeshService.getInstance().sendMeshMessage(message);
+            } else {
+                MeshLogger.log("online status enabled");
+            }
+//            sendTimeStatus();
+//            mHandler.postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    checkMeshOtaState();
+//                }
+//            }, 3 * 1000);
         }
     }
 
     private void onBindSuccess(BindingEvent event) {
         BindingDevice remote = event.getBindingDevice();
         MeshInfo mesh = meshHandler.getMeshInfo();
-        NodeInfo local = mesh.getDeviceByUUID(remote.getDeviceUUID());
-        if (local == null) return;
 
-        local.bound = true;
+        if (pvDevice != null) {
+            pvDevice.addLog(NetworkingDevice.TAG_BIND, "success");
+            pvDevice.nodeInfo.bound = true;
+            // if is default bound, composition data has been valued ahead of binding action
+            if (!remote.isDefaultBound()) {
+                pvDevice.nodeInfo.compositionData = remote.getCompositionData();
+            }
+
+            if (setTimePublish(pvDevice)) {
+                pvDevice.state = NetworkingState.TIME_PUB_SETTING;
+                pvDevice.addLog(NetworkingDevice.TAG_PUB_SET, "action start");
+                isPubSetting = true;
+                MeshLogger.d("waiting for time publication status");
+            } else {
+                // no need to set time publish
+                pvDevice.state = NetworkingState.BIND_SUCCESS;
+                provisionComplete();
+            }
+            mesh.saveOrUpdate(cordova.getContext());
+        } else {
+            NodeInfo local = mesh.getDeviceByUUID(remote.getDeviceUUID());
+            if (local == null) return;
+
+            local.bound = true;
 //        local. = remote.boundModels;
-        local.compositionData = remote.getCompositionData();
-        mesh.saveOrUpdate(cordova.getContext());
-        if (meshBindDeviceCallbackContext != null) {
-            meshBindDeviceCallbackContext.success();
-            meshBindDeviceCallbackContext = null;
+            local.compositionData = remote.getCompositionData();
+            mesh.saveOrUpdate(cordova.getContext());
+            if (meshBindDeviceCallbackContext != null) {
+                meshBindDeviceCallbackContext.success();
+                meshBindDeviceCallbackContext = null;
+            }
         }
     }
 
@@ -1546,6 +1778,68 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
         if (meshBindDeviceCallbackContext != null) {
             meshBindDeviceCallbackContext.error(event.toString());
             meshBindDeviceCallbackContext = null;
+        }
+        if (pvDevice != null) {
+            pvDevice.state = NetworkingState.BIND_FAIL;
+            pvDevice.addLog(NetworkingDevice.TAG_BIND, "failed - " + event.getDesc());
+            meshHandler.getMeshInfo().saveOrUpdate(cordova.getContext());
+            provisionComplete();
+        }
+    }
+
+    private boolean setTimePublish(NetworkingDevice networkingDevice) {
+        int modelId = MeshSigModel.SIG_MD_TIME_S.modelId;
+        int pubEleAdr = networkingDevice.nodeInfo.getTargetEleAdr(modelId);
+        if (pubEleAdr != -1) {
+            final int period = 30 * 1000;
+            final int pubAdr = 0xFFFF;
+            int appKeyIndex = meshHandler.getMeshInfo().getDefaultAppKeyIndex();
+            ModelPublication modelPublication = ModelPublication.createDefault(pubEleAdr, pubAdr, appKeyIndex, period, modelId, true);
+
+            ModelPublicationSetMessage publicationSetMessage = new ModelPublicationSetMessage(networkingDevice.nodeInfo.meshAddress, modelPublication);
+            boolean result = MeshService.getInstance().sendMeshMessage(publicationSetMessage);
+            if (result) {
+                mHandler.removeCallbacks(timePubSetTimeoutTask);
+                mHandler.postDelayed(timePubSetTimeoutTask, 5 * 1000);
+            }
+            return result;
+        } else {
+            return false;
+        }
+    }
+
+    private Runnable timePubSetTimeoutTask = new Runnable() {
+        @Override
+        public void run() {
+            onTimePublishComplete(false, "time pub set timeout");
+        }
+    };
+
+    private void onTimePublishComplete(boolean success, String desc) {
+        if (!isPubSetting) return;
+        MeshLogger.d("pub set complete: " + success + " -- " + desc);
+        isPubSetting = false;
+
+        if (pvDevice == null) {
+            MeshLogger.d("pv device not found pub set success");
+            return;
+        }
+        pvDevice.addLog(NetworkingDevice.TAG_PUB_SET, success ? "success" : ("failed : " + desc));
+        pvDevice.state = success ? NetworkingState.TIME_PUB_SET_SUCCESS : NetworkingState.TIME_PUB_SET_FAIL;
+        pvDevice.addLog(NetworkingDevice.TAG_PUB_SET, desc);
+        meshHandler.getMeshInfo().saveOrUpdate(cordova.getContext());
+        provisionComplete();
+    }
+
+    private void provisionComplete() {
+        if (meshStartProvisionCallbackContext != null) {
+
+            MeshInfo meshInfo = meshHandler.getMeshInfo();
+            List<MeshNetKey> selectedNetKeys = new ArrayList<MeshNetKey>(meshInfo.meshNetKeyList);
+            String meshInfoStr = MeshStorageService.getInstance().meshToJsonString(meshInfo, selectedNetKeys);
+
+            meshStartProvisionCallbackContext.success(meshInfoStr);
+            meshStartProvisionCallbackContext = null;
         }
     }
 
@@ -1590,17 +1884,8 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
             BindingDevice bindingDevice = new BindingDevice(nodeInfo.meshAddress, nodeInfo.deviceUUID, appKeyIndex);
             bindingDevice.setDefaultBound(defaultBound);
             bindingDevice.setBearer(BindingBearer.GattOnly);
-//        bindingDevice.setDefaultBound(false);
+            bindingDevice.setDefaultBound(false);
             MeshService.getInstance().startBinding(new BindingParameters(bindingDevice));
-        }
-        if (meshStartProvisionCallbackContext != null) {
-
-            MeshInfo meshInfo = meshHandler.getMeshInfo();
-            List<MeshNetKey> selectedNetKeys = new ArrayList<MeshNetKey>(meshInfo.meshNetKeyList);
-            String meshInfoStr = MeshStorageService.getInstance().meshToJsonString(meshInfo, selectedNetKeys);
-
-            meshStartProvisionCallbackContext.success(meshInfoStr);
-            meshStartProvisionCallbackContext = null;
         }
     }
 

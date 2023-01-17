@@ -179,6 +179,8 @@ public class MeshStorage {
         // heartbeatSub
         public List<HeartbeatSubscription> heartbeatSub;
 
+        public List<Integer> subList;
+
 
         // custom data for scheduler
         public List<NodeScheduler> schedulers;

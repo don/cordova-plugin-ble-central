@@ -629,6 +629,11 @@ public class MeshStorageService {
             }
         }
 
+        if (deviceInfo.subList != null) {
+            node.subList = new ArrayList<Integer>();
+            node.subList.addAll(deviceInfo.subList);
+        }
+
         return node;
     }
 

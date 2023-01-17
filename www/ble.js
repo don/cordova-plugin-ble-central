@@ -51,7 +51,7 @@ var autoconnected = {};
 const pluginName = 'BLE';
 var exec = function exec(method, params) {
     return new Promise(function (resolve, reject) {
-      return cordova.exec(resolve, reject, pluginName, method, params);
+        return cordova.exec(resolve, reject, pluginName, method, params);
     });
 };
 module.exports = {
@@ -496,8 +496,8 @@ module.exports.withPromises.l2cap = {
 };
 
 module.exports.mesh = {
-    initialize: function () {
-        return exec('mesh_initialize');
+    initialize: function initialize(force) {
+        return exec('mesh_initialize', [force]);
     },
     provScanDevices: function provScanDevices(params, success, failure) {
         cordova.exec(success, failure, pluginName, 'mesh_provScanDevices', []);
@@ -505,10 +505,10 @@ module.exports.mesh = {
     provAddDevice: function provAddDevice(uuid, success, failure) {
         cordova.exec(success, failure, pluginName, 'mesh_provAddDevice', [uuid]);
     },
-    getMeshInfo: function getMeshInfo(params, success, failure){
+    getMeshInfo: function getMeshInfo(params, success, failure) {
         return exec('mesh_getMeshInfo');
     },
-    importMeshInfo: function importMeshInfo(meshInfo){
+    importMeshInfo: function importMeshInfo(meshInfo) {
         return exec('mesh_importMeshInfo', [meshInfo]);
     },
     kickOutDevice: function kickOutDevice(unicastAddress) {
@@ -516,5 +516,17 @@ module.exports.mesh = {
     },
     bindDevice: function bindDevice(unicastAddress) {
         return exec('mesh_bindDevice', [unicastAddress]);
-    }
-}
+    },
+    sendOnOffCommand: function sendOnOffCommand(unicastAddress, appKeyIndex, OnOff) {
+        return exec('mesh_sendOnOffCommand', [unicastAddress, appKeyIndex, OnOff]);
+    },
+    addDeviceToGroup: function addDeviceToGroup(unicastAddress, groupAddress, addDelete, modelIndex) {
+        return exec('mesh_addDeviceToGroup', [unicastAddress, groupAddress, addDelete, modelIndex]);
+    },
+    groupControl: function groupControl(groupPosition, OnOff) {
+        return exec('mesh_groupControl', [groupPosition, OnOff]);
+    },
+    autoConnect: function autoConnect() {
+        return exec('mesh_autoConnect', []);
+    },
+};
