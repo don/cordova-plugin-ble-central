@@ -1,3 +1,8 @@
+= 1.6.2 =
+Android: Don't leak refreshDeviceCache callback
+Android: More thoroughly clean up callbacks on device disconnect #954
+Android: Don't disconnect if refreshDeviceCache fails
+
 = 1.6.1 =
 No changes - republish only
 

@@ -786,7 +786,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     private void queueCleanup(CallbackContext callbackContext, String macAddress) {
         Peripheral peripheral = peripherals.get(macAddress);
         if (peripheral != null) {
-            peripheral.queueCleanup();
+            peripheral.queueCleanup("Aborted due to queue cleanup");
         }
         callbackContext.success();
     }

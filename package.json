@@ -1,14 +1,13 @@
 {
   "name": "cordova-plugin-ble-central",
-  "version": "1.6.1-slim",
+  "version": "1.6.2-slim",
   "description": "Bluetooth Low Energy (BLE) Central Plugin",
   "cordova": {
     "id": "cordova-plugin-ble-central",
     "platforms": [
       "ios",
       "android",
-      "browser",
-      "wp8"
+      "browser"
     ]
   },
   "publishConfig": {
@@ -21,6 +20,7 @@
   },
   "keywords": [
     "cordova",
+    "capacitor",
     "bluetooth",
     "ble",
     "bluetoothle",

@@ -3,7 +3,7 @@
     xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-plugin-ble-central"
-    version="1.6.1-slim">
+    version="1.6.2-slim">
 
     <name>BLE</name>
     <description>Bluetooth Low Energy (BLE) Central Plugin</description>
@@ -89,20 +89,5 @@
         <js-module src="src/browser/BLECentralPlugin.js" name="BLECentralPlugin">
             <merges target="ble" />
         </js-module>
-    </platform>
-
-    <platform name="wp8">
-        <config-file target="config.xml" parent="/*">
-            <feature name="BLE">
-                <param name="wp-package" value="BLECentralPlugin"/>
-            </feature>
-        </config-file>
-
-         <config-file target="Properties/WMAppManifest.xml" parent="/Deployment/App/Capabilities">
-             <Capability Name="ID_CAP_PROXIMITY" />
-         </config-file>
-
-         <source-file src="src/wp/BLECentralPlugin.cs" />
-
     </platform>
 </plugin>
