@@ -89,8 +89,8 @@ public class Peripheral extends BluetoothGattCallback {
         closeGatt();
         connected = false;
         connecting = true;
-        queueCleanup();
-        callbackCleanup();
+        queueCleanup("Aborted by new connect call");
+        callbackCleanup("Aborted by new connect call");
 
         BluetoothDevice device = getDevice();
         if (Build.VERSION.SDK_INT < 23) {
@@ -105,11 +105,6 @@ public class Peripheral extends BluetoothGattCallback {
         currentActivity = activity;
         autoconnect = auto;
         connectCallback = callbackContext;
-        if (refreshCallback != null) {
-            refreshCallback.error(this.asJSONObject("refreshDeviceCache aborted due to new connect call"));
-            refreshCallback = null;
-        }
-
         gattConnect();
 
         PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
@@ -125,8 +120,8 @@ public class Peripheral extends BluetoothGattCallback {
         autoconnect = false;
 
         closeGatt();
-        queueCleanup();
-        callbackCleanup();
+        queueCleanup("Central disconnected");
+        callbackCleanup("Central disconnected");
     }
 
     // the peripheral disconnected
@@ -142,8 +137,8 @@ public class Peripheral extends BluetoothGattCallback {
 
         sendDisconnectMessage(message);
 
-        queueCleanup();
-        callbackCleanup();
+        queueCleanup(message);
+        callbackCleanup(message);
     }
 
     private void closeGatt() {
@@ -852,10 +847,10 @@ public class Peripheral extends BluetoothGattCallback {
         queueCommand(command);
     }
 
-    public void queueCleanup() {
+    public void queueCleanup(String message) {
         bleProcessing.set(true); // Stop anything else trying to process
         for (BLECommand command = commandQueue.poll(); command != null; command = commandQueue.poll()) {
-            command.getCallbackContext().error("Peripheral Disconnected");
+            command.getCallbackContext().error(message);
         }
         bleProcessing.set(false); // Now re-allow processing
 
@@ -873,17 +868,25 @@ public class Peripheral extends BluetoothGattCallback {
         getOrAddL2CAPContext(psm).writeL2CapChannel(callbackContext, data);
     }
 
-    private void callbackCleanup() {
+    private void callbackCleanup(String message) {
         synchronized(this) {
             if (readCallback != null) {
-                readCallback.error(this.asJSONObject("Peripheral Disconnected"));
+                readCallback.error(this.asJSONObject(message));
                 readCallback = null;
                 commandCompleted();
             }
             if (writeCallback != null) {
-                writeCallback.error(this.asJSONObject("Peripheral Disconnected"));
+                writeCallback.error(this.asJSONObject(message));
                 writeCallback = null;
                 commandCompleted();
+            }
+            if (refreshCallback != null) {
+                refreshCallback.error(this.asJSONObject(message));
+                refreshCallback = null;
+            }
+            if (requestMtuCallback != null) {
+                requestMtuCallback.error(message);
+                requestMtuCallback = null;
             }
         }
     }
