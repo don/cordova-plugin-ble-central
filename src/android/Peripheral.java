@@ -379,11 +379,11 @@ public class Peripheral extends BluetoothGattCallback {
 
         if (status == BluetoothGatt.GATT_SUCCESS) {
             PluginResult result = new PluginResult(PluginResult.Status.OK, this.asJSONObject(gatt));
-            result.setKeepCallback(true);
             if (refreshCallback != null) {
                 refreshCallback.sendPluginResult(result);
                 refreshCallback = null;
             } else if (connectCallback != null) {
+                result.setKeepCallback(true);
                 connectCallback.sendPluginResult(result);
             }
         } else {
