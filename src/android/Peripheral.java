@@ -391,9 +391,9 @@ public class Peripheral extends BluetoothGattCallback {
             if (refreshCallback != null) {
                 refreshCallback.error(this.asJSONObject("Service discovery failed"));
                 refreshCallback = null;
+            } else {
+                peripheralDisconnected("Service discovery failed");
             }
-
-            peripheralDisconnected("Service discovery failed");
         }
     }
 
