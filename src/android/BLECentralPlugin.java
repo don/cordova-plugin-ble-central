@@ -135,9 +135,13 @@ public class BLECentralPlugin extends CordovaPlugin {
     private static final int REQUEST_BLUETOOTH_CONNECT_AUTO = 4;
     private static final int REQUEST_GET_BONDED_DEVICES = 5;
     private static final int REQUEST_LIST_KNOWN_DEVICES = 6;
+    private static final int REQUEST_BOND = 7;
+    private static final int REQUEST_UNBOND = 8;
+    private static final int REQUEST_READ_BOND_STATE = 9;
     private static int COMPILE_SDK_VERSION = -1;
     private CallbackContext permissionCallback;
     private String deviceMacAddress;
+    private boolean usePairingDialog;
     private UUID[] serviceUUIDs;
     private int scanSeconds;
     private ScanSettings scanSettings;
@@ -855,6 +859,23 @@ public class BLECentralPlugin extends CordovaPlugin {
     }
 
     private void bond(CallbackContext callbackContext, String macAddress, boolean usePairingDialog) {
+        if (COMPILE_SDK_VERSION >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
+            List<String> missingPermissions = new ArrayList<String>();
+            if (!PermissionHelper.hasPermission(this, BLUETOOTH_CONNECT)) {
+                missingPermissions.add(BLUETOOTH_CONNECT);
+            }
+            if (usePairingDialog && !PermissionHelper.hasPermission(this, BLUETOOTH_SCAN)) {
+                missingPermissions.add(BLUETOOTH_SCAN);
+            }
+            if (!missingPermissions.isEmpty()) {
+                permissionCallback = callbackContext;
+                deviceMacAddress = macAddress;
+                this.usePairingDialog = usePairingDialog;
+                PermissionHelper.requestPermissions(this, REQUEST_BOND, missingPermissions.toArray(new String[0]));
+                return;
+            }
+        }
+
         if (!peripherals.containsKey(macAddress) && BluetoothAdapter.checkBluetoothAddress(macAddress)) {
             BluetoothDevice device = BLECentralPlugin.this.bluetoothAdapter.getRemoteDevice(macAddress);
             Peripheral peripheral = new Peripheral(device);
@@ -871,6 +892,15 @@ public class BLECentralPlugin extends CordovaPlugin {
     }
 
     private void unbond(CallbackContext callbackContext, String macAddress) {
+        if (COMPILE_SDK_VERSION >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
+            if (!PermissionHelper.hasPermission(this, BLUETOOTH_CONNECT)) {
+                permissionCallback = callbackContext;
+                deviceMacAddress = macAddress;
+                PermissionHelper.requestPermission(this, REQUEST_UNBOND, BLUETOOTH_CONNECT);
+                return;
+            }
+        }
+
         if (!peripherals.containsKey(macAddress) && BluetoothAdapter.checkBluetoothAddress(macAddress)) {
             BluetoothDevice device = BLECentralPlugin.this.bluetoothAdapter.getRemoteDevice(macAddress);
             Peripheral peripheral = new Peripheral(device);
@@ -886,6 +916,15 @@ public class BLECentralPlugin extends CordovaPlugin {
     }
 
     private void readBondState(CallbackContext callbackContext, String macAddress) {
+        if (COMPILE_SDK_VERSION >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
+            if (!PermissionHelper.hasPermission(this, BLUETOOTH_CONNECT)) {
+                permissionCallback = callbackContext;
+                deviceMacAddress = macAddress;
+                PermissionHelper.requestPermission(this, REQUEST_READ_BOND_STATE, BLUETOOTH_CONNECT);
+                return;
+            }
+        }
+
         if (!peripherals.containsKey(macAddress) && BluetoothAdapter.checkBluetoothAddress(macAddress)) {
             BluetoothDevice device = BLECentralPlugin.this.bluetoothAdapter.getRemoteDevice(macAddress);
             Peripheral peripheral = new Peripheral(device);
@@ -1391,6 +1430,25 @@ public class BLECentralPlugin extends CordovaPlugin {
             case REQUEST_LIST_KNOWN_DEVICES:
                 LOG.d(TAG, "User granted permissions for list known devices");
                 listKnownDevices(callback);
+                break;
+
+            case REQUEST_BOND:
+                LOG.d(TAG, "User granted permissions for bond");
+                bond(callback, deviceMacAddress, usePairingDialog);
+                this.deviceMacAddress = null;
+                this.usePairingDialog = true;
+                break;
+
+            case REQUEST_UNBOND:
+                LOG.d(TAG, "User granted permissions for unbond");
+                unbond(callback, deviceMacAddress);
+                this.deviceMacAddress = null;
+                break;
+
+            case REQUEST_READ_BOND_STATE:
+                LOG.d(TAG, "User granted permissions for read bond state");
+                readBondState(callback, deviceMacAddress);
+                this.deviceMacAddress = null;
                 break;
         }
     }

@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
+import androidx.annotation.RequiresPermission;
 
 /**
  * Peripheral wraps the BluetoothDevice and provides methods to convert to JSON.
@@ -996,6 +997,7 @@ public class Peripheral extends BluetoothGattCallback {
         }
     }
 
+    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
     public void bond(CallbackContext callbackContext, BluetoothAdapter bluetoothAdapter, boolean usePairingDialog) {
         if (bondStateCallback != null) {
             bondStateCallback.error("Aborted by new bond call");
@@ -1023,6 +1025,7 @@ public class Peripheral extends BluetoothGattCallback {
         }
     }
     
+    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
     public void unbond(CallbackContext callbackContext) {
         final int bondState = device.getBondState();
         if (bondState == BluetoothDevice.BOND_NONE) {
@@ -1070,6 +1073,7 @@ public class Peripheral extends BluetoothGattCallback {
         }
     }
 
+    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
     public void readBondState(CallbackContext callbackContext) {
         callbackContext.success(bondStates.get(device.getBondState()));
     }
