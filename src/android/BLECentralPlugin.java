@@ -1211,13 +1211,6 @@ public class BLECentralPlugin extends CordovaPlugin {
             return;
         }
 
-        // return error if already scanning
-        if (bluetoothAdapter.isDiscovering()) {
-            LOG.w(TAG, "Tried to start scan while already running.");
-            callbackContext.error("Tried to start scan while already running.");
-            return;
-        }
-
         // clear non-connected cached peripherals
         for(Iterator<Map.Entry<String, Peripheral>> iterator = peripherals.entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<String, Peripheral> entry = iterator.next();
