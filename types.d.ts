@@ -1,5 +1,6 @@
 declare namespace BLECentralPlugin {
     type PeripheralState = 'disconnected' | 'disconnecting' | 'connecting' | 'connected';
+    type BondState = 'none' | 'bonding' | 'bonded';
 
     interface PeripheralCharacteristic {
         service: string;
@@ -49,6 +50,11 @@ declare namespace BLECentralPlugin {
     interface L2CAPOptions {
         psm: number;
         secureChannel?: boolean;
+    }
+
+    interface CreateBondOptions {
+        /* Show pairing request as a dialog rather than a notification */
+        usePairingDialog: boolean;
     }
 
     interface L2CAP {
@@ -177,6 +183,21 @@ declare namespace BLECentralPlugin {
         requestConnectionPriority(device_id: string, priority: 'high' | 'balanced' | 'low'): Promise<void>;
 
         restoredBluetoothState(): Promise<RestoredState | undefined>;
+
+        /* Start the bonding (pairing) process with the remote device. 
+            [iOS] bond is not supported on iOS.
+         */
+        bond(device_id: string, options?: CreateBondOptions): Promise<void>;
+
+        /* unbonds a remote device. Note: this uses an unlisted API on Android.
+            [iOS] bond is not supported on iOS.
+         */
+        unbond(device_id: string): Promise<void>;
+
+        /* Read the bond state of the remote device.
+            [iOS] readBondState is not supported on iOS.
+         */
+        readBondState(device_id: string): Promise<BondState>;
     }
 
     export interface BLECentralPluginStatic extends BLECentralPluginCommon {
@@ -348,6 +369,26 @@ declare namespace BLECentralPlugin {
         restoredBluetoothState(success: (data: RestoredState) => any, failure?: (error: string) => any): void;
 
         withPromises: BLECentralPluginPromises;
+
+        /* Start the bonding (pairing) process with the remote device. 
+            [iOS] bond is not supported on iOS.
+         */
+        bond(
+            device_id: string,
+            success: () => any,
+            failure?: (error: string) => any,
+            options?: CreateBondOptions
+        ): void;
+
+        /* unbonds a remote device. Note: this uses an unlisted API on Android.
+            [iOS] bond is not supported on iOS.
+         */
+        unbond(device_id: string, success: () => any, failure?: (error: string) => any): void;
+
+        /* Read the bond state of the remote device.
+            [iOS] readBondState is not supported on iOS.
+         */
+        readBondState(device_id: string, success: (state: BondState) => any, failure?: (error: string) => any): void;
     }
 }
 

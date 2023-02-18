@@ -270,6 +270,18 @@ module.exports = {
     restoredBluetoothState: function (success, failure) {
         cordova.exec(success, failure, 'BLE', 'restoredBluetoothState', []);
     },
+
+    bond: function (device_id, success, failure, options) {
+        cordova.exec(success, failure, 'BLE', 'bond', [device_id, options || {}]);
+    },
+
+    unbond: function (device_id, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'unbond', [device_id]);
+    },
+
+    readBondState: function (device_id, success, failure) {
+        cordova.exec(success, failure, 'BLE', 'readBondState', [device_id]);
+    },
 };
 
 module.exports.withPromises = {
@@ -439,6 +451,24 @@ module.exports.withPromises = {
     restoredBluetoothState: function () {
         return new Promise(function (resolve, reject) {
             module.exports.restoredBluetoothState(resolve, reject);
+        });
+    },
+
+    bond: function (device_id, options) {
+        return new Promise(function (resolve, reject) {
+            module.exports.bond(device_id, resolve, reject, options);
+        });
+    },
+
+    unbond: function (device_id) {
+        return new Promise(function (resolve, reject) {
+            module.exports.unbond(device_id, resolve, reject);
+        });
+    },
+
+    readBondState: function (device_id) {
+        return new Promise(function (resolve, reject) {
+            module.exports.readBondState(device_id, resolve, reject);
         });
     },
 };
