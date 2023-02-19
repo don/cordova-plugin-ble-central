@@ -1,3 +1,6 @@
+= 1.6.3 =
+Android: Implement manual bond control on #605 #843
+
 = 1.6.2 =
 Android: Don't leak refreshDeviceCache callback
 Android: More thoroughly clean up callbacks on device disconnect #954

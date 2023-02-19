@@ -92,6 +92,9 @@ For the best understanding about which permissions are needed for which combinat
 -   [ble.startScanWithOptions](#startscanwithoptions)
 -   [ble.stopScan](#stopscan)
 -   [ble.setPin](#setpin)
+-   [ble.bond](#bond)
+-   [ble.unbond](#unbond)
+-   [ble.readBondState](#readbondstate)
 -   [ble.connect](#connect)
 -   [ble.autoConnect](#autoconnect)
 -   [ble.disconnect](#disconnect)
@@ -311,6 +314,83 @@ Function `setPin` sets the pin when device requires it.
 -   **pin**: Pin of the device as a string
 -   **success**: Success callback function that is invoked when the function is invoked. [optional]
 -   **failure**: Error callback function, invoked when error occurs. [optional]
+
+## bond
+
+Initiate a bond with a remote device
+
+    ble.bond(device_id, [success], [failure], [options]);
+    // Or using await with promises
+    await ble.withPromises.bond(device_id);
+    await ble.withPromises.bond(device_id, { usePairingDialog: true });
+
+### Description
+
+Function `bond` initialises a bond with a peripheral. The success callback will be called when the
+bonding is complete. The bonding process may prompt the user to confirm the pairing process.
+
+### Parameters
+
+-   **device_id**: UUID or MAC address of the peripheral
+-   **success**: Success callback function that is invoked when the bonding succeeds. [optional]
+-   **failure**: Error callback function, invoked when the bonding fails. [optional]
+-   **options**: an object specifying a set of name-value pairs. The currently acceptable options are:
+    -   _usePairingDialog_: _true_ (default) Show pairing request as a dialog rather than a notification [optional]
+
+### Supported Platforms
+
+-   Android
+
+## unbond
+
+Remove a bond for a remote device
+
+    ble.unbond(device_id, [success], [failure]);
+    // Or using await with promises
+    await ble.withPromises.unbond(device_id);
+
+### Description
+
+Function `unbond` removes an existing bond for a remote device. The success callback will be called when the
+bond has been removed.
+
+### Parameters
+
+-   **device_id**: UUID or MAC address of the peripheral
+-   **success**: Success callback function that is invoked when the bond is removed. [optional]
+-   **failure**: Error callback function, invoked when the bond removal fails. [optional]
+
+### Supported Platforms
+
+-   Android
+
+## readBondState
+
+Get the bond state of a device as a string
+
+    ble.readBondState(device_id, [success], [failure]);
+    // Or using await with promises
+    const bondState = await ble.withPromises.readBondState(device_id);
+
+### Description
+
+Function `readBondState` retrieves the current bond state of the device.
+
+**States**
+
+-   "none"
+-   "bonding"
+-   "bonded"
+
+### Parameters
+
+-   **device_id**: UUID or MAC address of the peripheral
+-   **success**: Success callback function that is invoked with the current bond state. [optional]
+-   **failure**: Error callback function, invoked when error occurs. [optional]
+
+### Supported Platforms
+
+-   Android
 
 ## connect
 
