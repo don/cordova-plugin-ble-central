@@ -538,6 +538,53 @@
    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void)mesh_addDeviceToGroup:(CDVInvokedUrlCommand*)command {
+    NSLog(@"mesh_addDeviceToGroup");
+//    + (BOOL)editSubscribeListWithWithDestination:(UInt16)destination isAdd:(BOOL)isAdd groupAddress:(UInt16)groupAddress elementAddress:(UInt16)elementAddress modelIdentifier:(UInt16)modelIdentifier companyIdentifier:(UInt16)companyIdentifier retryCount:(NSInteger)retryCount responseMaxCount:(NSInteger)responseMaxCount successCallback:(responseConfigModelSubscriptionStatusMessageBlock)successCallback resultCallback:(resultBlock)resultCallback {
+//        if (SigMeshLib.share.isBusyNow) {
+//            TeLogInfo(@"send request for edit subscribe list, but busy now.");
+//            if (resultCallback) {
+//                NSError *error = [NSError errorWithDomain:kSigMeshLibIsBusyErrorMessage code:kSigMeshLibIsBusyErrorCode userInfo:nil];
+//                resultCallback(NO,error);
+//            }
+//            return NO;
+//        } else {
+//            SigGroupModel *group = [SigDataSource.share getGroupModelWithGroupAddress:groupAddress];
+//            if (!group) {
+//                TeLogInfo(@"send request for edit subscribe list, but group is not exist.");
+//                if (resultCallback) {
+//                    NSError *error = [NSError errorWithDomain:kSigMeshLibGroupAddressNoExistErrorMessage code:kSigMeshLibGroupAddressNoExistErrorCode userInfo:nil];
+//                    resultCallback(NO,error);
+//                }
+//                return NO;
+//            }
+//            SigNodeModel *node = [SigDataSource.share getNodeWithAddress:destination];
+//            SigModelIDModel *modelIDModel = [node getModelIDModelWithModelID:modelIdentifier andElementAddress:elementAddress];
+//            if (!modelIDModel) {
+//                TeLogInfo(@"send request for edit subscribe list, but modelID is not exist.");
+//                if (resultCallback) {
+//                    NSError *error = [NSError errorWithDomain:kSigMeshLibModelIDModelNoExistErrorMessage code:kSigMeshLibModelIDModelNoExistErrorCode userInfo:nil];
+//                    resultCallback(NO,error);
+//                }
+//                return NO;
+//            }
+//
+//            TeLogInfo(@"send request for edit subscribe list");
+//            if (isAdd) {
+//                [SDKLibCommand configModelSubscriptionAddWithDestination:destination toGroupAddress:groupAddress elementAddress:elementAddress modelIdentifier:modelIdentifier companyIdentifier:companyIdentifier retryCount:retryCount responseMaxCount:responseMaxCount successCallback:successCallback resultCallback:resultCallback];
+//            } else {
+//                [SDKLibCommand configModelSubscriptionDeleteWithDestination:destination groupAddress:groupAddress elementAddress:elementAddress modelIdentifier:modelIdentifier companyIdentifier:companyIdentifier retryCount:retryCount responseMaxCount:responseMaxCount successCallback:successCallback resultCallback:resultCallback];
+//            }
+           // return YES;
+      //  }
+   // }
+    
+}
+
+- (void)mesh_groupControl:(CDVInvokedUrlCommand*)command {
+    NSLog(@"mesh_groupControl");
+}
+
 - (void)mesh_importMeshInfo:(CDVInvokedUrlCommand*)command {
     NSLog(@"mesh_importMeshInfo");
     NSString *meshinfo = [command argumentAtIndex:0];

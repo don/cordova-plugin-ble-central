@@ -49,6 +49,8 @@
 - (void)mesh_provAddDevice: (CDVInvokedUrlCommand *)command;
 - (void)mesh_getMeshInfo: (CDVInvokedUrlCommand *)command;
 - (void)mesh_importMeshInfo: (CDVInvokedUrlCommand *)command;
+- (void)mesh_addDeviceToGroup: (CDVInvokedUrlCommand *)command;
+- (void)mesh_groupControl: (CDVInvokedUrlCommand *)command;
 - (void)scan:(CDVInvokedUrlCommand *)command;
 - (void)startScan:(CDVInvokedUrlCommand *)command;
 - (void)startScanWithOptions:(CDVInvokedUrlCommand *)command;

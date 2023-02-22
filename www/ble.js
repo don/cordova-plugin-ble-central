@@ -520,8 +520,8 @@ module.exports.mesh = {
     sendOnOffCommand: function sendOnOffCommand(unicastAddress, appKeyIndex, OnOff) {
         return exec('mesh_sendOnOffCommand', [unicastAddress, appKeyIndex, OnOff]);
     },
-    addDeviceToGroup: function addDeviceToGroup(unicastAddress, groupAddress, addDelete, modelIndex) {
-        return exec('mesh_addDeviceToGroup', [unicastAddress, groupAddress, addDelete, modelIndex]);
+    addDeviceToGroup: function addDeviceToGroup(unicastAddress, groupAddress, addDelete, modelIndex, macAddress) {
+        return exec('mesh_addDeviceToGroup', [unicastAddress, groupAddress, addDelete, modelIndex, macAddress]);
     },
     groupControl: function groupControl(groupPosition, OnOff) {
         return exec('mesh_groupControl', [groupPosition, OnOff]);
