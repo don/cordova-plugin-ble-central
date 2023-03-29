@@ -156,6 +156,7 @@ public class MeshStorage {
 
         public String UUID;
         public String unicastAddress;
+        public String macAddress;
         public String deviceKey;
         public String security;
         public List<NodeKey> netKeys;
@@ -179,7 +180,7 @@ public class MeshStorage {
         // heartbeatSub
         public List<HeartbeatSubscription> heartbeatSub;
 
-        public List<Integer> subList;
+        public List<String> subList;
 
 
         // custom data for scheduler

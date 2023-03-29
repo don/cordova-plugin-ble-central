@@ -422,7 +422,7 @@ public class MeshStorageService {
                     deviceInfo.elementCnt = node.elements == null ? 0 : node.elements.size();
                     deviceInfo.deviceKey = Arrays.hexToBytes(node.deviceKey);
 
-                    List<Integer> subList = new ArrayList<>();
+                    List<String> subList = new ArrayList<>();
                     PublishModel publishModel;
                     if (node.elements != null) {
                         for (MeshStorage.Element element : node.elements) {
@@ -435,8 +435,8 @@ public class MeshStorageService {
                                     int subAdr;
                                     for (String sub : model.subscribe) {
                                         subAdr = MeshUtils.hexString2Int(sub, ByteOrder.BIG_ENDIAN);
-                                        if (!subList.contains(subAdr)) {
-                                            subList.add(subAdr);
+                                        if (!subList.contains(sub)) {
+                                            subList.add(sub);
                                         }
                                     }
                                 }
@@ -516,6 +516,7 @@ public class MeshStorageService {
         if (deviceInfo.deviceKey != null) {
             node.deviceKey = Arrays.bytesToHexString(deviceInfo.deviceKey, "").toUpperCase();
         }
+        node.macAddress = deviceInfo.macAddress;
         node.elements = new ArrayList<>(deviceInfo.elementCnt);
 
         if (deviceInfo.compositionData != null) {
@@ -560,8 +561,9 @@ public class MeshStorageService {
 
                             model.subscribe = new ArrayList<>();
                             if (inDefaultSubModel(modelId)) {
-                                for (int subAdr : deviceInfo.subList) {
-                                    model.subscribe.add(String.format("%04X", subAdr));
+                                for (String subAdr : deviceInfo.subList) {
+                                    model.subscribe.add(subAdr);
+                                    //String.format("%04X", subAdr)
                                 }
                             }
 
@@ -630,7 +632,7 @@ public class MeshStorageService {
         }
 
         if (deviceInfo.subList != null) {
-            node.subList = new ArrayList<Integer>();
+            node.subList = new ArrayList<String>();
             node.subList.addAll(deviceInfo.subList);
         }
 

@@ -583,6 +583,7 @@ public final class MeshController implements ProvisioningBridge, NetworkingBridg
     void autoConnect(AutoConnectParameters parameters) {
         if (!validateActionMode(Mode.MODE_AUTO_CONNECT)) {
             log("auto connect currently");
+            onAutoConnectSuccess();
             return;
         }
         mDelayHandler.removeCallbacksAndMessages(null);
@@ -837,6 +838,7 @@ public final class MeshController implements ProvisioningBridge, NetworkingBridg
     public boolean sendMeshMessage(MeshMessage meshMessage) {
         if (!isLogin) {
             log("not login when sending message");
+            proxyFilterInit();
             return false;
         }
         log("send mesh message: " + meshMessage.getClass().getSimpleName()
@@ -1443,7 +1445,9 @@ public final class MeshController implements ProvisioningBridge, NetworkingBridg
 
     private void onScanFilter(final BluetoothDevice device, final int rssi, final byte[] scanRecord) {
         synchronized (SCAN_LOCK) {
-            if (!isScanning) return;
+            if (!isScanning) {
+                stopScan();
+                return;}
             boolean connectIntent = false;
             if (actionMode == Mode.MODE_AUTO_CONNECT) {
                 connectIntent = validateProxyAdv(scanRecord);
@@ -1513,7 +1517,7 @@ public final class MeshController implements ProvisioningBridge, NetworkingBridg
                 }*/
             } else if (actionMode == Mode.MODE_FAST_PROVISION) {
                 connectIntent = true;
-            } else if (actionMode == Mode.MODE_SCAN) {
+            } else if (actionMode == Mode.MODE_SCAN || actionMode == Mode.MODE_IDLE) {
                 boolean single = mActionParams.getBool(Parameters.SCAN_SINGLE_MODE, false);
                 if (single) {
                     stopScan();

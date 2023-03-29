@@ -88,7 +88,7 @@ public class NodeInfo implements Serializable {
     /**
      * device subscription/group info
      */
-    public List<Integer> subList = new ArrayList<>();
+    public List<String> subList = new ArrayList<>();
 
     // device lightness
     public int lum = 100;
@@ -123,6 +123,12 @@ public class NodeInfo implements Serializable {
     private PublishModel publishModel;
 
     /**
+     * device on off state
+     * 0:off 1:on -1:offline
+     */
+//    private OnlineState onlineState = OnlineState.OFFLINE;
+
+    /**
      * default bind support
      */
     private boolean defaultBind = false;
@@ -149,6 +155,10 @@ public class NodeInfo implements Serializable {
 //            TelinkMeshApplication.getInstance().dispatchEvent(new NodeStatusChangedEvent(TelinkMeshApplication.getInstance(), NodeStatusChangedEvent.EVENT_TYPE_NODE_STATUS_CHANGED, NodeInfo.this));
         }
     };
+
+    public int getOnlineState() {
+        return onOff;
+    }
 
     public int getOnOff() {
         return onOff;

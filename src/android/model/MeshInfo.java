@@ -234,8 +234,9 @@ public class MeshInfo implements Serializable, Cloneable {
         int result = 0;
         for (NodeInfo device : nodes) {
             if (device.getOnOff() != -1) {
-                for (int addr : device.subList) {
-                    if (addr == groupAddress) {
+                for (String addr : device.subList) {
+                    int grp_addr = Integer.parseInt(addr,16);
+                    if (grp_addr == groupAddress) {
                         result++;
                         break;
                     }
@@ -360,6 +361,7 @@ public class MeshInfo implements Serializable, Cloneable {
 
 
     public MeshConfiguration convertToConfiguration() {
+
         MeshConfiguration meshConfiguration = new MeshConfiguration();
         meshConfiguration.deviceKeyMap = new SparseArray<>();
         if (nodes != null) {
