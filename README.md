@@ -1296,7 +1296,8 @@ Bluetooth advertising data is returned in when scanning for devices. The format 
 
 The advertising information for both Android and iOS appears to be a combination of advertising data and scan response data.
 
-Ideally a common format (map or array) would be returned for both platforms in future versions. If you have ideas, please contact me.
+To get consistent advertising data payloads across platforms, you can use
+the [ble-central-advertisements](https://github.com/jospete/ble-central-advertisements) module.
 
 ## Android
 
