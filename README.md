@@ -11,6 +11,7 @@ The plugin provides a simple [JavaScript API](#api) for iOS and Android.
 -   Read the value of a characteristic
 -   Write new value to a characteristic
 -   Get notified when characteristic's value changes
+-   Transfer data via L2CAP channels
 
 Advertising information is returned when scanning for peripherals.
 Service, characteristic, and property info is returned when connecting to a peripheral.
@@ -31,51 +32,86 @@ See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master
 
 # Installing
 
-### Cordova
+## Capacitor
 
-    $ cordova plugin add cordova-plugin-ble-central
+    $ npm install cordova-plugin-ble-central
+    $ npx cap sync
 
-It's recommended to always use the latest cordova and cordova platform packages in order to enusre correct function. This plugin generally best supports the following platforms and version ranges:
+The plugin can be further configured via the cordova preferences section of the [capacitor config file](https://capacitorjs.com/docs/cordova/migrating-from-cordova-to-capacitor#cordova-plugin-preferences):
+
+```
+const config = {
+  ...
+  cordova: {
+    preferences: {
+      ...
+      bluetooth_restore_state: "true",
+      accessBackgroundLocation: "false",
+    },
+  }
+}
+```
+
+-   `bluetooth_restore_state`: [**iOS**] Enable Bluetooth state restoration, allowing an app to be woken up to receive scan results and peripheral notifications. This is needed for background scanning support. See [iOS restore state](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW13). For more information about background operation with this plugin, see [Background Scanning and Notifications on iOS](#background-scanning-and-notifications-on-ios).
+
+-   `accessBackgroundLocation`: [**Android**] Tells the plugin to request the `ACCESS_BACKGROUND_LOCATION` permission on Android 10 & Android 11 in order for scanning to function when the app is not visible.
+
+### iOS
+
+After installation, the following additions should be made to the app's `Info.plist`
+
+-   Set [NSBluetoothAlwaysUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/nsbluetoothalwaysusagedescription?language=objc) to a descriptive text, to be shown to the user on first access to the Bluetooth adapter. **If this is not defined the app will crash**.
+-   _(Optional)_ Add `bluetooth-central` to [UIBackgroundModes](https://developer.apple.com/documentation/bundleresources/information_property_list/uibackgroundmodes?language=objc) to enable background receipt of scan information and BLE notifications
+
+## Cordova
+
+`$ cordova plugin add cordova-plugin-ble-central --variable BLUETOOTH_USAGE_DESCRIPTION="Your description here" --variable IOS_INIT_ON_LOAD=true|false --variable BLUETOOTH_RESTORE_STATE=true|false --variable ACCESS_BACKGROUND_LOCATION=true|false`
+
+It's recommended to always use the latest cordova and cordova platform packages in order to ensure correct function. This plugin generally best supports the following platforms and version ranges:
 
 | cordova | cordova-ios | cordova-android | cordova-browser |
 | ------- | ----------- | --------------- | --------------- |
 | 10+     | 6.2.0+      | 10.0+           | not tested      |
 
-### iOS
+All variables can be modified after installation by updating the values in `package.json`.
 
-For iOS, apps will crash unless they include usage description keys for the types of data they access. Applications targeting iOS 13 and later, define [NSBluetoothAlwaysUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/nsbluetoothalwaysusagedescription?language=objc) to tell the user why the application needs Bluetooth. For apps with a deployment target earlier than iOS 13, add [NSBluetoothPeripheralUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/nsbluetoothperipheralusagedescription?language=objc). Both of these keys can be set when installing the plugin by passing the BLUETOOTH_USAGE_DESCRIPTION variable.
+-   `BLUETOOTH_USAGE_DESCRIPTION`: [**iOS**] defines the values for [NSBluetoothAlwaysUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/nsbluetoothalwaysusagedescription?language=objc).
 
-    $ cordova plugin add cordova-plugin-ble-central --variable BLUETOOTH_USAGE_DESCRIPTION="Your description here"
+-   `IOS_INIT_ON_LOAD`: [**iOS**] Prevents the Bluetooth plugin from being initialised until first access to the `ble` window object. This allows an application to warn the user before the Bluetooth access permission is requested.
 
-See Apple's documentation about [Protected Resources](https://developer.apple.com/documentation/bundleresources/information_property_list/protected_resources) for more details. If your app needs other permissions like location, try the [cordova-custom-config plugin](https://github.com/don/cordova-plugin-ble-central/issues/700#issuecomment-538312656).
+-   `BLUETOOTH_RESTORE_STATE`: [**iOS**] Enable Bluetooth state restoration, allowing an app to be woken up to receive scan results and peripheral notifications. This is needed for background scanning support. See [iOS restore state](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW13). For more information about background operation with this plugin, see [Background Scanning and Notifications on iOS](#background-scanning-and-notifications-on-ios).
 
-It is possible to delay the initialization of the plugin on iOS. Normally the Bluetooth permission dialog is shown when the app loads for the first time. Delaying the initialization of the plugin shows the permission dialog the first time the Bluetooth API is called. Set `IOS_INIT_ON_LOAD` to false when installing.
+-   `ACCESS_BACKGROUND_LOCATION`: [**Android**] Tells the plugin to request the ACCESS_BACKGROUND_LOCATION permission on Android 10 & Android 11 in order for scanning to function when the app is not visible.
 
-    --variable IOS_INIT_ON_LOAD=false
+## Android permission conflicts
 
-If background scanning and operation is required, the [iOS restore state](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW13) should be enabled:
+If you are having Android permissions conflicts with other plugins, try using the `slim` variant of the plugin instead with `cordova plugin add cordova-plugin-ble-central@slim`. This variant excludes all Android permissions, leaving it to the developer to ensure the right entries are added manually to the `AndroidManifest.xml` (see below for an example).
 
-    --variable BLUETOOTH_RESTORE_STATE=true
+To include the default set of permissions the plugin installs on Android SDK v31+, add the following snippet in your `config.xml` file, in the `<platform name="android">` section:
 
-For more information about background operation, see [Background Scanning and Notifications on iOS](#background-scanning-and-notifications-on-ios).
-
-### Android
-
-If your app targets Android 10 (API level 29) or higher, you may need the ACCESS_BACKGROUND_LOCATION permission on Android 10 & Android 11 in order for scanning to function when your app is not visible. To enable this permission and feature, set `ACCESS_BACKGROUND_LOCATION ` to true when installing:
-
-    --variable ACCESS_BACKGROUND_LOCATION=true
+```
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+        <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="28" />
+        <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
+        <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+        <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+        <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+        <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    </config-file>
+```
 
 For the best understanding about which permissions are needed for which combinations of target SDK version & OS version, see [Android Bluetooth permissions](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions)
 
 # API
-
-## Methods
 
 -   [ble.scan](#scan)
 -   [ble.startScan](#startscan)
 -   [ble.startScanWithOptions](#startscanwithoptions)
 -   [ble.stopScan](#stopscan)
 -   [ble.setPin](#setpin)
+-   [ble.bond](#bond)
+-   [ble.unbond](#unbond)
+-   [ble.readBondState](#readbondstate)
 -   [ble.connect](#connect)
 -   [ble.autoConnect](#autoconnect)
 -   [ble.disconnect](#disconnect)
@@ -295,6 +331,83 @@ Function `setPin` sets the pin when device requires it.
 -   **pin**: Pin of the device as a string
 -   **success**: Success callback function that is invoked when the function is invoked. [optional]
 -   **failure**: Error callback function, invoked when error occurs. [optional]
+
+## bond
+
+Initiate a bond with a remote device
+
+    ble.bond(device_id, [success], [failure], [options]);
+    // Or using await with promises
+    await ble.withPromises.bond(device_id);
+    await ble.withPromises.bond(device_id, { usePairingDialog: true });
+
+### Description
+
+Function `bond` initialises a bond with a peripheral. The success callback will be called when the
+bonding is complete. The bonding process may prompt the user to confirm the pairing process.
+
+### Parameters
+
+-   **device_id**: UUID or MAC address of the peripheral
+-   **success**: Success callback function that is invoked when the bonding succeeds. [optional]
+-   **failure**: Error callback function, invoked when the bonding fails. [optional]
+-   **options**: an object specifying a set of name-value pairs. The currently acceptable options are:
+    -   _usePairingDialog_: _true_ (default) Show pairing request as a dialog rather than a notification [optional]
+
+### Supported Platforms
+
+-   Android
+
+## unbond
+
+Remove a bond for a remote device
+
+    ble.unbond(device_id, [success], [failure]);
+    // Or using await with promises
+    await ble.withPromises.unbond(device_id);
+
+### Description
+
+Function `unbond` removes an existing bond for a remote device. The success callback will be called when the
+bond has been removed.
+
+### Parameters
+
+-   **device_id**: UUID or MAC address of the peripheral
+-   **success**: Success callback function that is invoked when the bond is removed. [optional]
+-   **failure**: Error callback function, invoked when the bond removal fails. [optional]
+
+### Supported Platforms
+
+-   Android
+
+## readBondState
+
+Get the bond state of a device as a string
+
+    ble.readBondState(device_id, [success], [failure]);
+    // Or using await with promises
+    const bondState = await ble.withPromises.readBondState(device_id);
+
+### Description
+
+Function `readBondState` retrieves the current bond state of the device.
+
+**States**
+
+-   "none"
+-   "bonding"
+-   "bonded"
+
+### Parameters
+
+-   **device_id**: UUID or MAC address of the peripheral
+-   **success**: Success callback function that is invoked with the current bond state. [optional]
+-   **failure**: Error callback function, invoked when error occurs. [optional]
+
+### Supported Platforms
+
+-   Android
 
 ## connect
 
@@ -1183,7 +1296,8 @@ Bluetooth advertising data is returned in when scanning for devices. The format 
 
 The advertising information for both Android and iOS appears to be a combination of advertising data and scan response data.
 
-Ideally a common format (map or array) would be returned for both platforms in future versions. If you have ideas, please contact me.
+To get consistent advertising data payloads across platforms, you can use
+the [ble-central-advertisements](https://github.com/jospete/ble-central-advertisements) module.
 
 ## Android
 
@@ -1336,6 +1450,12 @@ Run the app on your phone
 2.  Align `plugin.xml` version with npm version
 3.  Update release notes
 4.  `npm publish --registry=https://registry.npmjs.org`
+
+## Release (lean)
+
+1.  `git merge master`
+2.  Align `package.json` and `plugin.xml` versions
+3.  `npm publish --tag lean --registry=https://registry.npmjs.org`
 
 # Nordic DFU
 

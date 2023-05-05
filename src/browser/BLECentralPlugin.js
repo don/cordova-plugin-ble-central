@@ -200,5 +200,11 @@ module.exports = {
     },
     stopStateNotifications: function(success, failure) {
         notSupported(failure);
-    }
+    },
+    bond: function (success, failure) {
+        notSupported(failure);
+    },
+    readBondState: function (success, failure) {
+        notSupported(failure);
+    },
 };

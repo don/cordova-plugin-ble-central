@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
+import androidx.annotation.RequiresPermission;
 
 /**
  * Peripheral wraps the BluetoothDevice and provides methods to convert to JSON.
@@ -42,6 +43,11 @@ public class Peripheral extends BluetoothGattCallback {
     //public final static UUID CLIENT_CHARACTERISTIC_CONFIGURATION_UUID = UUID.fromString("00002902-0000-1000-8000-00805F9B34FB");
     public final static UUID CLIENT_CHARACTERISTIC_CONFIGURATION_UUID = UUIDHelper.uuidFromString("2902");
     private static final String TAG = "Peripheral";
+    private final static Map<Integer, String> bondStates = new Hashtable<Integer, String>() {{
+        put(BluetoothDevice.BOND_NONE, "none");
+        put(BluetoothDevice.BOND_BONDING, "bonding");
+        put(BluetoothDevice.BOND_BONDED, "bonded");
+    }};
 
     private static final int FAKE_PERIPHERAL_RSSI = 0x7FFFFFFF;
 
@@ -62,6 +68,7 @@ public class Peripheral extends BluetoothGattCallback {
     private CallbackContext readCallback;
     private CallbackContext writeCallback;
     private CallbackContext requestMtuCallback;
+    private CallbackContext bondStateCallback;
     private Activity currentActivity;
 
     private Map<String, SequentialCallbackContext> notificationCallbacks = new HashMap<String, SequentialCallbackContext>();
@@ -89,8 +96,8 @@ public class Peripheral extends BluetoothGattCallback {
         closeGatt();
         connected = false;
         connecting = true;
-        queueCleanup();
-        callbackCleanup();
+        queueCleanup("Aborted by new connect call");
+        callbackCleanup("Aborted by new connect call");
 
         BluetoothDevice device = getDevice();
         if (Build.VERSION.SDK_INT < 23) {
@@ -105,11 +112,6 @@ public class Peripheral extends BluetoothGattCallback {
         currentActivity = activity;
         autoconnect = auto;
         connectCallback = callbackContext;
-        if (refreshCallback != null) {
-            refreshCallback.error(this.asJSONObject("refreshDeviceCache aborted due to new connect call"));
-            refreshCallback = null;
-        }
-
         gattConnect();
 
         PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
@@ -125,8 +127,8 @@ public class Peripheral extends BluetoothGattCallback {
         autoconnect = false;
 
         closeGatt();
-        queueCleanup();
-        callbackCleanup();
+        queueCleanup("Central disconnected");
+        callbackCleanup("Central disconnected");
     }
 
     // the peripheral disconnected
@@ -142,8 +144,8 @@ public class Peripheral extends BluetoothGattCallback {
 
         sendDisconnectMessage(message);
 
-        queueCleanup();
-        callbackCleanup();
+        queueCleanup(message);
+        callbackCleanup(message);
     }
 
     private void closeGatt() {
@@ -384,11 +386,11 @@ public class Peripheral extends BluetoothGattCallback {
 
         if (status == BluetoothGatt.GATT_SUCCESS) {
             PluginResult result = new PluginResult(PluginResult.Status.OK, this.asJSONObject(gatt));
-            result.setKeepCallback(true);
             if (refreshCallback != null) {
                 refreshCallback.sendPluginResult(result);
                 refreshCallback = null;
             } else if (connectCallback != null) {
+                result.setKeepCallback(true);
                 connectCallback.sendPluginResult(result);
             }
         } else {
@@ -396,9 +398,9 @@ public class Peripheral extends BluetoothGattCallback {
             if (refreshCallback != null) {
                 refreshCallback.error(this.asJSONObject("Service discovery failed"));
                 refreshCallback = null;
+            } else {
+                peripheralDisconnected("Service discovery failed");
             }
-
-            peripheralDisconnected("Service discovery failed");
         }
     }
 
@@ -852,10 +854,10 @@ public class Peripheral extends BluetoothGattCallback {
         queueCommand(command);
     }
 
-    public void queueCleanup() {
+    public void queueCleanup(String message) {
         bleProcessing.set(true); // Stop anything else trying to process
         for (BLECommand command = commandQueue.poll(); command != null; command = commandQueue.poll()) {
-            command.getCallbackContext().error("Peripheral Disconnected");
+            command.getCallbackContext().error(message);
         }
         bleProcessing.set(false); // Now re-allow processing
 
@@ -873,17 +875,25 @@ public class Peripheral extends BluetoothGattCallback {
         getOrAddL2CAPContext(psm).writeL2CapChannel(callbackContext, data);
     }
 
-    private void callbackCleanup() {
+    private void callbackCleanup(String message) {
         synchronized(this) {
             if (readCallback != null) {
-                readCallback.error(this.asJSONObject("Peripheral Disconnected"));
+                readCallback.error(this.asJSONObject(message));
                 readCallback = null;
                 commandCompleted();
             }
             if (writeCallback != null) {
-                writeCallback.error(this.asJSONObject("Peripheral Disconnected"));
+                writeCallback.error(this.asJSONObject(message));
                 writeCallback = null;
                 commandCompleted();
+            }
+            if (refreshCallback != null) {
+                refreshCallback.error(this.asJSONObject(message));
+                refreshCallback = null;
+            }
+            if (requestMtuCallback != null) {
+                requestMtuCallback.error(message);
+                requestMtuCallback = null;
             }
         }
     }
@@ -985,5 +995,86 @@ public class Peripheral extends BluetoothGattCallback {
             }
             return context;
         }
+    }
+
+    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+    public void bond(CallbackContext callbackContext, BluetoothAdapter bluetoothAdapter, boolean usePairingDialog) {
+        if (bondStateCallback != null) {
+            bondStateCallback.error("Aborted by new bond call");
+            bondStateCallback = null;
+        }
+
+        int bondState = device.getBondState();
+        if (bondState == BluetoothDevice.BOND_BONDED) {
+            callbackContext.success();
+            return;
+        }
+
+        bondStateCallback = callbackContext;
+        if (bondState == BluetoothDevice.BOND_NONE) {
+            if (usePairingDialog) {
+                // Fake Bluetooth discovery so Android gives us a prompt rather than a crappy notification
+                // Source: https://stackoverflow.com/a/59881926
+                bluetoothAdapter.startDiscovery();
+                bluetoothAdapter.cancelDiscovery();
+            }
+            if (!device.createBond()) {
+                bondStateCallback = null;
+                callbackContext.error("createBond returned false");
+            }
+        }
+    }
+    
+    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+    public void unbond(CallbackContext callbackContext) {
+        final int bondState = device.getBondState();
+        if (bondState == BluetoothDevice.BOND_NONE) {
+            callbackContext.success();
+            return;
+        }
+
+        if (bondState != BluetoothDevice.BOND_BONDED) {
+            LOG.w(TAG, "Unbonding device in state %s", bondState);
+        }
+
+        try {
+            //noinspection JavaReflectionMemberAccess
+            final Method removeBond = device.getClass().getMethod("removeBond");
+            if (removeBond == null) {
+                LOG.w(TAG, "removeBond method not found on gatt");
+                callbackContext.error("removeBond method not found on gatt");
+                return;
+            }
+
+            if(removeBond.invoke(device) != Boolean.TRUE) {
+                LOG.w(TAG, "removeBond returned false");
+                callbackContext.error("removeBond returned false");
+                return;
+            }
+
+            callbackContext.success();
+        } catch (final Exception e) {
+            LOG.w(TAG, "removeBond threw an exception", e);
+            callbackContext.error("removeBond threw an exception: " + e.getMessage());
+        }
+    }
+
+    public void updateBondState(int bondState, int previousBondState) {
+        LOG.d(TAG, "Bonding state update %s => %s", previousBondState, bondState);
+        if (bondStateCallback == null) return;
+
+        if (bondState == BluetoothDevice.BOND_BONDED || bondState == BluetoothDevice.BOND_NONE) {
+            if (bondState == BluetoothDevice.BOND_BONDED) {
+                bondStateCallback.success();
+            } else {
+                bondStateCallback.error("Unsuccessful bond state: " + bondStates.get(bondState));
+            }
+            bondStateCallback = null;
+        }
+    }
+
+    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+    public void readBondState(CallbackContext callbackContext) {
+        callbackContext.success(bondStates.get(device.getBondState()));
     }
 }
