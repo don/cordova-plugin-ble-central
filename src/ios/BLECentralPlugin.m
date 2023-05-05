@@ -371,6 +371,73 @@
      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void)mesh_autoConnect:(CDVInvokedUrlCommand *)command {
+    if ([SDKLibCommand isBLEInitFinish]) {
+        [SDKLibCommand startMeshConnectWithComplete:^(BOOL successful) {
+            if (successful) {
+                NSLog(@"mesh_autoconnect");
+            }
+            CDVPluginResult *pluginResult = nil;
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+          
+           [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }];
+    }
+}
+
+- (void)mesh_sendOnOffCommand:(CDVInvokedUrlCommand *)command {
+    NSNumber* unicastaddress = [command argumentAtIndex:0];
+    NSNumber* onOff = [command argumentAtIndex:2];
+    UInt16 addr = [unicastaddress unsignedShortValue];
+    BOOL isOn = [onOff boolValue];
+    [SDKLibCommand genericOnOffSetWithDestination:addr isOn:isOn retryCount:SigDataSource.share.defaultRetryCount responseMaxCount:1 ack:YES successCallback:^(UInt16 source, UInt16 destination, SigGenericOnOffStatus * _Nonnull responseMessage) {
+        //界面刷新统一在SDK回调函数didReceiveMessage:中进行
+    } resultCallback:^(BOOL isResponseAll, NSError * _Nonnull error) {
+        if (isResponseAll) {
+            TeLogDebug(@"onoff success.");
+            CDVPluginResult *pluginResult = nil;
+//            NSData *data = [SigDataSource.share getLocationMeshData];
+//            NSDictionary *meshDict = [LibTools getDictionaryWithJSONData:data];
+            NSArray *curNodes = [NSArray arrayWithArray:SigDataSource.share.curNodes];
+           // NSError * err;
+           // NSData * jsonData = [NSJSONSerialization dataWithJSONObject:curNodes options:0 error:&err];
+        //                                [self setDictionaryToDataSource:meshDict];
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:curNodes];
+          
+           [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        } else {
+            TeLogDebug(@"onoff fail.");
+        }
+
+    }];
+}
+
+- (void)mesh_kickOutDevice:(CDVInvokedUrlCommand *)command {
+    NSNumber* unicastaddress = [command argumentAtIndex:0];
+    UInt16 addr = [unicastaddress unsignedShortValue];
+    //NSLog(@"%@",unicastaddress);
+    //NSNumberFormatter* formatter = [ [NSNumberFormatter alloc] init];
+    //UInt16 addr = [[formatter numberFromString:unicastaddress] unsignedShortValue];
+    [SDKLibCommand resetNodeWithDestination:addr retryCount:SigDataSource.share.defaultRetryCount responseMaxCount:1 successCallback:^(UInt16 source, UInt16 destination, SigConfigNodeResetStatus * _Nonnull responseMessage) {
+
+    } resultCallback:^(BOOL isResponseAll, NSError * _Nullable error) {
+        if (isResponseAll) {
+            TeLogDebug(@"kickout success.");
+        } else {
+            TeLogDebug(@"kickout fail.");
+        }
+        [SigDataSource.share deleteNodeFromMeshNetworkWithDeviceAddress:addr];
+        CDVPluginResult *pluginResult = nil;
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+      
+       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            [NSObject cancelPreviousPerformRequestsWithTarget:weakSelf];
+//            [weakSelf pop];
+//        });
+    }];
+}
+
 - (void)mesh_provScanDevices:(CDVInvokedUrlCommand*)command {
     NSLog(@"mesh_provScanDevices");
     NSMutableArray<NSDictionary *> *connected = [NSMutableArray new];

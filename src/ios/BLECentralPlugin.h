@@ -45,12 +45,20 @@
 
 
 - (void)mesh_initialize:(CDVInvokedUrlCommand *)command;
+- (void)mesh_autoConnect:(CDVInvokedUrlCommand *)command;
 - (void)mesh_provScanDevices: (CDVInvokedUrlCommand *)command;
 - (void)mesh_provAddDevice: (CDVInvokedUrlCommand *)command;
 - (void)mesh_getMeshInfo: (CDVInvokedUrlCommand *)command;
+- (void)mesh_onoffstatus: (CDVInvokedUrlCommand *)command;
 - (void)mesh_importMeshInfo: (CDVInvokedUrlCommand *)command;
+- (void)mesh_kickOutDevice: (CDVInvokedUrlCommand *)command;
 - (void)mesh_addDeviceToGroup: (CDVInvokedUrlCommand *)command;
 - (void)mesh_groupControl: (CDVInvokedUrlCommand *)command;
+- (void)mesh_bindDevice: (CDVInvokedUrlCommand *)command;
+- (void)mesh_sendOnOffCommand: (CDVInvokedUrlCommand *)command;
+- (void)mesh_sendLightnessCommand: (CDVInvokedUrlCommand *)command;
+- (void)mesh_sendCTLCommand: (CDVInvokedUrlCommand *)command;
+- (void)mesh_deviceOTA: (CDVInvokedUrlCommand *)command;
 - (void)scan:(CDVInvokedUrlCommand *)command;
 - (void)startScan:(CDVInvokedUrlCommand *)command;
 - (void)startScanWithOptions:(CDVInvokedUrlCommand *)command;
