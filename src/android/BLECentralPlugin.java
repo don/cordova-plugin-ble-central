@@ -526,7 +526,8 @@ public class BLECentralPlugin extends CordovaPlugin {
                 if (reportDelay >= 0L)
                     scanSettings.setReportDelay( reportDelay );
 
-                findLowEnergyDevices(callbackContext, serviceUUIDs, -1, scanSettings.build() );
+                int scanDuration = options.optInt("duration", -1);
+                findLowEnergyDevices(callbackContext, serviceUUIDs, scanDuration, scanSettings.build() );
             }
 
         } else if (action.equals(BONDED_DEVICES)) {

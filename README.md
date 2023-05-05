@@ -245,8 +245,9 @@ See the [location permission notes](#location-permission-notes) above for inform
 
 -   **services**: List of services to discover, or [] to find all devices
 -   **options**: an object specifying a set of name-value pairs. The currently acceptable options are:
-    -   _reportDuplicates_: _true_ if duplicate devices should be reported, _false_ (default) if devices should only be reported once. [optional]
-    -   _scanMode_: String defines [setScanMode()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setscanmode) argument on Android.  
+    -   _reportDuplicates_: _true_ if duplicate devices should be reported, _false_ (default) if devices should only be reported once.
+    -   _duration_: time in seconds to scan for. (default) Scans forever when not specified.
+    -   _scanMode_: String defines [setScanMode()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setscanmode) argument on Android. Default on Android is _lowPower_. When interactive scanning from an app, _lowLatency_ can boost how quickly the device is found, at the expense of using more battery power.
         Can be one of: _lowPower_ | _balanced_ | _lowLatency_ | _opportunistic_
     -   _callbackType_: String defines [setCallbackType()](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanSettings.Builder#setcallbacktype) argument on Android.  
         Can be one of: _all_ | _first_ | _lost_

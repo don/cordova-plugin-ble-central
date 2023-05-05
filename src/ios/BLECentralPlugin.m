@@ -420,8 +420,17 @@
         [scanOptions setValue:reportDuplicates
                        forKey:CBCentralManagerScanOptionAllowDuplicatesKey];
     }
+    NSNumber *timeoutSeconds = [options valueForKey: @"duration"];
 
     [manager scanForPeripheralsWithServices:serviceUUIDs options:scanOptions];
+
+    if (timeoutSeconds) {
+        [NSTimer scheduledTimerWithTimeInterval:[timeoutSeconds floatValue]
+                                         target:self
+                                       selector:@selector(stopScanTimer:)
+                                       userInfo:[command.callbackId copy]
+                                        repeats:NO];
+    }
 }
 
 - (void)stopScan:(CDVInvokedUrlCommand*)command {
