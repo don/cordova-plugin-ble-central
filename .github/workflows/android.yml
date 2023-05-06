@@ -19,7 +19,6 @@ jobs:
       with:
         java-version: '16'
         distribution: 'temurin'
-        cache: gradle
     - name: Use Node.js 18
       uses: actions/setup-node@v3
       with:
@@ -28,6 +27,6 @@ jobs:
       run: |
         npx cordova create temp
         cd temp
-        npx cordova platform add android
+        npx cordova platform add android@latest
         npx cordova plugin add .. --noregistry --force --link
         npx cordova build android
