@@ -53,7 +53,6 @@ jobs:
 
   capacitor-ios:
     name: capacitor/ios@${{ matrix.capacitor }}
-    if: ${{ false }}
     runs-on: macos-latest
     
     strategy:
