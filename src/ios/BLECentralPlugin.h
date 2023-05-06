@@ -43,8 +43,6 @@
 @property (strong, nonatomic) NSMutableSet *peripherals;
 @property (strong, nonatomic) CBCentralManager *manager;
 
-- (void)scan:(CDVInvokedUrlCommand *)command;
-- (void)startScan:(CDVInvokedUrlCommand *)command;
 - (void)startScanWithOptions:(CDVInvokedUrlCommand *)command;
 - (void)stopScan:(CDVInvokedUrlCommand *)command;
 - (void)connectedPeripheralsWithServices:(CDVInvokedUrlCommand*)command;

@@ -354,50 +354,6 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)scan:(CDVInvokedUrlCommand*)command {
-    NSLog(@"scan");
-    if ([manager state] != CBManagerStatePoweredOn) {
-        NSString *error = @"Bluetooth is disabled";
-        NSLog(@"%@", error);
-        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                                          messageAsString:error];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        return;
-    }
-
-    discoverPeripheralCallbackId = [command.callbackId copy];
-
-    NSArray<NSString *> *serviceUUIDStrings = [command argumentAtIndex:0];
-    NSNumber *timeoutSeconds = [command argumentAtIndex:1];
-    NSArray<CBUUID *> *serviceUUIDs = [self uuidStringsToCBUUIDs:serviceUUIDStrings];
-
-    [manager scanForPeripheralsWithServices:serviceUUIDs options:nil];
-
-    [NSTimer scheduledTimerWithTimeInterval:[timeoutSeconds floatValue]
-                                     target:self
-                                   selector:@selector(stopScanTimer:)
-                                   userInfo:[command.callbackId copy]
-                                    repeats:NO];
-}
-
-- (void)startScan:(CDVInvokedUrlCommand*)command {
-    NSLog(@"startScan");
-    if ([manager state] != CBManagerStatePoweredOn) {
-        NSString *error = @"Bluetooth is disabled";
-        NSLog(@"%@", error);
-        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                                          messageAsString:error];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        return;
-    }
-
-    discoverPeripheralCallbackId = [command.callbackId copy];
-    NSArray<NSString *> *serviceUUIDStrings = [command argumentAtIndex:0];
-    NSArray<CBUUID *> *serviceUUIDs = [self uuidStringsToCBUUIDs:serviceUUIDStrings];
-
-    [manager scanForPeripheralsWithServices:serviceUUIDs options:nil];
-}
-
 - (void)startScanWithOptions:(CDVInvokedUrlCommand*)command {
     NSLog(@"startScanWithOptions");
     if ([manager state] != CBManagerStatePoweredOn) {

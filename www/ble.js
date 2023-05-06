@@ -51,19 +51,11 @@ var autoconnected = {};
 
 module.exports = {
     scan: function (services, seconds, success, failure) {
-        var successWrapper = function (peripheral) {
-            convertToNativeJS(peripheral);
-            success(peripheral);
-        };
-        cordova.exec(successWrapper, failure, 'BLE', 'scan', [services, seconds]);
+        module.exports.startScanWithOptions(services, { duration: seconds }, success, failure);
     },
 
     startScan: function (services, success, failure) {
-        var successWrapper = function (peripheral) {
-            convertToNativeJS(peripheral);
-            success(peripheral);
-        };
-        cordova.exec(successWrapper, failure, 'BLE', 'startScan', [services]);
+        module.exports.startScanWithOptions(services, undefined, success, failure);
     },
 
     stopScan: function (success, failure) {

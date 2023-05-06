@@ -64,8 +64,6 @@ public class BLECentralPlugin extends CordovaPlugin {
     private static final String BLUETOOTH_SCAN =  "android.permission.BLUETOOTH_SCAN" ; // API 31
 
     // actions
-    private static final String SCAN = "scan";
-    private static final String START_SCAN = "startScan";
     private static final String STOP_SCAN = "stopScan";
     private static final String START_SCAN_WITH_OPTIONS = "startScanWithOptions";
     private static final String BONDED_DEVICES = "bondedDevices";
@@ -210,21 +208,7 @@ public class BLECentralPlugin extends CordovaPlugin {
         }
 
         boolean validAction = true;
-
-        if (action.equals(SCAN)) {
-
-            UUID[] serviceUUIDs = parseServiceUUIDList(args.getJSONArray(0));
-            int scanSeconds = args.getInt(1);
-            resetScanOptions();
-            findLowEnergyDevices(callbackContext, serviceUUIDs, scanSeconds);
-
-        } else if (action.equals(START_SCAN)) {
-
-            UUID[] serviceUUIDs = parseServiceUUIDList(args.getJSONArray(0));
-            resetScanOptions();
-            findLowEnergyDevices(callbackContext, serviceUUIDs, -1);
-
-        } else if (action.equals(STOP_SCAN)) {
+        if (action.equals(STOP_SCAN)) {
             stopScan();
             callbackContext.success();
 
@@ -1186,10 +1170,6 @@ public class BLECentralPlugin extends CordovaPlugin {
         }
     };
 
-
-    private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds) {
-        findLowEnergyDevices( callbackContext, serviceUUIDs, scanSeconds, new ScanSettings.Builder().build() );
-    }
 
     private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds, ScanSettings scanSettings) {
 
