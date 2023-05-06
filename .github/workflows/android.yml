@@ -19,6 +19,7 @@ jobs:
       with:
         java-version: '16'
         distribution: 'temurin'
+        cache: gradle
     - name: Use Node.js 18
       uses: actions/setup-node@v3
       with:
