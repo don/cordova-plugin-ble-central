@@ -8,24 +8,39 @@ on:
     branches: [ "master" ]
 
 jobs:
-  cordova-android-latest:
-    name: Android (latest)
+  cordova-android:
+    name: Android (cordova: ${{ matrix.cordova }}, android: ${{ matrix.platform }})
+    
     runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        include:
+          - jdk: 16
+            cordova: latest
+            platform: latest
+            node: 18.x
+          - jdk: 11
+            cordova: 11.1.0
+            platform: 10.1.2
+            node: 14.x
+
     steps:
     - uses: actions/checkout@v3
-    - name: set up JDK 16
+    - name: set up JDK ${{ matrix.jdk }}
       uses: actions/setup-java@v3
       with:
-        java-version: '16'
+        java-version: ${{ matrix.jdk }}
         distribution: 'temurin'
-    - name: Use Node.js 18
+    - name: Use Node.js ${{ matrix.node }}
       uses: actions/setup-node@v3
       with:
-        node-version: 18.x
+        node-version: ${{ matrix.node }}
     - name: Build test app
       run: |
-        npx cordova create temp
+        npm install -g cordova@${{ matrix.cordova }}
+        cordova create temp
         cd temp
-        npx cordova platform add android@latest
-        npx cordova plugin add .. --noregistry --force --link
-        npx cordova build android
+        cordova platform add android@${{ matrix.platform }}
+        cordova plugin add .. --noregistry --force --link
+        cordova build android
