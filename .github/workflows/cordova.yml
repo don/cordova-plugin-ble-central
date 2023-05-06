@@ -9,7 +9,7 @@ on:
 
 jobs:
   cordova-android:
-    name: Android (cordova: ${{ matrix.cordova }}, android: ${{ matrix.platform }})
+    name: cordova@${{ matrix.cordova }} android@${{ matrix.platform }}
     
     runs-on: ubuntu-latest
     
