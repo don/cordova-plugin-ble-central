@@ -80,4 +80,4 @@ jobs:
         npx cap add ios
         npx cap sync ios
         cd ios
-        xcodebuild -workspace App/App.xcworkspace -scheme CapacitorCordova -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=Any iOS Simulator Device"
+        xcodebuild -workspace App/App.xcworkspace -scheme CapacitorCordova -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 14 Pro Max"
