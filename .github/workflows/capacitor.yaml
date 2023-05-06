@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - jdk: 16
+          - jdk: 17
             capacitor: latest
             node: 18.x
           - jdk: 11
@@ -80,4 +80,4 @@ jobs:
         npx cap add ios
         npx cap sync ios
         cd ios
-        # xcodebuild -workspace App/App.xcworkspace -scheme App -configuration Debug -sdk iphonesimulator -destination platform="iOS Simulator"
+        xcodebuild -workspace App/App.xcworkspace -scheme CapacitorCordova -configuration Debug -sdk iphonesimulator -destination platform="iOS Simulator"
