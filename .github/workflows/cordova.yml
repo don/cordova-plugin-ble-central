@@ -24,6 +24,10 @@ jobs:
             cordova: 11.1.0
             platform: 10.1.2
             node: 14.x
+          - jdk: 8
+            cordova: 10.0.0
+            platform: 10.1.2
+            node: 14.x
 
     steps:
     - uses: actions/checkout@v3
