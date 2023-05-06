@@ -21,12 +21,12 @@ jobs:
             platform: latest
             node: 18.x
           - jdk: 11
-            cordova: 11.1.0
-            platform: 10.1.2
+            cordova: 11
+            platform: 10
             node: 14.x
           - jdk: 8
-            cordova: 10.0.0
-            platform: 10.1.2
+            cordova: 10
+            platform: 10
             node: 14.x
 
     steps:
