@@ -48,3 +48,30 @@ jobs:
         cordova platform add android@${{ matrix.platform }}
         cordova plugin add .. --noregistry --force --link
         cordova build android
+
+  cordova-ios:
+    name: cordova@${{ matrix.cordova }} ios@${{ matrix.platform }}
+    
+    runs-on: macos-latest
+    
+    strategy:
+      matrix:
+        include:
+          - cordova: latest
+            platform: latest
+            node: 18.x
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node }}
+    - name: Build test app
+      run: |
+        npm install -g cordova@${{ matrix.cordova }}
+        cordova create temp
+        cd temp
+        cordova platform add ios@${{ matrix.platform }}
+        cordova plugin add .. --noregistry --force --link
+        cordova build ios
