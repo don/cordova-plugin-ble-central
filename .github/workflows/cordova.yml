@@ -1,4 +1,4 @@
-name: Cordova Android (latest)
+name: Cordova
 
 on:
   workflow_dispatch:
@@ -9,9 +9,8 @@ on:
 
 jobs:
   cordova-android-latest:
-
+    name: Android (latest)
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
     - name: set up JDK 16
