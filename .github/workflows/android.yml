@@ -29,5 +29,4 @@ jobs:
         cd temp
         npx cordova platform add android
         npx cordova plugin add .. --noregistry --force --link
-        npx cordova platform prepare android
-        npx cordova platform build android
+        npx cordova build android
