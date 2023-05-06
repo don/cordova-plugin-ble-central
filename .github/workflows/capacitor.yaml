@@ -9,7 +9,7 @@ on:
 
 jobs:
   capacitor-android:
-    name: @capacitor/android@${{ matrix.capacitor }}
+    name: capacitor/android@${{ matrix.capacitor }}
     
     runs-on: ubuntu-latest
     
@@ -52,7 +52,7 @@ jobs:
         
 
   capacitor-ios:
-    name: @capacitor/ios@${{ matrix.capacitor }}
+    name: capacitor/ios@${{ matrix.capacitor }}
     if: ${{ false }}
     runs-on: macos-latest
     
