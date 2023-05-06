@@ -9,7 +9,7 @@ on:
 
 jobs:
   cordova-android:
-    name: cordova@${{ matrix.cordova }} android@${{ matrix.platform }}
+    name: android@${{ matrix.platform }} cordova@${{ matrix.cordova }}
     
     runs-on: ubuntu-latest
     
@@ -50,7 +50,7 @@ jobs:
         cordova build android
 
   cordova-ios:
-    name: cordova@${{ matrix.cordova }} ios@${{ matrix.platform }}
+    name: ios@${{ matrix.platform }} cordova@${{ matrix.cordova }}
     
     runs-on: macos-latest
     
