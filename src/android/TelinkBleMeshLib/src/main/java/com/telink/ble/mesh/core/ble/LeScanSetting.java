@@ -40,7 +40,7 @@ public class LeScanSetting {
     public static LeScanSetting getDefault() {
         LeScanSetting setting = new LeScanSetting();
         setting.spacing = 5 * 1000;
-        setting.timeout = 10 * 1000;
+        setting.timeout = 60 * 1000;
         return setting;
     }
 

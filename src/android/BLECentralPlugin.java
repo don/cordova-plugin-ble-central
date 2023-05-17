@@ -28,6 +28,7 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanSettings;
 import android.location.LocationManager;
+import android.os.Environment;
 import android.os.ParcelUuid;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -54,6 +55,7 @@ import com.megster.cordova.ble.central.model.NodeStatusChangedEvent;
 import com.megster.cordova.ble.central.model.PrivateDevice;
 import com.megster.cordova.ble.central.model.json.MeshStorage;
 import com.megster.cordova.ble.central.model.json.MeshStorageService;
+import com.telink.ble.mesh.core.MeshUtils;
 import com.telink.ble.mesh.core.access.BindingBearer;
 import com.telink.ble.mesh.core.message.MeshMessage;
 import com.telink.ble.mesh.core.message.MeshSigModel;
@@ -80,6 +82,7 @@ import com.telink.ble.mesh.foundation.MeshConfiguration;
 import com.telink.ble.mesh.foundation.MeshService;
 import com.telink.ble.mesh.foundation.event.AutoConnectEvent;
 import com.telink.ble.mesh.foundation.event.BindingEvent;
+import com.telink.ble.mesh.foundation.event.GattOtaEvent;
 import com.telink.ble.mesh.foundation.event.MeshEvent;
 import com.telink.ble.mesh.foundation.event.OnlineStatusEvent;
 import com.telink.ble.mesh.foundation.event.ProvisioningEvent;
@@ -87,6 +90,8 @@ import com.telink.ble.mesh.foundation.event.StatusNotificationEvent;
 import com.telink.ble.mesh.foundation.parameter.AutoConnectParameters;
 import com.telink.ble.mesh.foundation.parameter.BindingParameters;
 import com.telink.ble.mesh.foundation.parameter.GattConnectionParameters;
+import com.telink.ble.mesh.foundation.parameter.GattOtaParameters;
+import com.telink.ble.mesh.util.Arrays;
 import com.telink.ble.mesh.util.MeshLogger;
 
 import org.apache.cordova.CallbackContext;
@@ -101,12 +106,19 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteOrder;
 import java.util.*;
 
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_DUAL;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_LE;
 
 import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 public class BLECentralPlugin extends CordovaPlugin implements EventListener<String> {
     // permissions
@@ -196,7 +208,9 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
     private CallbackContext permissionCallback;
     private String deviceMacAddress;
     private UUID[] serviceUUIDs;
+    private byte[] mFirmware;
     private int scanSeconds;
+    private int binPid;
     private ScanSettings scanSettings;
 
     // Bluetooth state notification
@@ -680,13 +694,13 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
             final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
             sendBluetoothStateChange(state);
             if (state == BluetoothAdapter.STATE_OFF) {
-               // #894 When Bluetooth is physically turned off the whole process might die, so the normal
+                // #894 When Bluetooth is physically turned off the whole process might die, so the normal
                 // onConnectionStateChange callbacks won't be invoked
-                
+
                 BluetoothManager bluetoothManager = (BluetoothManager) cordova.getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
                 for(Peripheral peripheral : peripherals.values()) {
                     if (!peripheral.isConnected()) continue;
-                    
+
                     int connectedState = bluetoothManager.getConnectionState(peripheral.getDevice(), BluetoothProfile.GATT);
                     if (connectedState == BluetoothProfile.STATE_DISCONNECTED) {
                         peripheral.peripheralDisconnected("Bluetooth Disabled");
@@ -1396,6 +1410,7 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
             return;
         }
         dp = new DeviceProvisioning();
+        dp.stop();
         dp.initialize(cordova.getActivity().getApplication(), cordova.getActivity(), callbackContext);
         // TODO: we also have to destroy dp events we subscribed to.
 
@@ -1417,6 +1432,9 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
                 meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_FAIL, this);
                 meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_BEGIN, this);
                 meshHandler.addEventListener(NodeStatusChangedEvent.EVENT_TYPE_NODE_STATUS_CHANGED, this);
+                meshHandler.addEventListener(GattOtaEvent.EVENT_TYPE_OTA_SUCCESS, this);
+                meshHandler.addEventListener(GattOtaEvent.EVENT_TYPE_OTA_PROGRESS, this);
+                meshHandler.addEventListener(GattOtaEvent.EVENT_TYPE_OTA_FAIL, this);
 
                 meshHandler.addEventListener(ModelSubscriptionStatusMessage.class.getName(), this);
 
@@ -1562,7 +1580,7 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
             int lightness = args.getInt(2);
             appKeyIndex = meshHandler.getMeshInfo().getDefaultAppKeyIndex();
             LightnessSetMessage lightnessSetMessage = LightnessSetMessage.getSimple(meshAddress, appKeyIndex, lightness, true, 0);
-           // OnOffSetMessage offSetMessage = OnOffSetMessage.getSimple(meshAddress, appKeyIndex, OnOff == 1 ? OnOffSetMessage.ON : OnOffSetMessage.OFF, true, 0);
+            // OnOffSetMessage offSetMessage = OnOffSetMessage.getSimple(meshAddress, appKeyIndex, OnOff == 1 ? OnOffSetMessage.ON : OnOffSetMessage.OFF, true, 0);
 //            offSetMessage.setComplete(true);
             MeshService.getInstance().sendMeshMessage(lightnessSetMessage);
         } catch (Exception e) {
@@ -1664,12 +1682,70 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
     }
 
     public void mesh_autoConnect(CordovaArgs args, CallbackContext callbackContext) throws Exception {
-      try {
-          this.autoConnect();
-      } catch (Exception e) {
-          Util.sendPluginResult(callbackContext, e.getMessage());
-      }
+        try {
+            this.autoConnect();
+        } catch (Exception e) {
+            Util.sendPluginResult(callbackContext, e.getMessage());
+        }
     }
+
+    CallbackContext deviceotacallback = null;
+    CallbackContext deviceotaProgress = null;
+    public void mesh_deviceOTA(CordovaArgs args, CallbackContext callbackContext) throws Exception {
+        try {
+            deviceotacallback = callbackContext;
+            deviceotaProgress = callbackContext;
+            String fileName = args.getString(0);
+            int meshAddress = args.getInt(1);
+            NodeInfo mNodeInfo = meshHandler.getMeshInfo().getDeviceByMeshAddress(meshAddress);
+            File mCurrentDir = Environment.getExternalStorageDirectory();
+            String mFilePath = mCurrentDir.getAbsolutePath();
+            ActivityCompat.requestPermissions(cordova.getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            InputStream stream = new FileInputStream(fileName);
+            int length = stream.available();
+            mFirmware = new byte[length];
+            stream.read(mFirmware);
+            stream.close();
+
+            byte[] pid = new byte[2];
+            byte[] vid = new byte[2];
+            System.arraycopy(mFirmware, 2, pid, 0, 2);
+            this.binPid = MeshUtils.bytes2Integer(pid, ByteOrder.LITTLE_ENDIAN);
+
+            System.arraycopy(mFirmware, 4, vid, 0, 2);
+            ConnectionFilter connectionFilter = new ConnectionFilter(ConnectionFilter.TYPE_MESH_ADDRESS, mNodeInfo.meshAddress);
+            GattOtaParameters parameters = new GattOtaParameters(connectionFilter, mFirmware);
+            MeshService.getInstance().startGattOta(parameters);
+        } catch (Exception e) {
+            e.printStackTrace();
+            mFirmware = null;
+            Util.sendPluginResult(callbackContext, e.getMessage());
+        }
+    }
+
+//    private void readFirmware(String fileName) {
+//        try {
+//            InputStream stream = new FileInputStream(fileName);
+//            int length = stream.available();
+//            mFirmware = new byte[length];
+//            stream.read(mFirmware);
+//            stream.close();
+//
+//            byte[] pid = new byte[2];
+//            byte[] vid = new byte[2];
+//            System.arraycopy(mFirmware, 2, pid, 0, 2);
+//            this.binPid = MeshUtils.bytes2Integer(pid, ByteOrder.LITTLE_ENDIAN);
+//
+//            System.arraycopy(mFirmware, 4, vid, 0, 2);
+//
+////            String pidInfo = com.telink.ble.mesh.util.Arrays.bytesToHexString(pid, ":");
+////            String vidInfo = Arrays.bytesToHexString(vid, ":");
+////            String firmVersion = " pid-" + pidInfo + " vid-" + vidInfo;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            mFirmware = null;
+//        }
+//    }
 
     CallbackContext onoffstatuscallback = null;
     public void mesh_onoffstatus(CordovaArgs args, CallbackContext callbackContext) throws Exception {
@@ -1829,6 +1905,18 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
                 onoffstatuscallback = null;
             }
         }
+        else if (event.getType().equals(GattOtaEvent.EVENT_TYPE_OTA_SUCCESS)) {
+            Util.sendPluginResult(deviceotacallback,"ota_success");
+            deviceotacallback = null;
+        }
+        else if (event.getType().equals(GattOtaEvent.EVENT_TYPE_OTA_FAIL)) {
+            Util.sendPluginResult(deviceotacallback, "ota_fail");
+            deviceotacallback = null;
+        }
+        else if (event.getType().equals(GattOtaEvent.EVENT_TYPE_OTA_PROGRESS)) {
+            int progress = ((GattOtaEvent) event).getProgress();
+            Util.sendPluginResult(deviceotaProgress, String.valueOf(progress));
+        }
     }
 
     private void onBindSuccess(BindingEvent event) {
@@ -1851,6 +1939,8 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
             } else {
                 // no need to set time publish
                 pvDevice.state = NetworkingState.BIND_SUCCESS;
+                mesh.updateNodeByUUID(pvDevice.nodeInfo.deviceUUID, pvDevice.nodeInfo);
+                mesh.saveOrUpdate(cordova.getContext());
                 provisionComplete();
             }
             mesh.saveOrUpdate(cordova.getContext());

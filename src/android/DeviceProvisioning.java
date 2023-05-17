@@ -81,6 +81,7 @@ public class DeviceProvisioning implements EventListener<String> {
   private String MESH_EVENT_DEVICE_PROV_FAIL = "device_prov_fail";
   private String MESH_EVENT_DEVICE_BIND_SUC = "device_bind_suc";
   private String MESH_EVENT_DEVICE_BIND_FAIL = "device_bind_fail";
+  private static final int SCAN_RESULT_DELAY = 10000;
 
 
 
@@ -101,6 +102,14 @@ public class DeviceProvisioning implements EventListener<String> {
     this.ctx = ctx;
     this.appCtx = actCtx;
     this.callbackContext = callbackContext;
+    Handler handler = new Handler();
+    Runnable runnable = new Runnable() {
+      @Override
+      public void run() {
+        doSomething();
+      }
+    };
+    handler.postDelayed(runnable,SCAN_RESULT_DELAY);
 
     TelinkBleMeshHandler.getInstance().addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_BEGIN, this);
     TelinkBleMeshHandler.getInstance().addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_SUCCESS, this);
@@ -113,9 +122,14 @@ public class DeviceProvisioning implements EventListener<String> {
     mesh = TelinkBleMeshHandler.getInstance().getMeshInfo();
     startScan();
   }
+  private void doSomething() {
+    // Do something here after the delay
+   // updateDevices(devices);
+  }
 
   public void stop() {
-    TelinkBleMeshHandler.getInstance().removeEventListener(this);
+    MeshService.getInstance().stopScan();
+   // TelinkBleMeshHandler.getInstance().removeEventListener(this);
   }
 
   private void startScan() {
@@ -378,9 +392,17 @@ public class DeviceProvisioning implements EventListener<String> {
         }
       }
       resultObj.put("devices", devicesArray);
+      Log.d("HHHHHH", new String(String.valueOf(devicesArray.length())));
+      Log.d("HHHHHH", callbackContext.getCallbackId());
       PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
       pluginResult.setKeepCallback(true);
-      callbackContext.sendPluginResult(pluginResult);
+//      new Handler().postDelayed(new Runnable() {
+//        @Override
+//        public void run() {
+          callbackContext.sendPluginResult(pluginResult);
+//        }
+//      }, 2000);
+
     } catch (JSONException e) {
 //      e.printStackTrace();
       callbackContext.error(Util.makeError("JSONError", e.getMessage()));
@@ -467,7 +489,7 @@ public class DeviceProvisioning implements EventListener<String> {
       MeshService.getInstance().stopScan();
     }
 
-    int address = mesh.getProvisionIndex();
+    int address = TelinkBleMeshHandler.getInstance().getMeshInfo().getProvisionIndex();
     MeshLogger.d("alloc address: " + address);
     if (!MeshUtils.validUnicastAddress(address)) {
 //      enableUI(true);
