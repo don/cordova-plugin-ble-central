@@ -532,6 +532,9 @@
        addDeviceToGroup: function addDeviceToGroup(unicastAddress, groupAddress, addDelete, modelIndex, success, failure) {
            cordova.exec(success, failure, pluginName, 'mesh_addDeviceToGroup', [unicastAddress, groupAddress, addDelete, modelIndex]);
        },
+       deviceOTA: function deviceOTA(file, unicastAddress, success, failure) {
+           cordova.exec(success, failure, pluginName, 'mesh_deviceOTA', [file, unicastAddress]);
+       },
        groupControl: function groupControl(groupPosition, OnOff) {
            return exec('mesh_groupControl', [groupPosition, OnOff]);
        },
