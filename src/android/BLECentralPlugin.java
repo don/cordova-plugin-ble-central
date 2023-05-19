@@ -64,8 +64,6 @@ public class BLECentralPlugin extends CordovaPlugin {
     private static final String BLUETOOTH_SCAN =  "android.permission.BLUETOOTH_SCAN" ; // API 31
 
     // actions
-    private static final String SCAN = "scan";
-    private static final String START_SCAN = "startScan";
     private static final String STOP_SCAN = "stopScan";
     private static final String START_SCAN_WITH_OPTIONS = "startScanWithOptions";
     private static final String BONDED_DEVICES = "bondedDevices";
@@ -146,6 +144,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     private int scanSeconds;
     private ScanSettings scanSettings;
     private final Handler stopScanHandler = new Handler(Looper.getMainLooper());
+    private final Runnable stopScanRunnable = this::stopScan;
 
     // Bluetooth state notification
     CallbackContext stateCallback;
@@ -210,21 +209,7 @@ public class BLECentralPlugin extends CordovaPlugin {
         }
 
         boolean validAction = true;
-
-        if (action.equals(SCAN)) {
-
-            UUID[] serviceUUIDs = parseServiceUUIDList(args.getJSONArray(0));
-            int scanSeconds = args.getInt(1);
-            resetScanOptions();
-            findLowEnergyDevices(callbackContext, serviceUUIDs, scanSeconds);
-
-        } else if (action.equals(START_SCAN)) {
-
-            UUID[] serviceUUIDs = parseServiceUUIDList(args.getJSONArray(0));
-            resetScanOptions();
-            findLowEnergyDevices(callbackContext, serviceUUIDs, -1);
-
-        } else if (action.equals(STOP_SCAN)) {
+        if (action.equals(STOP_SCAN)) {
             stopScan();
             callbackContext.success();
 
@@ -526,7 +511,8 @@ public class BLECentralPlugin extends CordovaPlugin {
                 if (reportDelay >= 0L)
                     scanSettings.setReportDelay( reportDelay );
 
-                findLowEnergyDevices(callbackContext, serviceUUIDs, -1, scanSettings.build() );
+                int scanDuration = options.optInt("duration", -1);
+                findLowEnergyDevices(callbackContext, serviceUUIDs, scanDuration, scanSettings.build() );
             }
 
         } else if (action.equals(BONDED_DEVICES)) {
@@ -1186,10 +1172,6 @@ public class BLECentralPlugin extends CordovaPlugin {
     };
 
 
-    private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds) {
-        findLowEnergyDevices( callbackContext, serviceUUIDs, scanSeconds, new ScanSettings.Builder().build() );
-    }
-
     private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds, ScanSettings scanSettings) {
 
         if (!locationServicesEnabled() && Build.VERSION.SDK_INT < 31) {
@@ -1273,11 +1255,11 @@ public class BLECentralPlugin extends CordovaPlugin {
                 filters.add(filter);
             }
         }
-        stopScanHandler.removeCallbacks(this::stopScan);
+        stopScanHandler.removeCallbacks(stopScanRunnable);
         bluetoothLeScanner.startScan(filters, scanSettings, leScanCallback);
 
         if (scanSeconds > 0) {
-            stopScanHandler.postDelayed(this::stopScan, scanSeconds * 1000);
+            stopScanHandler.postDelayed(stopScanRunnable, scanSeconds * 1000);
         }
 
         PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
@@ -1286,7 +1268,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     }
 
     private void stopScan() {
-        stopScanHandler.removeCallbacks(this::stopScan);
+        stopScanHandler.removeCallbacks(stopScanRunnable);
         if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
             LOG.d(TAG, "Stopping Scan");
             try {
