@@ -38,6 +38,7 @@
     NSMutableDictionary *readRSSICallbacks;
     NSDictionary<NSString*,id> *restoredState;
     NSMutableDictionary *l2CapContexts;
+    NSTimer *scanTimer;
 }
 
 @property (strong, nonatomic) NSMutableSet *peripherals;

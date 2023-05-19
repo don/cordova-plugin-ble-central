@@ -380,8 +380,10 @@
 
     [manager scanForPeripheralsWithServices:serviceUUIDs options:scanOptions];
 
+    [scanTimer invalidate];
+    scanTimer = nil;
     if (timeoutSeconds) {
-        [NSTimer scheduledTimerWithTimeInterval:[timeoutSeconds floatValue]
+        scanTimer = [NSTimer scheduledTimerWithTimeInterval:[timeoutSeconds floatValue]
                                          target:self
                                        selector:@selector(stopScanTimer:)
                                        userInfo:[command.callbackId copy]
@@ -391,7 +393,9 @@
 
 - (void)stopScan:(CDVInvokedUrlCommand*)command {
     NSLog(@"stopScan");
-
+    [scanTimer invalidate];
+    scanTimer = nil;
+    
     if ([manager state] == CBManagerStatePoweredOn) {
         [manager stopScan];
     }
@@ -604,7 +608,8 @@
 
 -(void)stopScanTimer:(NSTimer *)timer {
     NSLog(@"stopScanTimer");
-
+    [scanTimer invalidate];
+    scanTimer = nil;
     [manager stopScan];
 
     if (discoverPeripheralCallbackId) {
