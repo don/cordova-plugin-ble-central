@@ -19,7 +19,6 @@ import android.app.Activity;
 import android.bluetooth.*;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Base64;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.LOG;
@@ -73,7 +72,6 @@ public class Peripheral extends BluetoothGattCallback {
     private Activity currentActivity;
 
     private Map<String, SequentialCallbackContext> notificationCallbacks = new HashMap<String, SequentialCallbackContext>();
-    private final Handler handler = new Handler(Looper.getMainLooper());
 
     public Peripheral(BluetoothDevice device) {
 
@@ -236,8 +234,8 @@ public class Peripheral extends BluetoothGattCallback {
                     success = (Boolean)refresh.invoke(gatt);
                     if (success) {
                         this.refreshCallback = callback;
+                        Handler handler = new Handler();
                         LOG.d(TAG, "Waiting " + timeoutMillis + " milliseconds before discovering services");
-                        handler.removeCallbacksAndMessages(null);
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
@@ -415,8 +413,7 @@ public class Peripheral extends BluetoothGattCallback {
             LOG.d(TAG, "onConnectionStateChange CONNECTED");
             connected = true;
             connecting = false;
-            handler.removeCallbacksAndMessages(null);
-            handler.postDelayed(gatt::discoverServices, 1000);
+            gatt.discoverServices();
 
         } else {  // Disconnected
             LOG.d(TAG, "onConnectionStateChange DISCONNECTED");
