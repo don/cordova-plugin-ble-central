@@ -393,12 +393,7 @@
 
 - (void)stopScan:(CDVInvokedUrlCommand*)command {
     NSLog(@"stopScan");
-    [scanTimer invalidate];
-    scanTimer = nil;
-    
-    if ([manager state] == CBManagerStatePoweredOn) {
-        [manager stopScan];
-    }
+    [self internalStopScan];
 
     if (discoverPeripheralCallbackId) {
         discoverPeripheralCallbackId = nil;
@@ -608,13 +603,7 @@
 
 -(void)stopScanTimer:(NSTimer *)timer {
     NSLog(@"stopScanTimer");
-    [scanTimer invalidate];
-    scanTimer = nil;
-    [manager stopScan];
-
-    if (discoverPeripheralCallbackId) {
-        discoverPeripheralCallbackId = nil;
-    }
+    [self internalStopScan];
 }
 
 #pragma mark - CBCentralManagerDelegate
@@ -1219,6 +1208,19 @@
         }
     }
     return value;
+}
+
+- (void) internalStopScan {
+    [scanTimer invalidate];
+    scanTimer = nil;
+    
+    if ([manager state] == CBManagerStatePoweredOn) {
+        [manager stopScan];
+    }
+
+    if (discoverPeripheralCallbackId) {
+        discoverPeripheralCallbackId = nil;
+    }
 }
 
 @end
