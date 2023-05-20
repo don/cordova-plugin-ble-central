@@ -1,0 +1,77 @@
+name: Cordova
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  cordova-android:
+    name: android@${{ matrix.platform }} cordova@${{ matrix.cordova }}
+    
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        include:
+          - jdk: 16
+            cordova: latest
+            platform: latest
+            node: 18.x
+          - jdk: 11
+            cordova: 11
+            platform: 10
+            node: 14.x
+          - jdk: 8
+            cordova: 10
+            platform: 10
+            node: 14.x
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: set up JDK ${{ matrix.jdk }}
+      uses: actions/setup-java@v3
+      with:
+        java-version: ${{ matrix.jdk }}
+        distribution: 'temurin'
+    - name: Use Node.js ${{ matrix.node }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node }}
+    - name: Build test app
+      run: |
+        npm install -g cordova@${{ matrix.cordova }}
+        cordova create temp
+        cd temp
+        cordova platform add android@${{ matrix.platform }}
+        cordova plugin add .. --noregistry --force --link
+        cordova build android
+
+  cordova-ios:
+    name: ios@${{ matrix.platform }} cordova@${{ matrix.cordova }}
+    
+    runs-on: macos-latest
+    
+    strategy:
+      matrix:
+        include:
+          - cordova: latest
+            platform: latest
+            node: 18.x
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node }}
+    - name: Build test app
+      run: |
+        npm install -g cordova@${{ matrix.cordova }}
+        cordova create temp
+        cd temp
+        cordova platform add ios@${{ matrix.platform }}
+        cordova plugin add .. --noregistry --force --link
+        cordova build ios

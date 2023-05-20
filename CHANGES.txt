@@ -1,3 +1,13 @@
+= 1.7.0 =
+iOS: Prevent API warnings on iOS if Bluetooth is disabled during timed scan
+iOS: Ensure scan timeout is cleared and reset when new scans are started
+Android: Ensure scan timeout is cleared and reset when new scans are started
+Standardise all scans to go via scanWithOptions
+Add duration flag (in seconds) to scan with options
+CI: Create GitHub Cordova & Capacitor Actions (#969)
+Documentation: update readme with info for advertisement parsing module
+Documentation: Detail capacitor installation instructions
+
 = 1.6.3 =
 Android: Implement manual bond control on #605 #843
 

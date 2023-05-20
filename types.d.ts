@@ -45,6 +45,8 @@ declare namespace BLECentralPlugin {
         reportDelay?: number;
 
         reportDuplicates?: boolean;
+        /** Scanning duration in seconds */
+        duration?: number;
     }
 
     interface L2CAPOptions {
