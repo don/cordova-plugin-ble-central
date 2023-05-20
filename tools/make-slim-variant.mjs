@@ -1,7 +1,10 @@
 import { readFileSync, writeFileSync, rmSync } from 'fs';
 import { DOMParser, XMLSerializer } from '@xmldom/xmldom';
 
-const { version } = JSON.parse(readFileSync('package.json', 'utf8'));
+const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+packageJson.version += '-slim';
+writeFileSync('package.json', JSON.stringify(packageJson, undefined, '  ') + '\n');
+const version = packageJson.version;
 
 const doc = new DOMParser().parseFromString(readFileSync('plugin.xml', 'utf-8'), 'text/xml');
 const pluginXml = doc.documentElement;
@@ -23,8 +26,8 @@ for (const hookEl of Array.from(pluginXml.getElementsByTagName('hook'))) {
 console.log('Removed plugin.xml hook');
 writeFileSync('plugin.xml', new XMLSerializer().serializeToString(doc));
 
-rmSync('hooks', { recursive: true });
+rmSync('hooks', { recursive: true, force: true });
 console.log('Removed hooks folder');
 
-rmSync('stripDuplicatePermissions.js');
+rmSync('stripDuplicatePermissions.js', { force: true });
 console.log('Removed stripDuplicatePermissions hook');
