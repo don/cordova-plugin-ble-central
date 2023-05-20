@@ -1443,20 +1443,20 @@ Run the app on your phone
 
 1.  `npm version prepatch --preid=alpha`
 2.  Align `plugin.xml` version with npm version
-3.  `npm publish --tag alpha --registry=https://registry.npmjs.org`
+3.  `npm publish --tag alpha`
 
 ## Release
 
 1.  `npm version patch`
 2.  Align `plugin.xml` version with npm version
-3.  Update release notes
-4.  `npm publish --registry=https://registry.npmjs.org`
+3.  Update release notes based on `git log --oneline --no-merges <last release>...master`
+4.  `npm publish`
 
-## Release (lean)
+## Release (slim)
 
 1.  `git merge master`
 2.  Align `package.json` and `plugin.xml` versions
-3.  `npm publish --tag lean --registry=https://registry.npmjs.org`
+3.  `npm publish --tag slim`
 
 # Nordic DFU
 
