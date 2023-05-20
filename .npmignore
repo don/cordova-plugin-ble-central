@@ -1,0 +1,11 @@
+.idea/
+*.DS_Store
+node_modules
+package-lock.json
+.github
+.vscode
+examples
+tests
+tools
+.prettierrc
+cordova-plugin-ble-central.iml
