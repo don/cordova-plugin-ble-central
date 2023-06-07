@@ -22,9 +22,6 @@ jobs:
           - jdk: 11
             capacitor: 4
             node: 14.x
-          - jdk: 8
-            capacitor: 3
-            node: 14.x
 
     steps:
       - uses: actions/checkout@v3
