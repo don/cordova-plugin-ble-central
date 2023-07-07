@@ -368,6 +368,8 @@ public class MeshStorageService {
             mesh.sno = tempMesh.sno;
         }
          */
+
+         mesh.provisionIndex = meshStorage.provisionIndex;
         if (localProvisioner == null) {
             int low = maxRangeHigh + 1;
 
@@ -379,7 +381,9 @@ public class MeshStorageService {
             mesh.unicastRange = new ArrayList<AddressRange>();
             mesh.unicastRange.add(new AddressRange(low, high));
             mesh.localAddress = low;
-            mesh.resetProvisionIndex(low + 1);
+//            if (meshStorage.provisionIndex == null) {
+//                mesh.resetProvisionIndex(low + 1);
+//            }
             mesh.addressTopLimit = high;
             mesh.sequenceNumber = 0;
 //            MeshStorage.Provisioner.AddressRange unicastRange = localProvisioner.allocatedUnicastRange.get(0);

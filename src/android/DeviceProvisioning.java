@@ -102,14 +102,6 @@ public class DeviceProvisioning implements EventListener<String> {
     this.ctx = ctx;
     this.appCtx = actCtx;
     this.callbackContext = callbackContext;
-    Handler handler = new Handler();
-    Runnable runnable = new Runnable() {
-      @Override
-      public void run() {
-        doSomething();
-      }
-    };
-    handler.postDelayed(runnable,SCAN_RESULT_DELAY);
 
     TelinkBleMeshHandler.getInstance().addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_BEGIN, this);
     TelinkBleMeshHandler.getInstance().addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_SUCCESS, this);
@@ -121,10 +113,6 @@ public class DeviceProvisioning implements EventListener<String> {
     TelinkBleMeshHandler.getInstance().addEventListener(ModelPublicationStatusMessage.class.getName(), this);
     mesh = TelinkBleMeshHandler.getInstance().getMeshInfo();
     startScan();
-  }
-  private void doSomething() {
-    // Do something here after the delay
-   // updateDevices(devices);
   }
 
   public void stop() {
@@ -473,7 +461,7 @@ public class DeviceProvisioning implements EventListener<String> {
 //      enableUI(true);
       return;
     }
-    startProvision(waitingDevice);
+    startProvision(waitingDevice, mesh.getProvisionIndex());
   }
   private NetworkingDevice getNextWaitingDevice() {
     for (NetworkingDevice device : devices) {
@@ -483,13 +471,13 @@ public class DeviceProvisioning implements EventListener<String> {
     }
     return null;
   }
-  public void startProvision(NetworkingDevice processingDevice) {
+  public void startProvision(NetworkingDevice processingDevice, int addr) {
     if (isScanning) {
       isScanning = false;
       MeshService.getInstance().stopScan();
     }
 
-    int address = TelinkBleMeshHandler.getInstance().getMeshInfo().getProvisionIndex();
+    int address = addr;//TelinkBleMeshHandler.getInstance().getMeshInfo().getProvisionIndex();
     MeshLogger.d("alloc address: " + address);
     if (!MeshUtils.validUnicastAddress(address)) {
 //      enableUI(true);

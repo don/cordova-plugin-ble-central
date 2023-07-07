@@ -41,7 +41,7 @@ import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 
-import com.alibaba.fastjson.JSON;
+//import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.megster.cordova.ble.central.model.AppSettings;
@@ -1420,7 +1420,7 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
         try {
             Log.d(TAG, "mesh_initialize: ");
             Boolean force = args.getBoolean(0);
-            if (!meshSdkInitialized || force) {
+            if (!meshSdkInitialized) {
                 mGson = new GsonBuilder().setPrettyPrinting().create();
                 meshSdkInitialized = true;
                 meshHandler = new TelinkBleMeshHandler();
@@ -1476,7 +1476,8 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
                 callbackContext.error(Util.makeError("1", "Device with given uuid not found"));
                 return;
             }
-            dp.startProvision(pvDevice);
+            int address = meshHandler.getMeshInfo().getProvisionIndex();
+            dp.startProvision(pvDevice,address);
             pvDevice.state = NetworkingState.PROVISIONING;
             meshStartProvisionCallbackContext = callbackContext;
         } catch (Exception e) {
@@ -1693,8 +1694,9 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
     CallbackContext deviceotaProgress = null;
     public void mesh_deviceOTA(CordovaArgs args, CallbackContext callbackContext) throws Exception {
         try {
+            //this.autoConnect();
             deviceotacallback = callbackContext;
-            deviceotaProgress = callbackContext;
+            //deviceotaProgress = callbackContext;
             String fileName = args.getString(0);
             int meshAddress = args.getInt(1);
             NodeInfo mNodeInfo = meshHandler.getMeshInfo().getDeviceByMeshAddress(meshAddress);
@@ -1755,13 +1757,13 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
             if (!AppSettings.ONLINE_STATUS_ENABLE) {
                 this.autoConnect();
                 MeshService.getInstance().getOnlineStatus();
+            }
                 int rspMax = meshHandler.getMeshInfo().getOnlineCountInAll();
                 int appKeyIndex = meshHandler.getMeshInfo().getDefaultAppKeyIndex();
                 OnOffGetMessage message = OnOffGetMessage.getSimple(0xFFFF, appKeyIndex, rspMax);
                 if(!MeshService.getInstance().sendMeshMessage(message)){
                     Util.sendPluginResult(callbackContext, (String) null);
                 };
-            }
         } catch (Exception e) {
             Util.sendPluginResult(callbackContext, e.getMessage());
         }
@@ -1888,34 +1890,38 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
         }
         else if (event.getType().equals(NodeStatusChangedEvent.EVENT_TYPE_NODE_STATUS_CHANGED)) {
             MeshInfo meshInfo = meshHandler.getMeshInfo();
+            String json = new Gson().toJson(meshInfo.nodes);
             if(sendOnOffcallback !=  null){
-                sendOnOffcallback.success(JSON.toJSONString(meshInfo.nodes));
+                sendOnOffcallback.success(json);
                 sendOnOffcallback = null;
             }
             if(sendLightnesscallback !=  null){
-                sendLightnesscallback.success(JSON.toJSONString(meshInfo.nodes));
+                sendLightnesscallback.success(json);
                 sendLightnesscallback = null;
             }
             if(sendCTLcallback !=  null){
-                sendCTLcallback.success(JSON.toJSONString(meshInfo.nodes));
+                sendCTLcallback.success(json);
                 sendCTLcallback = null;
             }
             if(onoffstatuscallback != null){
-                onoffstatuscallback.success(JSON.toJSONString(meshInfo.nodes));
+                onoffstatuscallback.success(json);
                 onoffstatuscallback = null;
             }
         }
         else if (event.getType().equals(GattOtaEvent.EVENT_TYPE_OTA_SUCCESS)) {
-            Util.sendPluginResult(deviceotacallback,"ota_success");
+            deviceotacallback.success("ota_success");
             deviceotacallback = null;
         }
         else if (event.getType().equals(GattOtaEvent.EVENT_TYPE_OTA_FAIL)) {
-            Util.sendPluginResult(deviceotacallback, "ota_fail");
+            deviceotacallback.success("ota_fail");
             deviceotacallback = null;
         }
         else if (event.getType().equals(GattOtaEvent.EVENT_TYPE_OTA_PROGRESS)) {
             int progress = ((GattOtaEvent) event).getProgress();
-            Util.sendPluginResult(deviceotaProgress, String.valueOf(progress));
+//            PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, String.valueOf(progress));
+//            pluginResult.setKeepCallback(true);
+           // deviceotacallback.sendPluginResult(pluginResult);
+            //Util.sendPluginResult(deviceotaProgress, String.valueOf(progress));
         }
     }
 

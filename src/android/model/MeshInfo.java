@@ -106,7 +106,7 @@ public class MeshInfo implements Serializable, Cloneable {
      *
      * @see NodeInfo#elementCnt
      */
-    private int provisionIndex = 1;
+    public int provisionIndex = 1;
 
     public int addressTopLimit = 0xFF;
 
@@ -156,6 +156,11 @@ public class MeshInfo implements Serializable, Cloneable {
                 return info;
         }
         return null;
+    }
+
+    public void updateNodeByUUID(@NonNull byte[] deviceUUID,NodeInfo deviceInfo){
+        NodeInfo local = getDeviceByUUID(deviceUUID);
+        local = deviceInfo;
     }
 
     public void insertDevice(NodeInfo deviceInfo) {
