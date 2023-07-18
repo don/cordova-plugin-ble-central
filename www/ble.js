@@ -499,6 +499,9 @@
         initialize: function initialize(force) {
             return exec('mesh_initialize', [force]);
         },
+        stopScan: function stopScan() {
+            return exec('mesh_stopScan');
+        },
         provScanDevices: function provScanDevices(params, success, failure) {
             cordova.exec(success, failure, pluginName, 'mesh_provScanDevices', []);
         },

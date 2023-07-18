@@ -1395,6 +1395,15 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
     // =========================================================
     //========================= Mesh Interface =================
     // =========================================================
+    public void mesh_stopScan(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+        Log.d(TAG, "mesh_stopScan");
+        if (dp == null) {
+            dp = new DeviceProvisioning();
+            dp.initialize(cordova.getActivity().getApplication(), cordova.getActivity(), callbackContext);
+            // TODO: we also have to destroy dp events we subscribed to.
+        }
+        dp.stop();
+    }
 
     /**
      *s
@@ -1477,6 +1486,15 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
                 return;
             }
             int address = meshHandler.getMeshInfo().getProvisionIndex();
+//            MeshInfo meshInfo = meshHandler.getMeshInfo();
+//            for (NodeInfo info : meshInfo.nodes) {
+//                   int ele = info.elementCnt;
+//                   int addr = info.meshAddress;
+//                   if(address>=addr && address<(addr+ele)){
+//                       meshHandler.getMeshInfo().increaseProvisionIndex(ele);
+//                       address = meshHandler.getMeshInfo().getProvisionIndex();
+//                   }
+          //  }
             dp.startProvision(pvDevice,address);
             pvDevice.state = NetworkingState.PROVISIONING;
             meshStartProvisionCallbackContext = callbackContext;
