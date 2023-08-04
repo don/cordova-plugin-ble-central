@@ -52,7 +52,9 @@ import com.megster.cordova.ble.central.model.NetworkingDevice;
 import com.megster.cordova.ble.central.model.NetworkingState;
 import com.megster.cordova.ble.central.model.NodeInfo;
 import com.megster.cordova.ble.central.model.NodeStatusChangedEvent;
+import com.megster.cordova.ble.central.model.OnlineState;
 import com.megster.cordova.ble.central.model.PrivateDevice;
+import com.megster.cordova.ble.central.model.UnitConvert;
 import com.megster.cordova.ble.central.model.json.MeshStorage;
 import com.megster.cordova.ble.central.model.json.MeshStorageService;
 import com.telink.ble.mesh.core.MeshUtils;
@@ -71,6 +73,7 @@ import com.telink.ble.mesh.core.message.generic.OnOffGetMessage;
 import com.telink.ble.mesh.core.message.generic.OnOffSetMessage;
 import com.telink.ble.mesh.core.message.lighting.CtlTemperatureSetMessage;
 import com.telink.ble.mesh.core.message.lighting.LightnessSetMessage;
+import com.telink.ble.mesh.core.message.time.TimeSetMessage;
 import com.telink.ble.mesh.entity.BindingDevice;
 import com.telink.ble.mesh.entity.CompositionData;
 import com.telink.ble.mesh.entity.ConnectionFilter;
@@ -92,6 +95,7 @@ import com.telink.ble.mesh.foundation.parameter.BindingParameters;
 import com.telink.ble.mesh.foundation.parameter.GattConnectionParameters;
 import com.telink.ble.mesh.foundation.parameter.GattOtaParameters;
 import com.telink.ble.mesh.util.Arrays;
+import com.telink.ble.mesh.util.LogInfo;
 import com.telink.ble.mesh.util.MeshLogger;
 
 import org.apache.cordova.CallbackContext;
@@ -244,11 +248,14 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
 
     @Override
     public void onDestroy() {
-        removeStateListener();
-        removeLocationStateListener();
-        for(Peripheral peripheral : peripherals.values()) {
-            peripheral.disconnect();
-        }
+//        removeStateListener();
+//        removeLocationStateListener();
+//        for(Peripheral peripheral : peripherals.values()) {
+//            peripheral.disconnect();
+//        }
+        super.onDestroy();
+        TelinkBleMeshHandler.getInstance().removeEventListener(this);
+        MeshService.getInstance().clear();
     }
 
     @Override
@@ -1433,20 +1440,19 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
                 mGson = new GsonBuilder().setPrettyPrinting().create();
                 meshSdkInitialized = true;
                 meshHandler = new TelinkBleMeshHandler();
-                meshHandler.initialize(cordova.getActivity().getApplication());
-                meshHandler.addEventListener(BindingEvent.EVENT_TYPE_BIND_SUCCESS, this);
+                meshHandler.initialize(this.cordova.getActivity().getApplicationContext());
+//                meshHandler.addEventListener(BindingEvent.EVENT_TYPE_BIND_SUCCESS, this);
                 meshHandler.addEventListener(AutoConnectEvent.EVENT_TYPE_AUTO_CONNECT_LOGIN, this);
-                meshHandler.addEventListener(BindingEvent.EVENT_TYPE_BIND_FAIL, this);
-                meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_SUCCESS, this);
-                meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_FAIL, this);
-                meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_BEGIN, this);
+//                meshHandler.addEventListener(BindingEvent.EVENT_TYPE_BIND_FAIL, this);
+//                meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_SUCCESS, this);
+//                meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_FAIL, this);
+//                meshHandler.addEventListener(ProvisioningEvent.EVENT_TYPE_PROVISION_BEGIN, this);
                 meshHandler.addEventListener(NodeStatusChangedEvent.EVENT_TYPE_NODE_STATUS_CHANGED, this);
                 meshHandler.addEventListener(GattOtaEvent.EVENT_TYPE_OTA_SUCCESS, this);
                 meshHandler.addEventListener(GattOtaEvent.EVENT_TYPE_OTA_PROGRESS, this);
                 meshHandler.addEventListener(GattOtaEvent.EVENT_TYPE_OTA_FAIL, this);
 
                 meshHandler.addEventListener(ModelSubscriptionStatusMessage.class.getName(), this);
-
 //                MeshService.getInstance().init(cordova.getContext(), meshHandler.getInstance());
 //                MeshConfiguration meshConfiguration = meshHandler.getMeshInfo().convertToConfiguration();
 //                MeshService.getInstance().setupMeshNetwork(meshConfiguration);
@@ -1478,7 +1484,7 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
                 dp.initialize(cordova.getActivity().getApplication(), cordova.getActivity(), callbackContext);
                 // TODO: we also have to destroy dp events we subscribed to.
             }
-//            dp.setCallbackContext(callbackContext);
+            dp.setCallbackContext(callbackContext);
 
             pvDevice = dp.getDevicebyUUID(deviceId);
             if (pvDevice == null) {
@@ -1521,10 +1527,17 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
     public void mesh_importMeshInfo(CordovaArgs args, CallbackContext callbackContext) throws Exception {
         try {
             String inMeshInfo = args.getString(0);
-            MeshInfo meshInfo = meshHandler.getMeshInfo();
-            meshHandler.setMeshInfo(MeshStorageService.getInstance().importExternal(inMeshInfo, meshInfo));
-            MeshConfiguration meshConfiguration = meshHandler.getMeshInfo().convertToConfiguration();
-            MeshService.getInstance().setupMeshNetwork(meshConfiguration);
+            MeshInfo localMesh = TelinkBleMeshHandler.getInstance().getMeshInfo();
+            MeshInfo newMesh = MeshStorageService.getInstance().importExternal(inMeshInfo, localMesh);
+            if (newMesh == null) {
+                Util.sendPluginResult(callbackContext, "mesh init failed");
+                return;
+            }
+            newMesh.saveOrUpdate(cordova.getActivity().getApplicationContext());
+            MeshService.getInstance().idle(true);
+            TelinkBleMeshHandler.getInstance().setupMesh(newMesh);
+//            meshHandler.setMeshInfo(newMesh);
+            MeshService.getInstance().setupMeshNetwork(newMesh.convertToConfiguration());
             Util.sendPluginResult(callbackContext, true);
         } catch (Exception e) {
             Util.sendPluginResult(callbackContext, e.getMessage());
@@ -1773,15 +1786,16 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
             onoffstatuscallback = callbackContext;
             AppSettings.ONLINE_STATUS_ENABLE = MeshService.getInstance().getOnlineStatus();
             if (!AppSettings.ONLINE_STATUS_ENABLE) {
-                this.autoConnect();
+//                this.autoConnect();
                 MeshService.getInstance().getOnlineStatus();
             }
-                int rspMax = meshHandler.getMeshInfo().getOnlineCountInAll();
-                int appKeyIndex = meshHandler.getMeshInfo().getDefaultAppKeyIndex();
-                OnOffGetMessage message = OnOffGetMessage.getSimple(0xFFFF, appKeyIndex, rspMax);
-                if(!MeshService.getInstance().sendMeshMessage(message)){
-                    Util.sendPluginResult(callbackContext, (String) null);
-                };
+            int rspMax = meshHandler.getMeshInfo().getOnlineCountInAll();
+            int appKeyIndex = meshHandler.getMeshInfo().getDefaultAppKeyIndex();
+            OnOffGetMessage message = OnOffGetMessage.getSimple(0xFFFF, appKeyIndex, rspMax);
+            if (!MeshService.getInstance().sendMeshMessage(message)) {
+                Util.sendPluginResult(callbackContext, (String) null);
+            }
+
         } catch (Exception e) {
             Util.sendPluginResult(callbackContext, e.getMessage());
         }
@@ -1790,6 +1804,7 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
     private void autoConnect() {
         MeshLogger.log("main auto connect");
         MeshInfo meshInfo = meshHandler.getMeshInfo();
+//        MeshService.getInstance().autoConnect(new AutoConnectParameters());
         if (meshInfo.nodes.size() == 0) {
             MeshService.getInstance().idle(true);
         } else {
@@ -1800,6 +1815,15 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
                 MeshService.getInstance().idle(true);
             }
             MeshService.getInstance().autoConnect(new AutoConnectParameters());
+
+
+            if (meshInfo.nodes != null) {
+                for (NodeInfo deviceInfo : meshInfo.nodes) {
+                    deviceInfo.setOnlineState(OnlineState.OFFLINE);
+                    deviceInfo.lum = 0;
+                    deviceInfo.temp = 0;
+                }
+            }
 //            MeshService.getInstance().getOnlineStatus();
 //            int rspMax = meshHandler.getMeshInfo().getOnlineCountInAll();
 //            int appKeyIndex = meshHandler.getMeshInfo().getDefaultAppKeyIndex();
@@ -1841,7 +1865,7 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
                 onKickOutFinish();
             }
         } else if (event.getType().equals(ProvisioningEvent.EVENT_TYPE_PROVISION_SUCCESS)) {
-            onProvisionSuccess((ProvisioningEvent) event);
+//            onProvisionSuccess((ProvisioningEvent) event);
         } else if (event.getType().equals(ProvisioningEvent.EVENT_TYPE_PROVISION_FAIL)) {
             onProvisionFail((ProvisioningEvent) event);
         } else if (event.getType().equals(ModelPublicationStatusMessage.class.getName())) {
@@ -1868,7 +1892,7 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
                         MeshInfo meshInfo = meshHandler.getMeshInfo();
                         NodeInfo deviceInfo = meshInfo.getDeviceByMeshAddress(addDeviceToGroupMeta.get(1));
                         if (addDeviceToGroupMeta.get(3) == 0) {
-                            deviceInfo.subList.add(String.format("%04X", addDeviceToGroupMeta.get(2)));
+                            deviceInfo.subList.add(String.valueOf(Integer.valueOf(String.format("%04X", addDeviceToGroupMeta.get(2)))));
                         } else {
                             deviceInfo.subList.remove(String.format("%04X", addDeviceToGroupMeta.get(2)));
                         }
@@ -1898,7 +1922,7 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
             } else {
                 MeshLogger.log("online status enabled");
             }
-//            sendTimeStatus();
+            sendTimeStatus();
 //            mHandler.postDelayed(new Runnable() {
 //                @Override
 //                public void run() {
@@ -1943,10 +1967,22 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
         }
     }
 
+    public void sendTimeStatus() {
+        mHandler.postDelayed(() -> {
+            long time = MeshUtils.getTaiTime();
+            int offset = UnitConvert.getZoneOffset();
+            final int address = 0xFFFF;
+            MeshInfo meshInfo = meshHandler.getInstance().getMeshInfo();
+            TimeSetMessage timeSetMessage = TimeSetMessage.getSimple(address, meshInfo.getDefaultAppKeyIndex(), time, offset, 1);
+            timeSetMessage.setAck(false);
+            MeshService.getInstance().sendMeshMessage(timeSetMessage);
+        }, 1500);
+    }
+
     private void onBindSuccess(BindingEvent event) {
         BindingDevice remote = event.getBindingDevice();
         MeshInfo mesh = meshHandler.getMeshInfo();
-
+    try {
         if (pvDevice != null) {
             pvDevice.addLog(NetworkingDevice.TAG_BIND, "success");
             pvDevice.nodeInfo.bound = true;
@@ -1963,7 +1999,7 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
             } else {
                 // no need to set time publish
                 pvDevice.state = NetworkingState.BIND_SUCCESS;
-                mesh.updateNodeByUUID(pvDevice.nodeInfo.deviceUUID, pvDevice.nodeInfo);
+//                mesh.updateNodeByUUID(pvDevice.nodeInfo.deviceUUID, pvDevice.nodeInfo);
                 mesh.saveOrUpdate(cordova.getContext());
                 provisionComplete();
             }
@@ -1981,6 +2017,9 @@ public class BLECentralPlugin extends CordovaPlugin implements EventListener<Str
                 meshBindDeviceCallbackContext = null;
             }
         }
+    } catch (Exception e) {
+        Log.e("edede", e.toString());
+    }
     }
 
     private void onBindFail(BindingEvent event) {

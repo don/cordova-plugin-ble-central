@@ -240,7 +240,7 @@ public class MeshInfo implements Serializable, Cloneable {
         for (NodeInfo device : nodes) {
             if (device.getOnOff() != -1) {
                 for (String addr : device.subList) {
-                    int grp_addr = Integer.parseInt(addr,16);
+                   int grp_addr = Integer.parseInt(addr,16);
                     if (grp_addr == groupAddress) {
                         result++;
                         break;

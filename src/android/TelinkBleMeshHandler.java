@@ -2,15 +2,16 @@ package com.megster.cordova.ble.central;
 
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 
-import com.google.gson.Gson;
 import com.megster.cordova.ble.central.model.AppSettings;
+import com.megster.cordova.ble.central.model.CertCacheService;
 import com.megster.cordova.ble.central.model.MeshInfo;
 import com.megster.cordova.ble.central.model.NodeInfo;
 import com.megster.cordova.ble.central.model.NodeStatusChangedEvent;
 import com.megster.cordova.ble.central.model.UnitConvert;
-import com.megster.cordova.ble.central.model.json.MeshStorageService;
 import com.telink.ble.mesh.core.message.MeshSigModel;
 import com.telink.ble.mesh.core.message.NotificationMessage;
 import com.telink.ble.mesh.core.message.StatusMessage;
@@ -19,6 +20,7 @@ import com.telink.ble.mesh.core.message.generic.OnOffStatusMessage;
 import com.telink.ble.mesh.core.message.lighting.CtlStatusMessage;
 import com.telink.ble.mesh.core.message.lighting.CtlTemperatureStatusMessage;
 import com.telink.ble.mesh.core.message.lighting.LightnessStatusMessage;
+import com.telink.ble.mesh.core.networking.ExtendBearerMode;
 import com.telink.ble.mesh.entity.OnlineStatusInfo;
 import com.telink.ble.mesh.foundation.Event;
 import com.telink.ble.mesh.foundation.EventBus;
@@ -27,6 +29,7 @@ import com.telink.ble.mesh.foundation.EventListener;
 import com.telink.ble.mesh.foundation.MeshApplication;
 import com.telink.ble.mesh.foundation.MeshConfiguration;
 import com.telink.ble.mesh.foundation.MeshService;
+import com.telink.ble.mesh.foundation.event.AutoConnectEvent;
 import com.telink.ble.mesh.foundation.event.MeshEvent;
 import com.telink.ble.mesh.foundation.event.NetworkInfoUpdateEvent;
 import com.telink.ble.mesh.foundation.event.OnlineStatusEvent;
@@ -39,9 +42,10 @@ import java.util.List;
 
 public class TelinkBleMeshHandler extends MeshApplication implements EventHandler {
   private String TAG = "TelinkBleMeshHandler";
-  private EventBus<String> mEventBus;
-  private MeshInfo meshInfo;
   private static TelinkBleMeshHandler mThis;
+  private Handler mOfflineCheckHandler;
+  private MeshInfo meshInfo;
+  private EventBus<String> mEventBus;
 
   // Very Important to call this before anything.
   // Because we are setting mThis to this.
@@ -50,15 +54,26 @@ public class TelinkBleMeshHandler extends MeshApplication implements EventHandle
     mEventBus = new EventBus<>();
     initMesh(ctx);
     startMeshService(ctx);
+    HandlerThread offlineCheckThread = new HandlerThread("offline check thread");
+    offlineCheckThread.start();
+    mOfflineCheckHandler = new Handler(offlineCheckThread.getLooper());
+    CertCacheService.getInstance().load(ctx);
+    MeshLogger.enableRecord(true);
   }
 
   private void startMeshService(Context ctx) {
-    MeshService.getInstance().init(ctx, this);
-    MeshConfiguration meshConfiguration = getMeshInfo().convertToConfiguration();
-    MeshService.getInstance().setupMeshNetwork(meshConfiguration);
-    MeshService.getInstance().checkBluetoothState();
+    try {
+      MeshService.getInstance().init(ctx, getInstance(), this);
+      MeshConfiguration meshConfiguration = getMeshInfo().convertToConfiguration();
+      MeshService.getInstance().setupMeshNetwork(meshConfiguration);
+      MeshService.getInstance().checkBluetoothState();
+    } catch (Exception e) {
+      Log.e("deed", e.toString());
+    }
+
     // set DLE enable
-    MeshService.getInstance().resetDELState(SharedPreferenceHelper.isDleEnable(ctx));
+//    MeshService.getInstance().resetDELState(SharedPreferenceHelper.isDleEnable(ctx));
+    MeshService.getInstance().resetExtendBearerMode(SharedPreferenceHelper.getExtendBearerMode(ctx));
   }
 
   private void initMesh(Context ctx) {
@@ -106,6 +121,10 @@ public class TelinkBleMeshHandler extends MeshApplication implements EventHandle
       nodeInfo.lum = lum;
     }
     return statusChanged;
+  }
+
+  public Handler getOfflineCheckHandler() {
+    return mOfflineCheckHandler;
   }
 
   private boolean onTempStatus(NodeInfo nodeInfo, int temp) {
@@ -258,6 +277,7 @@ public class TelinkBleMeshHandler extends MeshApplication implements EventHandle
     }
   }
 
+  @Override
   protected void onMeshEvent(MeshEvent meshEvent) {
     String eventType = meshEvent.getType();
     if (MeshEvent.EVENT_TYPE_DISCONNECTED.equals(eventType)) {

@@ -25,12 +25,14 @@ import android.os.Handler;
 import android.util.SparseBooleanArray;
 
 //import com.telink.ble.mesh.TelinkMeshApplication;
+import com.megster.cordova.ble.central.TelinkBleMeshHandler;
 import com.telink.ble.mesh.core.MeshUtils;
 import com.telink.ble.mesh.core.message.MeshSigModel;
 import com.telink.ble.mesh.entity.CompositionData;
 import com.telink.ble.mesh.entity.Scheduler;
 import com.telink.ble.mesh.util.Arrays;
 import com.telink.ble.mesh.util.MeshLogger;
+//import com.megster.cordova.ble.central.model.OnlineState;
 
 import java.io.Serializable;
 import java.nio.ByteOrder;
@@ -88,6 +90,7 @@ public class NodeInfo implements Serializable {
     /**
      * device subscription/group info
      */
+//    public List<Integer> subList = new ArrayList<>();
     public List<String> subList = new ArrayList<>();
 
     // device lightness
@@ -126,7 +129,7 @@ public class NodeInfo implements Serializable {
      * device on off state
      * 0:off 1:on -1:offline
      */
-//    private OnlineState onlineState = OnlineState.OFFLINE;
+   private OnlineState onlineState = OnlineState.OFFLINE;
 
     /**
      * default bind support
@@ -146,13 +149,13 @@ public class NodeInfo implements Serializable {
     public boolean selected = false;
 
 
+
     private OfflineCheckTask offlineCheckTask = new OfflineCheckTask() {
         @Override
         public void run() {
             onOff = -1;
             MeshLogger.log("offline check task running");
-            // TODO: Figure out
-//            TelinkMeshApplication.getInstance().dispatchEvent(new NodeStatusChangedEvent(TelinkMeshApplication.getInstance(), NodeStatusChangedEvent.EVENT_TYPE_NODE_STATUS_CHANGED, NodeInfo.this));
+            TelinkBleMeshHandler.getInstance().dispatchEvent(new NodeStatusChangedEvent(TelinkBleMeshHandler.getInstance(), NodeStatusChangedEvent.EVENT_TYPE_NODE_STATUS_CHANGED, NodeInfo.this));
         }
     };
 
@@ -167,15 +170,26 @@ public class NodeInfo implements Serializable {
     public void setOnOff(int onOff) {
         this.onOff = onOff;
         if (publishModel != null) {
-          // TODO: Figure out
-//            Handler handler = TelinkMeshApplication.getInstance().getOfflineCheckHandler();
-//            handler.removeCallbacks(offlineCheckTask);
-//            int timeout = publishModel.period * 3 + 2;
-//            if (this.onOff != -1 && timeout > 0) {
-//                handler.postDelayed(offlineCheckTask, timeout);
-//            }
+            Handler handler = TelinkBleMeshHandler.getInstance().getOfflineCheckHandler();
+            handler.removeCallbacks(offlineCheckTask);
+            int timeout = publishModel.period * 3 + 2;
+            if (this.onOff != -1 && timeout > 0) {
+                handler.postDelayed(offlineCheckTask, timeout);
+            }
         }
     }
+
+   public void setOnlineState(OnlineState onlineState) {
+       this.onlineState = onlineState;
+       if (publishModel != null) {
+           Handler handler = TelinkBleMeshHandler.getInstance().getOfflineCheckHandler();
+           handler.removeCallbacks(offlineCheckTask);
+           int timeout = publishModel.period * 3 + 2000;
+           if (this.onlineState != OnlineState.OFFLINE && timeout > 0) {
+               handler.postDelayed(offlineCheckTask, timeout);
+           }
+       }
+   }
 
 
     public boolean isPubSet() {
@@ -188,15 +202,14 @@ public class NodeInfo implements Serializable {
 
     public void setPublishModel(PublishModel model) {
         this.publishModel = model;
-      // TODO: Figure out
-//        Handler handler = TelinkMeshApplication.getInstance().getOfflineCheckHandler();
-//        handler.removeCallbacks(offlineCheckTask);
-//        if (this.publishModel != null && this.onOff != -1) {
-//            int timeout = publishModel.period * 3 + 2;
-//            if (timeout > 0) {
-//                handler.postDelayed(offlineCheckTask, timeout);
-//            }
-//        }
+        Handler handler = TelinkBleMeshHandler.getInstance().getOfflineCheckHandler();
+        handler.removeCallbacks(offlineCheckTask);
+        if (this.publishModel != null && this.onOff != -1) {
+            int timeout = publishModel.period * 3 + 2;
+            if (timeout > 0) {
+                handler.postDelayed(offlineCheckTask, timeout);
+            }
+        }
     }
 
     public boolean isRelayEnable() {

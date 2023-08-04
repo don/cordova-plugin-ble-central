@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.telink.ble.mesh.core.MeshUtils;
+import com.telink.ble.mesh.core.networking.ExtendBearerMode;
 import com.telink.ble.mesh.util.Arrays;
 
 
@@ -37,6 +38,8 @@ public class SharedPreferenceHelper {
   private static final String KEY_DLE_ENABLE = "com.telink.bluetooth.light.KEY_DLE_ENABLE";
 
   private static final String KEY_AUTO_PV = "com.telink.bluetooth.light.KEY_AUTO_PV";
+
+  private static final String KEY_EXTEND_BEARER_MODE = "com.telink.bluetooth.light.KEY_EXTEND_BEARER_MODE";
 
   public static boolean isFirstLoad(Context context) {
     SharedPreferences sharedPreferences = context.getSharedPreferences(DEFAULT_NAME, Context.MODE_PRIVATE);
@@ -141,6 +144,16 @@ public class SharedPreferenceHelper {
   public static void setAutoPvEnable(Context context, boolean enable) {
     SharedPreferences sharedPreferences = context.getSharedPreferences(DEFAULT_NAME, Context.MODE_PRIVATE);
     sharedPreferences.edit().putBoolean(KEY_AUTO_PV, enable).apply();
+  }
+
+  public static ExtendBearerMode getExtendBearerMode(Context context) {
+    SharedPreferences sharedPreferences = context.getSharedPreferences(DEFAULT_NAME, Context.MODE_PRIVATE);
+    return ExtendBearerMode.valueOf(sharedPreferences.getString(KEY_EXTEND_BEARER_MODE, ExtendBearerMode.NONE.name()));
+  }
+
+  public static void setExtendBearerMode(Context context, ExtendBearerMode extendBearerMode) {
+    SharedPreferences sharedPreferences = context.getSharedPreferences(DEFAULT_NAME, Context.MODE_PRIVATE);
+    sharedPreferences.edit().putString(KEY_EXTEND_BEARER_MODE, extendBearerMode.name()).apply();
   }
 
 }
