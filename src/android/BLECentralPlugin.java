@@ -1254,8 +1254,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             ScanFilter.Builder builder = new ScanFilter.Builder();
             ScanFilter filter = builder.build();
             filters.add(filter);
-        }
-        else if (serviceUUIDs != null && serviceUUIDs.length > 0) {
+        } else if (serviceUUIDs != null && serviceUUIDs.length > 0) {
             for (UUID uuid : serviceUUIDs) {
                 ScanFilter filter = new ScanFilter.Builder().setServiceUuid(
                         new ParcelUuid(uuid)).build();
