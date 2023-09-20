@@ -127,6 +127,7 @@ public class BLECentralPlugin extends CordovaPlugin {
 
     // scan options
     boolean reportDuplicates = false;
+    boolean forceScanFilter = false;
 
     private static final int REQUEST_BLUETOOTH_SCAN = 2;
     private static final int REQUEST_BLUETOOTH_CONNECT = 3;
@@ -410,6 +411,7 @@ public class BLECentralPlugin extends CordovaPlugin {
 
             resetScanOptions();
             this.reportDuplicates = options.optBoolean("reportDuplicates", false);
+            this.forceScanFilter = options.optBoolean("forceScanFilter", false);
             ScanSettings.Builder scanSettings = new ScanSettings.Builder();
 
             switch (options.optString("scanMode", "")) {
@@ -1248,7 +1250,12 @@ public class BLECentralPlugin extends CordovaPlugin {
         discoverCallback = callbackContext;
         final BluetoothLeScanner bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         List<ScanFilter> filters = new ArrayList<ScanFilter>();
-        if (serviceUUIDs != null && serviceUUIDs.length > 0) {
+        if (this.forceScanFilter) {
+            ScanFilter.Builder builder = new ScanFilter.Builder();
+            ScanFilter filter = builder.build();
+            filters.add(filter);
+        }
+        else if (serviceUUIDs != null && serviceUUIDs.length > 0) {
             for (UUID uuid : serviceUUIDs) {
                 ScanFilter filter = new ScanFilter.Builder().setServiceUuid(
                         new ParcelUuid(uuid)).build();
@@ -1450,6 +1457,7 @@ public class BLECentralPlugin extends CordovaPlugin {
      */
     private void resetScanOptions() {
         this.reportDuplicates = false;
+        this.forceScanFilter = false;
     }
 
     private void addBondStateListener() {

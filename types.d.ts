@@ -43,6 +43,8 @@ declare namespace BLECentralPlugin {
         legacy?: boolean;
         /* Android only */
         reportDelay?: number;
+        /* Android only */
+        forceScanFilter?: number;
 
         reportDuplicates?: boolean;
         /** Scanning duration in seconds */
