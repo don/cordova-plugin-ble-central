@@ -1,3 +1,6 @@
+= 1.7.1 =
+Android: Add forceScanFilter option for Android (#989, #987) thanks younesspotmaster
+
 = 1.7.0 =
 iOS: Prevent API warnings on iOS if Bluetooth is disabled during timed scan
 iOS: Ensure scan timeout is cleared and reset when new scans are started
