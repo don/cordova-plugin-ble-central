@@ -1250,17 +1250,17 @@ public class BLECentralPlugin extends CordovaPlugin {
         discoverCallback = callbackContext;
         final BluetoothLeScanner bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         List<ScanFilter> filters = new ArrayList<ScanFilter>();
-        if (this.forceScanFilter) {
-            ScanFilter.Builder builder = new ScanFilter.Builder();
-            ScanFilter filter = builder.build();
-            filters.add(filter);
-        } else if (serviceUUIDs != null && serviceUUIDs.length > 0) {
+        if (serviceUUIDs != null && serviceUUIDs.length > 0) {
             for (UUID uuid : serviceUUIDs) {
                 ScanFilter filter = new ScanFilter.Builder().setServiceUuid(
                         new ParcelUuid(uuid)).build();
                 filters.add(filter);
             }
+        } else if (this.forceScanFilter) {
+            ScanFilter filter = new ScanFilter.Builder().build();
+            filters.add(filter);
         }
+
         stopScanHandler.removeCallbacks(stopScanRunnable);
         bluetoothLeScanner.startScan(filters, scanSettings, leScanCallback);
 
