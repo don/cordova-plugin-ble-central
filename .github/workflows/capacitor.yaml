@@ -3,16 +3,16 @@ name: Capacitor
 on:
   workflow_dispatch:
   push:
-    branches: [ "master" ]
+    branches: ['master']
   pull_request:
-    branches: [ "master" ]
+    branches: ['master']
 
 jobs:
   capacitor-android:
     name: android@${{ matrix.capacitor }}
-    
+
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         include:
@@ -24,37 +24,36 @@ jobs:
             node: 14.x
 
     steps:
-    - uses: actions/checkout@v3
-    - name: set up JDK ${{ matrix.jdk }}
-      uses: actions/setup-java@v3
-      with:
-        java-version: ${{ matrix.jdk }}
-        distribution: 'temurin'
-    - name: Use Node.js ${{ matrix.node }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node }}
-    - name: Build test app
-      run: |
-        mkdir temp
-        cd temp
-        mkdir www
-        touch www/index.html
-        npm init -y
-        npm install ..
-        npm install @capacitor/cli@${{ matrix.capacitor }} @capacitor/core@${{ matrix.capacitor }} @capacitor/android@${{ matrix.capacitor }}
-        npx cap init test io.test.app
-        npx cap add android
-        npx cap sync android
-        cd android
-        chmod +x gradlew
-        ./gradlew build
-        
+      - uses: actions/checkout@v3
+      - name: set up JDK ${{ matrix.jdk }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ matrix.jdk }}
+          distribution: 'temurin'
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Build test app
+        run: |
+          mkdir temp
+          cd temp
+          mkdir www
+          touch www/index.html
+          npm init -y
+          npm install ..
+          npm install @capacitor/cli@${{ matrix.capacitor }} @capacitor/core@${{ matrix.capacitor }} @capacitor/android@${{ matrix.capacitor }}
+          npx cap init test io.test.app
+          npx cap add android
+          npx cap sync android
+          cd android
+          chmod +x gradlew
+          ./gradlew build
 
   capacitor-ios:
     name: ios@${{ matrix.capacitor }}
     runs-on: macos-latest
-    
+
     strategy:
       matrix:
         include:
@@ -62,22 +61,22 @@ jobs:
             node: 18.x
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node }}
-    - name: Build test app
-      run: |
-        mkdir temp
-        cd temp
-        mkdir www
-        touch www/index.html
-        npm init -y
-        npm install ..
-        npm install @capacitor/cli@${{ matrix.capacitor }} @capacitor/core@${{ matrix.capacitor }} @capacitor/ios@${{ matrix.capacitor }}
-        npx cap init test io.test.app
-        npx cap add ios
-        npx cap sync ios
-        cd ios
-        xcodebuild -workspace App/App.xcworkspace -scheme CapacitorCordova -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 14 Pro Max"
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Build test app
+        run: |
+          mkdir temp
+          cd temp
+          mkdir www
+          touch www/index.html
+          npm init -y
+          npm install ..
+          npm install @capacitor/cli@${{ matrix.capacitor }} @capacitor/core@${{ matrix.capacitor }} @capacitor/ios@${{ matrix.capacitor }}
+          npx cap init test io.test.app
+          npx cap add ios
+          npx cap sync ios
+          cd ios
+          xcodebuild -workspace App/App.xcworkspace -scheme CapacitorCordova -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 14 Pro Max"

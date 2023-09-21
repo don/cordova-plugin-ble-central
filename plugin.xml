@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="cordova-plugin-ble-central" version="1.7.0-slim">
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="cordova-plugin-ble-central" version="1.7.1-slim">
 
     <name>BLE</name>
     <description>Bluetooth Low Energy (BLE) Central Plugin</description>
@@ -76,6 +76,7 @@
         <source-file src="src/android/Helper.java" target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/UUIDHelper.java" target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/L2CAPContext.java" target-dir="src/com/megster/cordova/ble/central"/>
+        <framework src="androidx.annotation:annotation:*"/>
     </platform>
 
     <platform name="browser">
