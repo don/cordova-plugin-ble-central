@@ -158,6 +158,7 @@ Function `scan` scans for BLE devices. The success callback is called each time 
         "id": "BD922605-1B07-4D55-8D09-B66653E51BBA",
         "rssi": -79,
         "advertising": /* ArrayBuffer or map */
+        "connectable":"true" /*Only on Android >= API Level 26*/
     }
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
