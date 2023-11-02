@@ -158,7 +158,6 @@ Function `scan` scans for BLE devices. The success callback is called each time 
         "id": "BD922605-1B07-4D55-8D09-B66653E51BBA",
         "rssi": -79,
         "advertising": /* ArrayBuffer or map */
-        "connectable":"true" /*Only on Android >= API Level 26*/
     }
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
@@ -1309,6 +1308,7 @@ the [ble-central-advertisements](https://github.com/jospete/ble-central-advertis
         "id": "00:1A:7D:DA:71:13",
         "advertising": ArrayBuffer,
         "rssi": -37
+        "connectable":"true" /*Only on Android >= API Level 26*/
     }
 
 Convert the advertising info to a Uint8Array for processing. `var adData = new Uint8Array(peripheral.advertising)`. You application is responsible for parsing all the information out of the advertising ArrayBuffer using the [GAP type constants](https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile). For example to get the service data from the advertising info, I [parse the advertising info into a map](https://github.com/don/ITP-BluetoothLE/blob/887511c375b1ab2fbef3afe210d6a6b7db44cee9/phonegap/thermometer_v2/www/js/index.js#L18-L39) and then get the service data to retrieve a [characteristic value that is being broadcast](https://github.com/don/ITP-BluetoothLE/blob/887511c375b1ab2fbef3afe210d6a6b7db44cee9/phonegap/thermometer_v2/www/js/index.js#L93-L103).
