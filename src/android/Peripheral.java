@@ -53,6 +53,7 @@ public class Peripheral extends BluetoothGattCallback {
 
     private BluetoothDevice device;
     private byte[] advertisingData;
+    private boolean isConnectable = true;
     private int advertisingRSSI;
     private boolean autoconnect = false;
     private boolean connected = false;
@@ -81,6 +82,13 @@ public class Peripheral extends BluetoothGattCallback {
         this.advertisingRSSI = FAKE_PERIPHERAL_RSSI;
         this.advertisingData = null;
 
+    }
+
+    public Peripheral(BluetoothDevice device, int advertisingRSSI, byte[] scanRecord, boolean isConnectable) {
+        this.device = device;
+        this.advertisingRSSI = advertisingRSSI;
+        this.advertisingData = scanRecord;
+        this.isConnectable = isConnectable;
     }
 
     public Peripheral(BluetoothDevice device, int advertisingRSSI, byte[] scanRecord) {
@@ -279,6 +287,10 @@ public class Peripheral extends BluetoothGattCallback {
             // TODO real RSSI if we have it, else
             if (advertisingRSSI != FAKE_PERIPHERAL_RSSI) {
                 json.put("rssi", advertisingRSSI);
+            }
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                json.put("connectable", this.isConnectable);
             }
         } catch (JSONException e) { // this shouldn't happen
             e.printStackTrace();
@@ -515,10 +527,18 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     // Update rssi and scanRecord.
+    public void update(int rssi, byte[] scanRecord, boolean isConnectable) {
+        this.advertisingRSSI = rssi;
+        this.advertisingData = scanRecord;
+        this.isConnectable = isConnectable;
+    }
+
+
     public void update(int rssi, byte[] scanRecord) {
         this.advertisingRSSI = rssi;
         this.advertisingData = scanRecord;
     }
+
 
     public void updateRssi(int rssi) {
         advertisingRSSI = rssi;
@@ -1024,7 +1044,7 @@ public class Peripheral extends BluetoothGattCallback {
             }
         }
     }
-    
+
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
     public void unbond(CallbackContext callbackContext) {
         final int bondState = device.getBondState();
