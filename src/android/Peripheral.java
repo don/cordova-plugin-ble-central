@@ -53,6 +53,7 @@ public class Peripheral extends BluetoothGattCallback {
 
     private BluetoothDevice device;
     private byte[] advertisingData;
+    private Boolean isConnectable = null;
     private int advertisingRSSI;
     private boolean autoconnect = false;
     private boolean connected = false;
@@ -83,12 +84,11 @@ public class Peripheral extends BluetoothGattCallback {
 
     }
 
-    public Peripheral(BluetoothDevice device, int advertisingRSSI, byte[] scanRecord) {
-
+    public Peripheral(BluetoothDevice device, int advertisingRSSI, byte[] scanRecord, Boolean isConnectable) {
         this.device = device;
         this.advertisingRSSI = advertisingRSSI;
         this.advertisingData = scanRecord;
-
+        this.isConnectable = isConnectable;
     }
 
     private void gattConnect() {
@@ -279,6 +279,10 @@ public class Peripheral extends BluetoothGattCallback {
             // TODO real RSSI if we have it, else
             if (advertisingRSSI != FAKE_PERIPHERAL_RSSI) {
                 json.put("rssi", advertisingRSSI);
+            }
+
+            if (this.isConnectable != null) {
+                json.put("connectable", this.isConnectable.booleanValue());
             }
         } catch (JSONException e) { // this shouldn't happen
             e.printStackTrace();
@@ -515,10 +519,18 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     // Update rssi and scanRecord.
+    public void update(int rssi, byte[] scanRecord, boolean isConnectable) {
+        this.advertisingRSSI = rssi;
+        this.advertisingData = scanRecord;
+        this.isConnectable = isConnectable;
+    }
+
+
     public void update(int rssi, byte[] scanRecord) {
         this.advertisingRSSI = rssi;
         this.advertisingData = scanRecord;
     }
+
 
     public void updateRssi(int rssi) {
         advertisingRSSI = rssi;
@@ -1024,7 +1036,7 @@ public class Peripheral extends BluetoothGattCallback {
             }
         }
     }
-    
+
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
     public void unbond(CallbackContext callbackContext) {
         final int bondState = device.getBondState();

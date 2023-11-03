@@ -1,3 +1,6 @@
+= 1.7.2 =
+Android: add isConnectable Property for API26+ (O) #823 (#993) thanks @Gargamil
+
 = 1.7.1 =
 Android: Add forceScanFilter option for Android (#989, #987) thanks younesspotmaster
 
