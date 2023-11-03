@@ -1139,13 +1139,12 @@ public class BLECentralPlugin extends CordovaPlugin {
             boolean alreadyReported = peripherals.containsKey(address) && !peripherals.get(address).isUnscanned();
 
             if (!alreadyReported) {
-
-                Peripheral peripheral = null;
+                Boolean isConnectable = null;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    peripheral = new Peripheral(device, result.getRssi(), result.getScanRecord().getBytes(),result.isConnectable());
-                }else{
-                    peripheral = new Peripheral(device, result.getRssi(), result.getScanRecord().getBytes());
+                    isConnectable = result.isConnectable(); 
                 }
+
+                Peripheral peripheral = new Peripheral(device, result.getRssi(), result.getScanRecord().getBytes(), isConnectable);
                 peripherals.put(device.getAddress(), peripheral);
 
                 if (discoverCallback != null) {

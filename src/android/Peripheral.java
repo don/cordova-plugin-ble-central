@@ -53,7 +53,7 @@ public class Peripheral extends BluetoothGattCallback {
 
     private BluetoothDevice device;
     private byte[] advertisingData;
-    private boolean isConnectable = true;
+    private Boolean isConnectable = null;
     private int advertisingRSSI;
     private boolean autoconnect = false;
     private boolean connected = false;
@@ -84,19 +84,11 @@ public class Peripheral extends BluetoothGattCallback {
 
     }
 
-    public Peripheral(BluetoothDevice device, int advertisingRSSI, byte[] scanRecord, boolean isConnectable) {
+    public Peripheral(BluetoothDevice device, int advertisingRSSI, byte[] scanRecord, Boolean isConnectable) {
         this.device = device;
         this.advertisingRSSI = advertisingRSSI;
         this.advertisingData = scanRecord;
         this.isConnectable = isConnectable;
-    }
-
-    public Peripheral(BluetoothDevice device, int advertisingRSSI, byte[] scanRecord) {
-
-        this.device = device;
-        this.advertisingRSSI = advertisingRSSI;
-        this.advertisingData = scanRecord;
-
     }
 
     private void gattConnect() {
@@ -289,8 +281,8 @@ public class Peripheral extends BluetoothGattCallback {
                 json.put("rssi", advertisingRSSI);
             }
 
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                json.put("connectable", this.isConnectable);
+            if (this.isConnectable != null) {
+                json.put("connectable", this.isConnectable.booleanValue());
             }
         } catch (JSONException e) { // this shouldn't happen
             e.printStackTrace();

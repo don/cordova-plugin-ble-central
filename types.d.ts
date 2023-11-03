@@ -14,6 +14,8 @@ declare namespace BLECentralPlugin {
         id: string;
         rssi: number;
         advertising: ArrayBuffer | any;
+        /* Android only */
+        connectable?: boolean;
         state: PeripheralState;
     }
 
