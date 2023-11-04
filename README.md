@@ -1,6 +1,6 @@
 # Bluetooth Low Energy (BLE) Central Plugin for Apache Cordova
 
-[![npm version](https://img.shields.io/npm/v/cordova-plugin-ble-central.svg?style=flat)](https://www.npmjs.com/package/cordova-plugin-ble-central)
+[![npm version](https://img.shields.io/npm/v/cordova-plugin-ble-central.svg?style=flat)](https://www.npmjs.com/package/cordova-plugin-ble-central) ![maintained](https://img.shields.io/maintenance/yes/2023?style=flat-square) [![cordova builds](https://img.shields.io/github/actions/workflow/status/don/cordova-plugin-ble-central/.github/workflows/cordova.yml?branch=master&style=flat-square&label=cordova%20builds)](https://github.com/don/cordova-plugin-ble-central/actions/workflows/cordova.yml?query=branch%3Amaster) [![capacitor builds](https://img.shields.io/github/actions/workflow/status/don/cordova-plugin-ble-central/.github/workflows/capacitor.yaml?branch=master&style=flat-square&label=capacitor%20builds)](https://github.com/don/cordova-plugin-ble-central/actions/workflows/capacitor.yaml?query=branch%3Amaster)
 
 This plugin enables communication between a phone and Bluetooth Low Energy (BLE) peripherals.
 
