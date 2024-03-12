@@ -39,7 +39,7 @@ See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master
 
 The plugin can be further configured via the cordova preferences section of the [capacitor config file](https://capacitorjs.com/docs/cordova/migrating-from-cordova-to-capacitor#cordova-plugin-preferences):
 
-```
+```typescript
 const config = {
   ...
   cordova: {
@@ -83,13 +83,21 @@ All variables can be modified after installation by updating the values in `pack
 
 -   `ACCESS_BACKGROUND_LOCATION`: [**Android**] Tells the plugin to request the ACCESS_BACKGROUND_LOCATION permission on Android 10 & Android 11 in order for scanning to function when the app is not visible.
 
+## TypeScript
+
+TypeScript definitions are provided by this plugin. These can be added to a file by adding a [triple-slash reference](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html#-reference-types-) at the top of any file using this plugin:
+
+```typescript
+/// <reference types="cordova-plugin-ble-central" />
+```
+
 ## Android permission conflicts
 
 If you are having Android permissions conflicts with other plugins, try using the `slim` variant of the plugin instead with `cordova plugin add cordova-plugin-ble-central@slim`. This variant excludes all Android permissions, leaving it to the developer to ensure the right entries are added manually to the `AndroidManifest.xml` (see below for an example).
 
 To include the default set of permissions the plugin installs on Android SDK v31+, add the following snippet in your `config.xml` file, in the `<platform name="android">` section:
 
-```
+```xml
     <config-file target="AndroidManifest.xml" parent="/manifest">
         <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="28" />
         <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
@@ -146,19 +154,21 @@ For the best understanding about which permissions are needed for which combinat
 ## scan
 
 Scan and discover BLE peripherals.
-
-    ble.scan(services, seconds, success, failure);
-
+```javascript
+ble.scan(services, seconds, success, failure);
+```
 ### Description
 
 Function `scan` scans for BLE devices. The success callback is called each time a peripheral is discovered. Scanning automatically stops after the specified number of seconds.
 
-    {
-        "name": "TI SensorTag",
-        "id": "BD922605-1B07-4D55-8D09-B66653E51BBA",
-        "rssi": -79,
-        "advertising": /* ArrayBuffer or map */
-    }
+```json
+{
+    "name": "TI SensorTag",
+    "id": "BD922605-1B07-4D55-8D09-B66653E51BBA",
+    "rssi": -79,
+    "advertising": /* ArrayBuffer or map */
+}
+```
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
 
@@ -176,27 +186,32 @@ Location Services must be enabled for Bluetooth scanning. If location services a
 -   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
-
-    ble.scan([], 5, function(device) {
-        console.log(JSON.stringify(device));
-    }, failure);
+```javascript
+ble.scan([], 5, function(device) {
+    console.log(JSON.stringify(device));
+}, failure);
+```
 
 ## startScan
 
 Scan and discover BLE peripherals.
 
-    ble.startScan(services, success, failure);
+```javascript
+ble.startScan(services, success, failure);
+```
 
 ### Description
 
 Function `startScan` scans for BLE devices. The success callback is called each time a peripheral is discovered. Scanning will continue until `stopScan` is called.
 
-    {
-        "name": "TI SensorTag",
-        "id": "BD922605-1B07-4D55-8D09-B66653E51BBA",
-        "rssi": -79,
-        "advertising": /* ArrayBuffer or map */
-    }
+```json
+{
+    "name": "TI SensorTag",
+    "id": "BD922605-1B07-4D55-8D09-B66653E51BBA",
+    "rssi": -79,
+    "advertising": /* ArrayBuffer or map */
+}
+```
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
 
@@ -209,33 +224,38 @@ See the [location permission notes](#location-permission-notes) above for inform
 -   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
+```javascript
+ble.startScan([], function(device) {
+    console.log(JSON.stringify(device));
+}, failure);
 
-    ble.startScan([], function(device) {
-        console.log(JSON.stringify(device));
-    }, failure);
-
-    setTimeout(ble.stopScan,
-        5000,
-        function() { console.log("Scan complete"); },
-        function() { console.log("stopScan failed"); }
-    );
+setTimeout(ble.stopScan,
+    5000,
+    function() { console.log("Scan complete"); },
+    function() { console.log("stopScan failed"); }
+);
+```
 
 ## startScanWithOptions
 
 Scan and discover BLE peripherals, specifying scan options.
 
-    ble.startScanWithOptions(services, options, success, failure);
+```javascript
+ble.startScanWithOptions(services, options, success, failure);
+```
 
 ### Description
 
 Function `startScanWithOptions` scans for BLE devices. It operates similarly to the `startScan` function, but allows you to specify extra options (like allowing duplicate device reports). The success callback is called each time a peripheral is discovered. Scanning will continue until `stopScan` is called.
 
-    {
-        "name": "TI SensorTag",
-        "id": "BD922605-1B07-4D55-8D09-B66653E51BBA",
-        "rssi": -79,
-        "advertising": /* ArrayBuffer or map */
-    }
+```json
+{
+    "name": "TI SensorTag",
+    "id": "BD922605-1B07-4D55-8D09-B66653E51BBA",
+    "rssi": -79,
+    "advertising": /* ArrayBuffer or map */
+}
+```
 
 Advertising information format varies depending on your platform. See [Advertising Data](#advertising-data) for more information.
 
@@ -264,27 +284,29 @@ See the [location permission notes](#location-permission-notes) above for inform
 -   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
+```javascript
+ble.startScanWithOptions([],
+    { reportDuplicates: true }
+    function(device) {
+        console.log(JSON.stringify(device));
+    },
+    failure);
 
-    ble.startScanWithOptions([],
-        { reportDuplicates: true }
-        function(device) {
-            console.log(JSON.stringify(device));
-        },
-        failure);
-
-    setTimeout(ble.stopScan,
-        5000,
-        function() { console.log("Scan complete"); },
-        function() { console.log("stopScan failed"); }
-    );
+setTimeout(ble.stopScan,
+    5000,
+    function() { console.log("Scan complete"); },
+    function() { console.log("stopScan failed"); }
+);
+```
 
 ## stopScan
 
 Stop scanning for BLE peripherals.
-
-    ble.stopScan(success, failure);
-    // Or using await with promises
-    await ble.withPromises.stopScan()
+```javascript
+ble.stopScan(success, failure);
+// Or using await with promises
+await ble.withPromises.stopScan()
+```
 
 ### Description
 
@@ -296,33 +318,34 @@ Function `stopScan` stops scanning for BLE devices.
 -   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
+```javascript
+ble.startScan([], function(device) {
+    console.log(JSON.stringify(device));
+}, failure);
 
-    ble.startScan([], function(device) {
-        console.log(JSON.stringify(device));
-    }, failure);
+setTimeout(ble.stopScan,
+    5000,
+    function() { console.log("Scan complete"); },
+    function() { console.log("stopScan failed"); }
+);
 
-    setTimeout(ble.stopScan,
-        5000,
+/* Alternate syntax
+setTimeout(function() {
+    ble.stopScan(
         function() { console.log("Scan complete"); },
         function() { console.log("stopScan failed"); }
     );
-
-    /* Alternate syntax
-    setTimeout(function() {
-        ble.stopScan(
-            function() { console.log("Scan complete"); },
-            function() { console.log("stopScan failed"); }
-        );
-    }, 5000);
-    */
-
+}, 5000);
+*/
+```
 ## setPin
 
 Set device pin
-
-    ble.setPin(pin, [success], [failure]);
-    // Or using await with promises
-    await ble.withPromises.setPin(pin)
+```javascript
+ble.setPin(pin, [success], [failure]);
+// Or using await with promises
+await ble.withPromises.setPin(pin)
+```
 
 ### Description
 
@@ -337,11 +360,12 @@ Function `setPin` sets the pin when device requires it.
 ## bond
 
 Initiate a bond with a remote device
-
-    ble.bond(device_id, [success], [failure], [options]);
-    // Or using await with promises
-    await ble.withPromises.bond(device_id);
-    await ble.withPromises.bond(device_id, { usePairingDialog: true });
+```javascript
+ble.bond(device_id, [success], [failure], [options]);
+// Or using await with promises
+await ble.withPromises.bond(device_id);
+await ble.withPromises.bond(device_id, { usePairingDialog: true });
+```
 
 ### Description
 
@@ -363,10 +387,11 @@ bonding is complete. The bonding process may prompt the user to confirm the pair
 ## unbond
 
 Remove a bond for a remote device
-
-    ble.unbond(device_id, [success], [failure]);
-    // Or using await with promises
-    await ble.withPromises.unbond(device_id);
+```javascript
+ble.unbond(device_id, [success], [failure]);
+// Or using await with promises
+await ble.withPromises.unbond(device_id);
+```
 
 ### Description
 
@@ -386,10 +411,11 @@ bond has been removed.
 ## readBondState
 
 Get the bond state of a device as a string
-
-    ble.readBondState(device_id, [success], [failure]);
-    // Or using await with promises
-    const bondState = await ble.withPromises.readBondState(device_id);
+```javascript
+ble.readBondState(device_id, [success], [failure]);
+// Or using await with promises
+const bondState = await ble.withPromises.readBondState(device_id);
+```
 
 ### Description
 
@@ -414,8 +440,9 @@ Function `readBondState` retrieves the current bond state of the device.
 ## connect
 
 Connect to a peripheral.
-
-    ble.connect(device_id, connectCallback, disconnectCallback);
+```javascript
+ble.connect(device_id, connectCallback, disconnectCallback);
+```
 
 ### Description
 
@@ -438,8 +465,9 @@ For iOS, the plugin needs to know about any device UUID before calling connect. 
 ## autoConnect
 
 Establish an automatic connection to a peripheral.
-
-    ble.autoConnect(device_id, connectCallback, disconnectCallback);
+```javascript
+ble.autoConnect(device_id, connectCallback, disconnectCallback);
+```
 
 ### Description
 
@@ -462,10 +490,11 @@ See notes about [scanning before connecting](#scanning-before-connecting)
 ## disconnect
 
 Disconnect.
-
-    ble.disconnect(device_id, [success], [failure]);
-    // Or using await with promises
-    await ble.withPromises.disconnect(device_id)
+```javascript
+ble.disconnect(device_id, [success], [failure]);
+// Or using await with promises
+await ble.withPromises.disconnect(device_id)
+```
 
 ### Description
 
@@ -480,8 +509,9 @@ Function `disconnect` disconnects the selected device.
 ## requestMtu
 
 requestMtu
-
-    ble.requestMtu(device_id, mtu, [success], [failure]);
+```javascript
+ble.requestMtu(device_id, mtu, [success], [failure]);
+```
 
 ### Description
 
@@ -501,23 +531,25 @@ The resulting MTU size is sent to the success callback. The requested and result
 -   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
-
-    ble.requestMtu(device_id, new_mtu,
-        function(mtu){
-            alert("MTU set to: " + mtu);
-        },
-        function(failure){
-            alert("Failed to request MTU.");
-        }
-    );
+```javascript
+ble.requestMtu(device_id, new_mtu,
+    function(mtu){
+        alert("MTU set to: " + mtu);
+    },
+    function(failure){
+        alert("Failed to request MTU.");
+    }
+);
+```
 
 ## requestConnectionPriority
 
 requestConnectionPriority
-
-    ble.requestConnectionPriority(device_id, priority, [success], [failure]);
-    // Or using await with promises
-    await ble.withPromises.requestConnectionPriority(device_id, priority)
+```javascript
+ble.requestConnectionPriority(device_id, priority, [success], [failure]);
+// Or using await with promises
+await ble.withPromises.requestConnectionPriority(device_id, priority)
+```
 
 ### Description
 
@@ -541,21 +573,23 @@ Connection priority can be one of:
 -   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
-
-    ble.requestConnectionPriority(device_id, "high",
-        function() {
-            alert("success");
-        },
-        function(failure){
-            alert("Failed to request connection priority: " + failure);
-        }
-    );
+```javascript
+ble.requestConnectionPriority(device_id, "high",
+    function() {
+        alert("success");
+    },
+    function(failure){
+        alert("Failed to request connection priority: " + failure);
+    }
+);
+```
 
 ## refreshDeviceCache
 
 refreshDeviceCache
-
-    ble.refreshDeviceCache(deviceId, timeoutMillis,  [success], [failure]);
+```javascript
+ble.refreshDeviceCache(deviceId, timeoutMillis,  [success], [failure]);
+```
 
 ### Description
 
@@ -579,10 +613,11 @@ _NOTE_ Since this uses an undocumented API it's not guaranteed to work.
 ## read
 
 Reads the value of a characteristic.
-
-    ble.read(device_id, service_uuid, characteristic_uuid, success, failure);
-    // Or using await with promises
-    const data = await ble.withPromises.read(device_id, service_uuid, characteristic_uuid)
+```javascript
+ble.read(device_id, service_uuid, characteristic_uuid, success, failure);
+// Or using await with promises
+const data = await ble.withPromises.read(device_id, service_uuid, characteristic_uuid)
+```
 
 ### Description
 
@@ -601,25 +636,27 @@ Raw data is passed from native code to the callback as an [ArrayBuffer](#typed-a
 ### Quick Example
 
 Retrieves an [ArrayBuffer](#typed-arrays) when reading data.
-
-    // read data from a characteristic, do something with output data
-    ble.read(device_id, service_uuid, characteristic_uuid,
-        function(data){
-            console.log("Hooray we have data"+JSON.stringify(data));
-            alert("Successfully read data from device."+JSON.stringify(data));
-        },
-        function(failure){
-            alert("Failed to read characteristic from device.");
-        }
-    );
+```javascript
+// read data from a characteristic, do something with output data
+ble.read(device_id, service_uuid, characteristic_uuid,
+    function(data){
+        console.log("Hooray we have data"+JSON.stringify(data));
+        alert("Successfully read data from device."+JSON.stringify(data));
+    },
+    function(failure){
+        alert("Failed to read characteristic from device.");
+    }
+);
+```
 
 ## write
 
 Writes data to a characteristic.
-
-    ble.write(device_id, service_uuid, characteristic_uuid, data, success, failure);
-    // Or using await with promises
-    await ble.withPromises.write(device_id, service_uuid, characteristic_uuid, data)
+```javascript
+ble.write(device_id, service_uuid, characteristic_uuid, data, success, failure);
+// Or using await with promises
+await ble.withPromises.write(device_id, service_uuid, characteristic_uuid, data)
+```
 
 ### Description
 
@@ -637,31 +674,33 @@ Function `write` writes data to a characteristic.
 ### Quick Example
 
 Use an [ArrayBuffer](#typed-arrays) when writing data.
+```javascript
+// send 1 byte to switch a light on
+var data = new Uint8Array(1);
+data[0] = 1;
+ble.write(device_id, "FF10", "FF11", data.buffer, success, failure);
 
-    // send 1 byte to switch a light on
-    var data = new Uint8Array(1);
-    data[0] = 1;
-    ble.write(device_id, "FF10", "FF11", data.buffer, success, failure);
+// send a 3 byte value with RGB color
+var data = new Uint8Array(3);
+data[0] = 0xFF; // red
+data[1] = 0x00; // green
+data[2] = 0xFF; // blue
+ble.write(device_id, "ccc0", "ccc1", data.buffer, success, failure);
 
-    // send a 3 byte value with RGB color
-    var data = new Uint8Array(3);
-    data[0] = 0xFF; // red
-    data[1] = 0x00; // green
-    data[2] = 0xFF; // blue
-    ble.write(device_id, "ccc0", "ccc1", data.buffer, success, failure);
-
-    // send a 32 bit integer
-    var data = new Uint32Array(1);
-    data[0] = counterInput.value;
-    ble.write(device_id, SERVICE, CHARACTERISTIC, data.buffer, success, failure);
+// send a 32 bit integer
+var data = new Uint32Array(1);
+data[0] = counterInput.value;
+ble.write(device_id, SERVICE, CHARACTERISTIC, data.buffer, success, failure);
+```
 
 ## writeWithoutResponse
 
 Writes data to a characteristic without confirmation from the peripheral.
-
-    ble.writeWithoutResponse(device_id, service_uuid, characteristic_uuid, data, success, failure);
-    // Or using await with promises
-    await ble.withPromises.writeWithoutResponse(device_id, service_uuid, characteristic_uuid, data)
+```javascript
+ble.writeWithoutResponse(device_id, service_uuid, characteristic_uuid, data, success, failure);
+// Or using await with promises
+await ble.withPromises.writeWithoutResponse(device_id, service_uuid, characteristic_uuid, data)
+```
 
 ### Description
 
@@ -679,11 +718,12 @@ Function `writeWithoutResponse` writes data to a characteristic without a respon
 ## startNotification
 
 Register to be notified when the value of a characteristic changes.
-
-    ble.startNotification(device_id, service_uuid, characteristic_uuid, success, failure);
-    // Or using await with promises
-    // Note, initial promise resolves or rejects depending on whether the subscribe was successful
-    await ble.withPromises.startNotification(device_id, success, failure)
+```javascript
+ble.startNotification(device_id, service_uuid, characteristic_uuid, success, failure);
+// Or using await with promises
+// Note, initial promise resolves or rejects depending on whether the subscribe was successful
+await ble.withPromises.startNotification(device_id, success, failure)
+```
 
 ### Description
 
@@ -702,22 +742,24 @@ See [Background Notifications on iOS](#background-notifications-on-ios)
 -   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
+```javascript
+var onData = function(buffer) {
+    // Decode the ArrayBuffer into a typed Array based on the data you expect
+    var data = new Uint8Array(buffer);
+    alert("Button state changed to " + data[0]);
+}
 
-    var onData = function(buffer) {
-        // Decode the ArrayBuffer into a typed Array based on the data you expect
-        var data = new Uint8Array(buffer);
-        alert("Button state changed to " + data[0]);
-    }
-
-    ble.startNotification(device_id, "FFE0", "FFE1", onData, failure);
+ble.startNotification(device_id, "FFE0", "FFE1", onData, failure);
+```
 
 ## stopNotification
 
 Stop being notified when the value of a characteristic changes.
-
-    ble.stopNotification(device_id, service_uuid, characteristic_uuid, success, failure);
-    // Or using await with promises
-    await ble.withPromises.stopNotification(device_id)
+```javascript
+ble.stopNotification(device_id, service_uuid, characteristic_uuid, success, failure);
+// Or using await with promises
+await ble.withPromises.stopNotification(device_id)
+```
 
 ### Description
 
@@ -734,10 +776,11 @@ Function `stopNotification` stops a previously registered notification callback.
 ## isConnected
 
 Reports the connection status.
-
-    ble.isConnected(device_id, success, failure);
-    // Or using await with promises
-    await ble.withPromises.isConnected(device_id)
+```javascript
+ble.isConnected(device_id, success, failure);
+// Or using await with promises
+await ble.withPromises.isConnected(device_id)
+```
 
 ### Description
 
@@ -752,22 +795,24 @@ NOTE that for many apps isConnected is unncessary. The app can track the connect
 -   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
-
-    ble.isConnected(
-        'FFCA0B09-CB1D-4DC0-A1EF-31AFD3EDFB53',
-        function() {
-            console.log("Peripheral is connected");
-        },
-        function() {
-            console.log("Peripheral is *not* connected");
-        }
-    );
+```javascript
+ble.isConnected(
+    'FFCA0B09-CB1D-4DC0-A1EF-31AFD3EDFB53',
+    function() {
+        console.log("Peripheral is connected");
+    },
+    function() {
+        console.log("Peripheral is *not* connected");
+    }
+);
+```
 
 ## isEnabled
 
 Reports if bluetooth is enabled.
-
-    ble.isEnabled(success, failure);
+```javascript
+ble.isEnabled(success, failure);
+```
 
 ### Description
 
@@ -779,21 +824,23 @@ Function `isEnabled` calls the success callback when Bluetooth is enabled and th
 -   **failure**: Error callback function, invoked when Bluetooth is disabled.
 
 ### Quick Example
-
-    ble.isEnabled(
-        function() {
-            console.log("Bluetooth is enabled");
-        },
-        function() {
-            console.log("Bluetooth is *not* enabled");
-        }
-    );
+```javascript
+ble.isEnabled(
+    function() {
+        console.log("Bluetooth is enabled");
+    },
+    function() {
+        console.log("Bluetooth is *not* enabled");
+    }
+);
+```
 
 ## isLocationEnabled
 
 Reports if location services are enabled.
-
-    ble.isLocationEnabled(success, failure);
+```javascript
+ble.isLocationEnabled(success, failure);
+```
 
 ### Description
 
@@ -809,24 +856,26 @@ Function `isLocationEnabled` calls the success callback when location services a
 -   **failure**: Error callback function, invoked when location services are disabled.
 
 ### Quick Example
-
-    ble.isLocationEnabled(
-        function() {
-            console.log("location services are enabled");
-        },
-        function() {
-            console.log("location services are *not* enabled");
-        }
-    );
+```javascript
+ble.isLocationEnabled(
+    function() {
+        console.log("location services are enabled");
+    },
+    function() {
+        console.log("location services are *not* enabled");
+    }
+);
+```
 
 ## startLocationStateNotifications
 
 Registers to be notified when Location service state changes on the device.
-
-    ble.startLocationStateNotifications(success, failure);
-    // Or using await with promises
-    // Note, initial promise resolves or rejects depending on whether the subscribe was successful
-    await ble.withPromises.startLocationStateNotifications(success, failure)
+```javascript
+ble.startLocationStateNotifications(success, failure);
+// Or using await with promises
+// Note, initial promise resolves or rejects depending on whether the subscribe was successful
+await ble.withPromises.startLocationStateNotifications(success, failure)
+```
 
 ### Description
 
@@ -842,20 +891,22 @@ Function `startLocationStateNotifications` calls the success callback when the L
 -   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
-
-    ble.startLocationStateNotifications(
-        function(enabled) {
-            console.log("Location is " + enabled);
-        }
-    );
+```javascript
+ble.startLocationStateNotifications(
+    function(enabled) {
+        console.log("Location is " + enabled);
+    }
+);
+```
 
 ## stopLocationStateNotifications
 
 Stops state notifications.
-
-    ble.stopLocationStateNotifications(success, failure);
-    // Or using await with promises
-    await ble.withPromises.stopLocationStateNotifications()
+```javascript
+ble.stopLocationStateNotifications(success, failure);
+// Or using await with promises
+await ble.withPromises.stopLocationStateNotifications()
+```
 
 ### Description
 
@@ -868,11 +919,12 @@ Function `stopLocationStateNotifications` calls the success callback when Locati
 ## startStateNotifications
 
 Registers to be notified when Bluetooth state changes on the device.
-
-    ble.startStateNotifications(success, failure);
-    // Or using await with promises
-    // Note, initial promise resolves or rejects depending on whether the subscribe was successful
-    await ble.withPromises.startStateNotifications(success, failure)
+```javascript
+ble.startStateNotifications(success, failure);
+// Or using await with promises
+// Note, initial promise resolves or rejects depending on whether the subscribe was successful
+await ble.withPromises.startStateNotifications(success, failure)
+```
 
 ### Description
 
@@ -900,20 +952,22 @@ Function `startStateNotifications` calls the success callback when the Bluetooth
 -   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
-
-    ble.startStateNotifications(
-        function(state) {
-            console.log("Bluetooth is " + state);
-        }
-    );
+```javascript
+ble.startStateNotifications(
+    function(state) {
+        console.log("Bluetooth is " + state);
+    }
+);
+```
 
 ## stopStateNotifications
 
 Stops state notifications.
-
-    ble.stopStateNotifications(success, failure);
-    // Or using await with promises
-    await ble.withPromises.stopStateNotifications()
+```javascript
+ble.stopStateNotifications(success, failure);
+// Or using await with promises
+await ble.withPromises.stopStateNotifications()
+```
 
 ### Description
 
@@ -927,10 +981,11 @@ Function `stopStateNotifications` calls the success callback when Bluetooth stat
 ## showBluetoothSettings
 
 Show the Bluetooth settings on the device.
-
-    ble.showBluetoothSettings(success, failure);
-    // Or using await with promises
-    await ble.withPromises.showBluetoothSettings()
+```javascript
+ble.showBluetoothSettings(success, failure);
+// Or using await with promises
+await ble.withPromises.showBluetoothSettings()
+```
 
 ### Description
 
@@ -948,16 +1003,18 @@ Function `showBluetoothSettings` opens the Bluetooth settings for the operating 
 -   **failure**: Error callback function, invoked when error occurs. [optional]
 
 ### Quick Example
-
-    ble.showBluetoothSettings();
+```javascript
+ble.showBluetoothSettings();
+```
 
 ## enable
 
 Enable Bluetooth on the device.
-
-    ble.enable(success, failure);
-    // Or using await with promises
-    ble.withPromises.enable();
+```javascript
+ble.enable(success, failure);
+// Or using await with promises
+ble.withPromises.enable();
+```
 
 ### Description
 
@@ -977,21 +1034,23 @@ If `enable` is called when Bluetooth is already enabled, the user will not promp
 -   **failure**: Error callback function, invoked if the user does not enabled Bluetooth.
 
 ### Quick Example
-
-    ble.enable(
-        function() {
-            console.log("Bluetooth is enabled");
-        },
-        function() {
-            console.log("The user did *not* enable Bluetooth");
-        }
-    );
+```javascript
+ble.enable(
+    function() {
+        console.log("Bluetooth is enabled");
+    },
+    function() {
+        console.log("The user did *not* enable Bluetooth");
+    }
+);
+```
 
 ## readRSSI
 
 Read the RSSI value on the device connection.
-
-    ble.readRSSI(device_id, success, failure);
+```javascript
+ble.readRSSI(device_id, success, failure);
+```
 
 ### Description
 
@@ -1004,27 +1063,28 @@ Samples the RSSI value (a measure of signal strength) on the connection to a blu
 -   **failure**: Error callback function, invoked if there is no current connection or if there is an error reading the RSSI.
 
 ### Quick Example
-
-    var rssiSample;
-    ble.connect(device_id,
-        function(device) {
-            rssiSample = setInterval(function() {
-                    ble.readRSSI(device_id, function(rssi) {
-                            console.log('read RSSI',rssi,'with device', device_id);
-                        }, function(err) {
-                            console.error('unable to read RSSI',err);
-                            clearInterval(rssiSample);
-                            })
-                }, 5000);
-        },
-        function(err) { console.error('error connecting to device')}
-        );
-
+```javascript
+var rssiSample;
+ble.connect(device_id,
+    function(device) {
+        rssiSample = setInterval(function() {
+                ble.readRSSI(device_id, function(rssi) {
+                        console.log('read RSSI',rssi,'with device', device_id);
+                    }, function(err) {
+                        console.error('unable to read RSSI',err);
+                        clearInterval(rssiSample);
+                        })
+            }, 5000);
+    },
+    function(err) { console.error('error connecting to device')}
+);
+```
 ## connectedPeripheralsWithServices
 
 Find the connected peripherals offering the listed service UUIDs.
-
-    ble.connectedPeripheralsWithServices([service], success, failure);
+```javascript
+ble.connectedPeripheralsWithServices([service], success, failure);
+```
 
 ### Description
 
@@ -1043,8 +1103,9 @@ Retreives a list of the peripherals (containing any of the specified services) c
 ## peripheralsWithIdentifiers
 
 Find the connected peripherals offering the listed peripheral UUIDs.
-
-    ble.peripheralsWithIdentifiers([uuids], success, failure);
+```javascript
+ble.peripheralsWithIdentifiers([uuids], success, failure);
+```
 
 ### Description
 
@@ -1063,10 +1124,11 @@ Sends a list of known peripherals by their identifiers to the success callback. 
 ## restoredBluetoothState
 
 Retrieve the CBManager restoration state (if applicable)
-
-    ble.restoredBluetoothState(success, failure);
-    // Or using await with promises
-    await ble.withPromises.restoredBluetoothState();
+```javascript
+ble.restoredBluetoothState(success, failure);
+// Or using await with promises
+await ble.withPromises.restoredBluetoothState();
+```
 
 ### Description
 
@@ -1088,10 +1150,11 @@ If the application has no state restored, this will return an empty object.
 ## list
 
 Lists all peripherals discovered by the plugin due to scanning or connecting since app launch.
-
-    ble.list(success, failure);
-    // Or using await with promises
-    await ble.withPromises.list();
+```javascript
+ble.list(success, failure);
+// Or using await with promises
+await ble.withPromises.list();
+```
 
 ### Description
 
@@ -1109,10 +1172,11 @@ Sends a list of bonded low energy peripherals to the success callback.
 ## bondedDevices
 
 Find the bonded devices.
-
-    ble.bondedDevices(success, failure);
-    // Or using await with promises
-    await ble.withPromises.bondedDevices();
+```javascript
+ble.bondedDevices(success, failure);
+// Or using await with promises
+await ble.withPromises.bondedDevices();
+```
 
 ### Description
 
@@ -1130,16 +1194,18 @@ Sends a list of bonded low energy peripherals to the success callback.
 ## l2cap.open
 
 Open an L2CAP channel with a connected peripheral. The PSM is assigned by the peripheral, or possibly defined by the Bluetooth standard.
-
-    ble.l2cap.open(device_id, psm, connectCallback, disconnectCallback);
-    // Or using await with promises
-    await ble.withPromises.l2cap.open(device_id, psm, disconnectCallback);
+```javascript
+ble.l2cap.open(device_id, psm, connectCallback, disconnectCallback);
+// Or using await with promises
+await ble.withPromises.l2cap.open(device_id, psm, disconnectCallback);
+```
 
 Android supports additional arguments in the psm flag to select whether the L2CAP channel is insecure or secure (iOS does this automatically):
-
-    ble.l2cap.open(device_id, { psm: psm, secureChannel: true }, connectCallback, disconnectCallback);
-    // Or using await with promises
-    await ble.withPromises.l2cap.open(device_id, { psm: psm, secureChannel: true }, disconnectCallback);
+```javascript
+ble.l2cap.open(device_id, { psm: psm, secureChannel: true }, connectCallback, disconnectCallback);
+// Or using await with promises
+await ble.withPromises.l2cap.open(device_id, { psm: psm, secureChannel: true }, disconnectCallback);
+```
 
 ### Description
 
@@ -1162,10 +1228,11 @@ The PSM (protocol/service multiplexer) is specified by the peripheral when it op
 ## l2cap.close
 
 Close an L2CAP channel.
-
-    ble.l2cap.close(device_id, psm, success, failure);
-    // Or using await with promises
-    await ble.withPromises.l2cap.close(device_id, psm);
+```javascript
+ble.l2cap.close(device_id, psm, success, failure);
+// Or using await with promises
+await ble.withPromises.l2cap.close(device_id, psm);
+```
 
 ### Description
 
@@ -1186,8 +1253,9 @@ Closes an open L2CAP channel with the selected device. All pending reads and wri
 ## l2cap.receiveData
 
 Receive data from an L2CAP channel.
-
-    ble.l2cap.receiveData(device_id, psm, dataCallback);
+```javascript
+ble.l2cap.receiveData(device_id, psm, dataCallback);
+```
 
 ### Description
 
@@ -1207,10 +1275,11 @@ Sets the function to be called whenever bytes are received on the L2CAP channel.
 ## l2cap.write
 
 Write data to an L2CAP channel.
-
-    ble.l2cap.write(device_id, psm, data, success, failure);
-    // Or using await with promises
-    await ble.withPromises.l2cap.write(device_id, psm, data);
+```javascript
+ble.l2cap.write(device_id, psm, data, success, failure);
+// Or using await with promises
+await ble.withPromises.l2cap.write(device_id, psm, data);
+```
 
 ### Description
 
@@ -1232,65 +1301,67 @@ Writes all data to an open L2CAP channel. If the data exceeds the available spac
 # Peripheral Data
 
 Peripheral Data is passed to the success callback when scanning and connecting. Limited data is passed when scanning.
-
-    {
-        "name": "Battery Demo",
-        "id": "20:FF:D0:FF:D1:C0",
-        "advertising": [2,1,6,3,3,15,24,8,9,66,97,116,116,101,114,121],
-        "rssi": -55
-    }
+```json
+{
+    "name": "Battery Demo",
+    "id": "20:FF:D0:FF:D1:C0",
+    "advertising": [2,1,6,3,3,15,24,8,9,66,97,116,116,101,114,121],
+    "rssi": -55
+}
+```
 
 After connecting, the peripheral object also includes service, characteristic and descriptor information.
-
-    {
-        "name": "Battery Demo",
-        "id": "20:FF:D0:FF:D1:C0",
-        "advertising": [2,1,6,3,3,15,24,8,9,66,97,116,116,101,114,121],
-        "rssi": -55,
-        "services": [
-            "1800",
-            "1801",
-            "180f"
-        ],
-        "characteristics": [
-            {
-                "service": "1800",
-                "characteristic": "2a00",
-                "properties": [
-                    "Read"
-                ]
-            },
-            {
-                "service": "1800",
-                "characteristic": "2a01",
-                "properties": [
-                    "Read"
-                ]
-            },
-            {
-                "service": "1801",
-                "characteristic": "2a05",
-                "properties": [
-                    "Read"
-                ]
-            },
-            {
-                "service": "180f",
-                "characteristic": "2a19",
-                "properties": [
-                    "Read"
-                ],
-                "descriptors": [
-                    {
-                        "uuid": "2901"
-                    },
-                    {
-                        "uuid": "2904"
-                    }
-                ]
-            }
-        ]
-    }
+```json
+{
+    "name": "Battery Demo",
+    "id": "20:FF:D0:FF:D1:C0",
+    "advertising": [2,1,6,3,3,15,24,8,9,66,97,116,116,101,114,121],
+    "rssi": -55,
+    "services": [
+        "1800",
+        "1801",
+        "180f"
+    ],
+    "characteristics": [
+        {
+            "service": "1800",
+            "characteristic": "2a00",
+            "properties": [
+                "Read"
+            ]
+        },
+        {
+            "service": "1800",
+            "characteristic": "2a01",
+            "properties": [
+                "Read"
+            ]
+        },
+        {
+            "service": "1801",
+            "characteristic": "2a05",
+            "properties": [
+                "Read"
+            ]
+        },
+        {
+            "service": "180f",
+            "characteristic": "2a19",
+            "properties": [
+                "Read"
+            ],
+            "descriptors": [
+                {
+                    "uuid": "2901"
+                },
+                {
+                    "uuid": "2904"
+                }
+            ]
+        }
+    ]
+}
+```
 
 # Advertising Data
 
@@ -1302,53 +1373,56 @@ To get consistent advertising data payloads across platforms, you can use
 the [ble-central-advertisements](https://github.com/jospete/ble-central-advertisements) module.
 
 ## Android
-
-    {
-        "name": "demo",
-        "id": "00:1A:7D:DA:71:13",
-        "advertising": ArrayBuffer,
-        "rssi": -37
-        "connectable":"true" /*Only on Android >= API Level 26*/
-    }
+```json
+{
+    "name": "demo",
+    "id": "00:1A:7D:DA:71:13",
+    "advertising": ArrayBuffer,
+    "rssi": -37
+    "connectable":"true" /*Only on Android >= API Level 26*/
+}
+```
 
 Convert the advertising info to a Uint8Array for processing. `var adData = new Uint8Array(peripheral.advertising)`. You application is responsible for parsing all the information out of the advertising ArrayBuffer using the [GAP type constants](https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile). For example to get the service data from the advertising info, I [parse the advertising info into a map](https://github.com/don/ITP-BluetoothLE/blob/887511c375b1ab2fbef3afe210d6a6b7db44cee9/phonegap/thermometer_v2/www/js/index.js#L18-L39) and then get the service data to retrieve a [characteristic value that is being broadcast](https://github.com/don/ITP-BluetoothLE/blob/887511c375b1ab2fbef3afe210d6a6b7db44cee9/phonegap/thermometer_v2/www/js/index.js#L93-L103).
 
 ## iOS
 
 Note that iOS uses the string value of the constants for the [Advertisement Data Retrieval Keys](https://developer.apple.com/library/ios/documentation/CoreBluetooth/Reference/CBCentralManagerDelegate_Protocol/index.html#//apple_ref/doc/constant_group/Advertisement_Data_Retrieval_Keys). This will likely change in the future.
-
-    {
-        "name": "demo"
-        "id": "15B4F1C5-C9C0-4441-BD9F-1A7ED8F7A365",
-        "advertising": {
-            "kCBAdvDataLocalName": "demo",
-            "kCBAdvDataManufacturerData": {}, // arraybuffer data not shown
-            "kCBAdvDataServiceUUIDs": [
-                "721b"
-            ],
-            "kCBAdvDataIsConnectable": true,
-            "kCBAdvDataServiceData": {
-                "BBB0": {}   // arraybuffer data not shown
-            },
+```json
+{
+    "name": "demo"
+    "id": "15B4F1C5-C9C0-4441-BD9F-1A7ED8F7A365",
+    "advertising": {
+        "kCBAdvDataLocalName": "demo",
+        "kCBAdvDataManufacturerData": {}, // arraybuffer data not shown
+        "kCBAdvDataServiceUUIDs": [
+            "721b"
+        ],
+        "kCBAdvDataIsConnectable": true,
+        "kCBAdvDataServiceData": {
+            "BBB0": {}   // arraybuffer data not shown
         },
-        "rssi": -61
+    },
+    "rssi": -61
+}
+```
+
+Some of the values such as `kCBAdvDataManufacturerData` are `ArrayBuffers`. The data won't print out, but you can convert it to bytes using `new Uint8Array(peripheral.advertisting.kCBAdvDataManufacturerData)`. Your application is responsible for parsing and decoding any binary data such as `kCBAdvDataManufacturerData` or `kCBAdvDataServiceData`.
+```javascript
+function onDiscoverDevice(device) {
+    // log the device as JSON
+    console.log('Found Device', JSON.stringify(device, null, 2));
+
+    // on iOS, print the manufacturer data if it exists
+    if (device.advertising && device.advertising.kCBAdvDataManufacturerData) {
+        const mfgData = new Uint8Array(device.advertising.kCBAdvDataManufacturerData);
+        console.log('Manufacturer Data is', mfgData);
     }
 
-Some of the values such as kCBAdvDataManufacturerData are ArrayBuffers. The data won't print out, but you can convert it to bytes using `new Uint8Array(peripheral.advertisting.kCBAdvDataManufacturerData)`. Your application is responsible for parsing and decoding any binary data such as kCBAdvDataManufacturerData or kCBAdvDataServiceData.
+}
 
-    function onDiscoverDevice(device) {
-        // log the device as JSON
-        console.log('Found Device', JSON.stringify(device, null, 2));
-
-        // on iOS, print the manufacturer data if it exists
-        if (device.advertising && device.advertising.kCBAdvDataManufacturerData) {
-            const mfgData = new Uint8Array(device.advertising.kCBAdvDataManufacturerData);
-            console.log('Manufacturer Data is', mfgData);
-        }
-
-    }
-
-    ble.scan([], 5, onDiscoverDevice, onError);
+ble.scan([], 5, onDiscoverDevice, onError);
+```
 
 ## Browser
 
@@ -1364,20 +1438,21 @@ Scan must be initiated from a user action (click, touch, etc).
 This plugin uses typed Arrays or ArrayBuffers for sending and receiving data.
 
 This means that you need convert your data to ArrayBuffers before sending and from ArrayBuffers when receiving.
-
-    // ASCII only
-    function stringToBytes(string) {
-       var array = new Uint8Array(string.length);
-       for (var i = 0, l = string.length; i < l; i++) {
-           array[i] = string.charCodeAt(i);
-        }
-        return array.buffer;
+```javascript
+// ASCII only
+function stringToBytes(string) {
+   var array = new Uint8Array(string.length);
+   for (var i = 0, l = string.length; i < l; i++) {
+       array[i] = string.charCodeAt(i);
     }
+    return array.buffer;
+}
 
-    // ASCII only
-    function bytesToString(buffer) {
-        return String.fromCharCode.apply(null, new Uint8Array(buffer));
-    }
+// ASCII only
+function bytesToString(buffer) {
+    return String.fromCharCode.apply(null, new Uint8Array(buffer));
+}
+```
 
 You can read more about typed arrays in these articles on [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays) and [HTML5 Rocks](http://www.html5rocks.com/en/tutorials/webgl/typed_arrays/).
 
@@ -1394,14 +1469,15 @@ Android applications will continue to receive notification while the application
 iOS applications need additional configuration to allow Bluetooth to run in the background.
 
 Add a new section to config.xml
-
-    <platform name="ios">
-        <config-file parent="UIBackgroundModes" target="*-Info.plist">
-            <array>
-                <string>bluetooth-central</string>
-            </array>
-        </config-file>
-    </platform>
+```xml
+<platform name="ios">
+    <config-file parent="UIBackgroundModes" target="*-Info.plist">
+        <array>
+            <string>bluetooth-central</string>
+        </array>
+    </config-file>
+</platform>
+```
 
 See [ble-background](https://github.com/don/ble-background) example project for more details.
 
