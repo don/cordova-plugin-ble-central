@@ -11,7 +11,7 @@ jobs:
   cordova-android:
     name: android@${{ matrix.platform }} cordova@${{ matrix.cordova }}
     
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-${{ matrix.ubuntu }}
     
     strategy:
       matrix:
@@ -20,14 +20,17 @@ jobs:
             cordova: latest
             platform: latest
             node: 18.x
+            ubuntu: 22.04
           - jdk: 11
             cordova: 11
             platform: 10
             node: 14.x
+            ubuntu: 20.04
           - jdk: 8
             cordova: 10
             platform: 10
             node: 14.x
+            ubuntu: 20.04
 
     steps:
     - uses: actions/checkout@v3
