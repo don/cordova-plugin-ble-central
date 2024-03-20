@@ -21,16 +21,19 @@ jobs:
             platform: latest
             node: 18.x
             ubuntu: 22.04
+            android-cmdline-tools-version: 10406996
           - jdk: 11
             cordova: 11
             platform: 10
             node: 14.x
             ubuntu: 20.04
+            android-cmdline-tools-version: 9862592
           - jdk: 8
             cordova: 10
             platform: 10
             node: 14.x
             ubuntu: 20.04
+            android-cmdline-tools-version: 8512546
 
     steps:
     - uses: actions/checkout@v3
@@ -45,6 +48,8 @@ jobs:
         node-version: ${{ matrix.node }}
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
+      with:
+        cmdline-tools-version: ${{ matrix.android-cmdline-tools-version }}
     - name: Build test app
       run: |
         sdkmanager "build-tools;30.0.3"
