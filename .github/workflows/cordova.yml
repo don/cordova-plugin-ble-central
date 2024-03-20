@@ -45,6 +45,7 @@ jobs:
         node-version: ${{ matrix.node }}
     - name: Build test app
       run: |
+        sdkmanager "build-tools;30.0.3"
         npm install -g cordova@${{ matrix.cordova }}
         cordova create temp
         cd temp
