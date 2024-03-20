@@ -38,12 +38,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: set up JDK ${{ matrix.jdk }}
+    - name: Setup JDK ${{ matrix.jdk }}
       uses: actions/setup-java@v3
       with:
         java-version: ${{ matrix.jdk }}
         distribution: 'temurin'
-    - name: Use Node.js ${{ matrix.node }}
+    - name: Setup Node.js ${{ matrix.node }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node }}
