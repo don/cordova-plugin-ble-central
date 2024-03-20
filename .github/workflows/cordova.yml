@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-${{ matrix.ubuntu }}
     
     strategy:
+      fail-fast: false
       matrix:
         include:
           - jdk: 16
