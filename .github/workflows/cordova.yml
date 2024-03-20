@@ -43,6 +43,8 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node }}
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
     - name: Build test app
       run: |
         sdkmanager "build-tools;30.0.3"
