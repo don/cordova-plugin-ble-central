@@ -409,7 +409,7 @@
     CBPeripheral *peripheral = [self findPeripheralByUUID:[command argumentAtIndex:0]];
 
     if (peripheral && peripheral.state == CBPeripheralStateConnected) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:true];
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Not connected"];
     }
