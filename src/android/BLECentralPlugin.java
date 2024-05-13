@@ -212,7 +212,7 @@ public class BLECentralPlugin extends CordovaPlugin {
         boolean validAction = true;
         if (action.equals(STOP_SCAN)) {
             stopScan();
-            callbackContext.success();
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, true));
 
         } else if (action.equals(LIST)) {
 
@@ -328,7 +328,7 @@ public class BLECentralPlugin extends CordovaPlugin {
         } else if (action.equals(IS_ENABLED)) {
 
             if (bluetoothAdapter.isEnabled()) {
-                callbackContext.success();
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, true));
             } else {
                 callbackContext.error("Bluetooth is disabled.");
             }
@@ -346,7 +346,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             String macAddress = args.getString(0);
 
             if (peripherals.containsKey(macAddress) && peripherals.get(macAddress).isConnected()) {
-                callbackContext.success();
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, true));
             } else {
                 callbackContext.error("Not connected");
             }
@@ -381,7 +381,7 @@ public class BLECentralPlugin extends CordovaPlugin {
                 this.stateCallback = null;
             }
             removeStateListener();
-            callbackContext.success();
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, true));
 
         } else if (action.equals(START_LOCATION_STATE_NOTIFICATIONS)) {
 
@@ -793,7 +793,7 @@ public class BLECentralPlugin extends CordovaPlugin {
         Peripheral peripheral = peripherals.get(macAddress);
         if (peripheral != null) {
             peripheral.disconnect();
-            callbackContext.success();
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, true));
         } else {
             String message = "Peripheral " + macAddress + " not found.";
             LOG.w(TAG, message);
@@ -839,7 +839,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             intentFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
             webView.getContext().registerReceiver(broadCastReceiver, intentFilter);
 
-            callbackContext.success("OK");
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, true));
         } catch (Exception e) {
             callbackContext.error("Error: " + e.getMessage());
             return;
@@ -1141,7 +1141,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             if (!alreadyReported) {
                 Boolean isConnectable = null;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    isConnectable = result.isConnectable(); 
+                    isConnectable = result.isConnectable();
                 }
 
                 Peripheral peripheral = new Peripheral(device, result.getRssi(), result.getScanRecord().getBytes(), isConnectable);
@@ -1336,7 +1336,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             if (resultCode == Activity.RESULT_OK) {
                 LOG.d(TAG, "User enabled Bluetooth");
                 if (enableBluetoothCallback != null) {
-                    enableBluetoothCallback.success();
+                    enableBluetoothCallback.sendPluginResult(new PluginResult(PluginResult.Status.OK, true));
                 }
             } else {
                 LOG.d(TAG, "User did *NOT* enable Bluetooth");
