@@ -1,3 +1,8 @@
+## 1.7.3
+
+- Android: Expose Promise version of `requestMtu` for async/await
+- Types: Added returned mtu to `requestMtu` success callback thanks #1012 @ksievers-irco
+
 ## 1.7.2
 
 - Android: add isConnectable Property for API26+ (O) #823 (#993) thanks @Gargamil

@@ -184,6 +184,10 @@ declare namespace BLECentralPlugin {
 
         readRSSI(device_id: string): Promise<number>;
 
+        /* May be used to request (on Android) a larger MTU size to be able to send more data at once
+           [iOS] requestMtu is not supported on iOS. */
+        requestMtu(device_id: string, mtu: number): Promise<number>;
+
         /* When Connecting to a peripheral android can request for the connection priority for faster communication.
            [iOS] requestConnectionPriority is not supported on iOS. */
         requestConnectionPriority(device_id: string, priority: 'high' | 'balanced' | 'low'): Promise<void>;

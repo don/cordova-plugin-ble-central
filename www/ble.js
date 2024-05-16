@@ -434,6 +434,12 @@ module.exports.withPromises = {
         });
     },
 
+    requestMtu: function (device_id, mtu) {
+        return new Promise(function (resolve, reject) {
+            module.exports.requestMtu(device_id, mtu, resolve, reject);
+        });
+    },
+
     requestConnectionPriority: function (device_id, priority) {
         return new Promise(function (resolve, reject) {
             module.exports.requestConnectionPriority(device_id, priority, resolve, reject);
