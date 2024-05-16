@@ -297,7 +297,7 @@ declare namespace BLECentralPlugin {
 
         /* May be used to request (on Android) a larger MTU size to be able to send more data at once
            [iOS] requestMtu is not supported on iOS. */
-        requestMtu(device_id: string, mtu: number, success?: () => any, failure?: () => any): void;
+        requestMtu(device_id: string, mtu: number, success?: (mtu: number) => any, failure?: () => any): void;
 
         /* When Connecting to a peripheral android can request for the connection priority for faster communication.
            [iOS] requestConnectionPriority is not supported on iOS. */
