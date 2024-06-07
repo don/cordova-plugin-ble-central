@@ -27,7 +27,7 @@ See the [examples](https://github.com/don/cordova-plugin-ble-central/tree/master
 ## Supported Platforms
 
 -   iOS
--   Android (likely supports 6+, but 8.1 or greater recommended)
+-   Android 6+ (8.1 or greater recommended)
 -   Browser (where navigator.bluetooth is supported)
 
 # Installing
