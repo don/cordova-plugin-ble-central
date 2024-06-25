@@ -160,8 +160,13 @@ declare namespace BLECentralPlugin {
         ): Promise<void>;
         stopNotification(device_id: string, service_uuid: string, characteristic_uuid: string): Promise<void>;
 
-        /* Returns a rejected promise if the device is not connected */
+        /* Returns a resolved promise if the device is connected,
+            otherwise returns rejected promise if the device is not connected */
         isConnected(device_id: string): Promise<void>;
+
+        /* Returns a promise that resolves to true if the device is connected,
+            otherwise resolves to false if the device is not connected or an error occurs */
+        isConnected(device_id: string, rejectWhenDisconnected: false): Promise<boolean>;
 
         /* Returns a rejected promise if bluetooth is not connected */
         isEnabled(): Promise<void>;
