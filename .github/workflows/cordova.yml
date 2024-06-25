@@ -59,7 +59,8 @@ jobs:
         cmdline-tools-version: ${{ matrix.android-cmdline-tools-version }}
     - name: Build test app
       run: |
-        sdkmanager "build-tools;30.0.3;34.0.0"
+        sdkmanager "build-tools;30.0.3"
+        sdkmanager "build-tools;34.0.0"
         npm install -g cordova@${{ matrix.cordova }}
         cordova create temp
         cd temp
