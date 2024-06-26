@@ -1634,9 +1634,7 @@ Run the app on your phone
 ## Release
 
 1.  `npm version patch`
-2.  Align `plugin.xml` version with npm version
-3.  Update release notes based on `git log --oneline --no-merges <last release>...master`
-4.  `npm publish`
+2.  `npm publish`
 
 ## Release (slim)
 
