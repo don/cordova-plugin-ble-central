@@ -1,3 +1,7 @@
+## 1.7.4
+
+- More cleanly support isConnected usage with a bool return value #1018 with review from @MaximBelov
+
 ## 1.7.3
 
 - Android: Expose Promise version of `requestMtu` for async/await

@@ -838,9 +838,14 @@ Function `stopNotification` stops a previously registered notification callback.
 Reports the connection status.
 
 ```javascript
+// Callbacks
 ble.isConnected(device_id, success, failure);
-// Or using await with promises
-await ble.withPromises.isConnected(device_id);
+
+// Promises with boolean return
+const isConnected = await ble.withPromises.isConnected(device_id, false);
+
+// Promises with rejection
+await ble.withPromises.isConnected(device_id); // throws if not connected
 ```
 
 ### Description
@@ -858,6 +863,7 @@ NOTE that for many apps isConnected is unncessary. The app can track the connect
 ### Quick Example
 
 ```javascript
+// Callbacks
 ble.isConnected(
     'FFCA0B09-CB1D-4DC0-A1EF-31AFD3EDFB53',
     function () {
@@ -867,6 +873,22 @@ ble.isConnected(
         console.log('Peripheral is *not* connected');
     }
 );
+
+// Promises with boolean return
+const isConnected = await ble.withPromises.isConnected(device_id, false);
+if (isConnected) {
+    console.log('Peripheral is connected');
+} else {
+    console.log('Peripheral is *not* connected');
+}
+
+// Promises with rejection
+try {
+    await ble.withPromises.isConnected(device_id);
+    console.log('Peripheral is connected');
+} catch (e) {
+    console.log('Peripheral is *not* connected');
+}
 ```
 
 ## isEnabled
@@ -1612,9 +1634,7 @@ Run the app on your phone
 ## Release
 
 1.  `npm version patch`
-2.  Align `plugin.xml` version with npm version
-3.  Update release notes based on `git log --oneline --no-merges <last release>...master`
-4.  `npm publish`
+2.  `npm publish`
 
 ## Release (slim)
 

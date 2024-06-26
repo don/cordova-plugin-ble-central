@@ -17,9 +17,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - jdk: 16
+          - jdk: 17
             cordova: latest
             platform: latest
+            node: 18.x
+            ubuntu: 22.04
+            android-cmdline-tools-version: 10406996
+          - jdk: 16
+            cordova: 12
+            platform: 12
             node: 18.x
             ubuntu: 22.04
             android-cmdline-tools-version: 9862592
@@ -54,6 +60,7 @@ jobs:
     - name: Build test app
       run: |
         sdkmanager "build-tools;30.0.3"
+        sdkmanager "build-tools;34.0.0"
         npm install -g cordova@${{ matrix.cordova }}
         cordova create temp
         cd temp

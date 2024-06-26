@@ -362,9 +362,17 @@ module.exports.withPromises = {
         });
     },
 
-    isConnected: function (device_id) {
+    isConnected: function (device_id, rejectWhenDisconnected) {
         return new Promise(function (resolve, reject) {
-            module.exports.isConnected(device_id, resolve, reject);
+            if (rejectWhenDisconnected === false) {
+                module.exports.isConnected(
+                    device_id,
+                    () => resolve(true),
+                    () => resolve(false)
+                );
+            } else {
+                module.exports.isConnected(device_id, resolve, reject);
+            }
         });
     },
 
