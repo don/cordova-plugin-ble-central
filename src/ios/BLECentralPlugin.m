@@ -780,6 +780,17 @@
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error {
     NSLog(@"didDiscoverServices");
 
+    if (error) {
+        NSLog(@"%@", error);
+        NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
+        if (connectCallbackId) {
+            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
+            [pluginResult setKeepCallbackAsBool:TRUE];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
+        }
+        return;
+    }
+    
     // save the services to tell when all characteristics have been discovered
     NSMutableSet *servicesForPeriperal = [NSMutableSet new];
     [servicesForPeriperal addObjectsFromArray:peripheral.services];
@@ -794,24 +805,38 @@
     NSLog(@"didDiscoverCharacteristicsForService");
 
     NSString *peripheralUUIDString = [peripheral uuidAsString];
-    NSString *connectCallbackId = [connectCallbacks valueForKey:peripheralUUIDString];
-    NSMutableSet *latch = [connectCallbackLatches valueForKey:peripheralUUIDString];
-
-    [latch removeObject:service];
-
-    if ([latch count] == 0) {
-        // Call success callback for connect
+    
+    if (error) {
+        NSLog(@"%@", error);
+        [connectCallbackLatches removeObjectForKey:peripheralUUIDString];
+        NSString *connectCallbackId = [connectCallbacks valueForKey:peripheralUUIDString];
         if (connectCallbackId) {
-            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[peripheral asDictionary]];
+            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
             [pluginResult setKeepCallbackAsBool:TRUE];
             [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
         }
-        [connectCallbackLatches removeObjectForKey:peripheralUUIDString];
-    }
-
+        return;
+    } 
+    
     NSLog(@"Found characteristics for service %@", service);
     for (CBCharacteristic *characteristic in service.characteristics) {
         NSLog(@"Characteristic %@", characteristic);
+    }
+
+    NSMutableSet *latch = [connectCallbackLatches valueForKey:peripheralUUIDString];
+    if (latch) {
+        [latch removeObject:service];
+        
+        if ([latch count] == 0) {
+            [connectCallbackLatches removeObjectForKey:peripheralUUIDString];
+            // Call success callback for connect
+            NSString *connectCallbackId = [connectCallbacks valueForKey:peripheralUUIDString];
+            if (connectCallbackId) {
+                CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[peripheral asDictionary]];
+                [pluginResult setKeepCallbackAsBool:TRUE];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
+            }
+        }
     }
 }
 
