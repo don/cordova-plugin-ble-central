@@ -63,12 +63,12 @@
     stopNotificationCallbacks = [NSMutableDictionary new];
     l2CapContexts = [NSMutableDictionary new];
     bluetoothStates = [NSDictionary dictionaryWithObjectsAndKeys:
-                       @"unknown", @(CBCentralManagerStateUnknown),
-                       @"resetting", @(CBCentralManagerStateResetting),
-                       @"unsupported", @(CBCentralManagerStateUnsupported),
-                       @"unauthorized", @(CBCentralManagerStateUnauthorized),
-                       @"off", @(CBCentralManagerStatePoweredOff),
-                       @"on", @(CBCentralManagerStatePoweredOn),
+                       @"unknown", @(CBManagerStateUnknown),
+                       @"resetting", @(CBManagerStateResetting),
+                       @"unsupported", @(CBManagerStateUnsupported),
+                       @"unauthorized", @(CBManagerStateUnauthorized),
+                       @"off", @(CBManagerStatePoweredOff),
+                       @"on", @(CBManagerStatePoweredOn),
                        nil];
     readRSSICallbacks = [NSMutableDictionary new];
 }
@@ -353,14 +353,14 @@
 
 - (void)isEnabled:(CDVInvokedUrlCommand*)command {
     CDVPluginResult *pluginResult = nil;
-    int bluetoothState = [manager state];
+    CBManagerState bluetoothState = [manager state];
 
-    BOOL enabled = bluetoothState == CBCentralManagerStatePoweredOn;
+    BOOL enabled = bluetoothState == CBManagerStatePoweredOn;
 
     if (enabled) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     } else {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:bluetoothState];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsNSInteger:bluetoothState];
     }
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -446,8 +446,8 @@
 
     if (stateCallbackId == nil) {
         stateCallbackId = [command.callbackId copy];
-        int bluetoothState = [manager state];
-        NSString *state = [bluetoothStates objectForKey:[NSNumber numberWithInt:bluetoothState]];
+        CBManagerState bluetoothState = [manager state];
+        NSString *state = [bluetoothStates objectForKey:@(bluetoothState)];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:state];
         [pluginResult setKeepCallbackAsBool:TRUE];
         NSLog(@"Start state notifications on callback %@", stateCallbackId);
@@ -689,7 +689,7 @@
 {
     NSLog(@"Status of CoreBluetooth central manager changed %ld %@", (long)central.state, [self centralManagerStateToString: central.state]);
 
-    if (central.state == CBCentralManagerStateUnsupported)
+    if (central.state == CBManagerStateUnsupported)
     {
         NSLog(@"=============================================================");
         NSLog(@"WARNING: This hardware does not support Bluetooth Low Energy.");
@@ -1234,21 +1234,21 @@
 
 #pragma mark - util
 
-- (NSString*) centralManagerStateToString: (int)state {
+- (NSString*) centralManagerStateToString: (CBManagerState)state {
     switch(state)
     {
-        case CBCentralManagerStateUnknown:
-            return @"State unknown (CBCentralManagerStateUnknown)";
-        case CBCentralManagerStateResetting:
-            return @"State resetting (CBCentralManagerStateUnknown)";
-        case CBCentralManagerStateUnsupported:
-            return @"State BLE unsupported (CBCentralManagerStateResetting)";
-        case CBCentralManagerStateUnauthorized:
-            return @"State unauthorized (CBCentralManagerStateUnauthorized)";
-        case CBCentralManagerStatePoweredOff:
-            return @"State BLE powered off (CBCentralManagerStatePoweredOff)";
-        case CBCentralManagerStatePoweredOn:
-            return @"State powered up and ready (CBCentralManagerStatePoweredOn)";
+        case CBManagerStateUnknown:
+            return @"State unknown (CBManagerStateUnknown)";
+        case CBManagerStateResetting:
+            return @"State resetting (CBManagerStateUnknown)";
+        case CBManagerStateUnsupported:
+            return @"State BLE unsupported (CBManagerStateResetting)";
+        case CBManagerStateUnauthorized:
+            return @"State unauthorized (CBManagerStateUnauthorized)";
+        case CBManagerStatePoweredOff:
+            return @"State BLE powered off (CBManagerStatePoweredOff)";
+        case CBManagerStatePoweredOn:
+            return @"State powered up and ready (CBManagerStatePoweredOn)";
         default:
             return @"State unknown";
     }
