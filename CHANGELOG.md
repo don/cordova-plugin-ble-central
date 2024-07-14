@@ -1,3 +1,11 @@
+## 1.7.5
+
+- iOS: Improve input validation of UUIDs on iOS to avoid crashes (#1014, #905)
+- iOS: Address iOS deprecation warnings & general warnings (#919)
+- iOS: Harden up iOS service discovery (#741)
+- Android: Tidy up some warnings
+- Android: Mark broadcast receivers as exported for Android v34 (#1020)
+
 ## 1.7.4
 
 - More cleanly support isConnected usage with a bool return value #1018 with review from @MaximBelov
