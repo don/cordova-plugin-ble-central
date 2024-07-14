@@ -18,6 +18,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 
 import android.bluetooth.*;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Base64;
 import org.apache.cordova.CallbackContext;
@@ -802,16 +803,25 @@ public class Peripheral extends BluetoothGattCallback {
 
         boolean success = false;
 
-        characteristic.setValue(data);
-        characteristic.setWriteType(writeType);
         synchronized(this) {
             writeCallback = callbackContext;
-
-            if (gatt.writeCharacteristic(characteristic)) {
-                success = true;
+            if (Build.VERSION.SDK_INT >= 33) {
+                int status = gatt.writeCharacteristic(characteristic, data, writeType);
+                success = status == BluetoothStatusCodes.SUCCESS;
+                if (!success) {
+                    LOG.d(TAG,"BLE Write failed: %s", status);
+                    writeCallback = null;
+                    callbackContext.error("Write failed with status code " + status);
+                }
             } else {
-                writeCallback = null;
-                callbackContext.error("Write failed");
+                characteristic.setValue(data);
+                characteristic.setWriteType(writeType);
+                success = gatt.writeCharacteristic(characteristic);
+                if (!success) {
+                    LOG.d(TAG,"BLE Write failed");
+                    writeCallback = null;
+                    callbackContext.error("Write failed");
+                }
             }
         }
 
