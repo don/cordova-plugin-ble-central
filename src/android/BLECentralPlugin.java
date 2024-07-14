@@ -1228,7 +1228,7 @@ public class BLECentralPlugin extends CordovaPlugin {
                 missingPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
             } else {
                 String accessBackgroundLocation = this.preferences.getString("accessBackgroundLocation", "false");
-                if (accessBackgroundLocation == "true" &&  !PermissionHelper.hasPermission(this, ACCESS_BACKGROUND_LOCATION)) {
+                if (accessBackgroundLocation.equals("true") &&  !PermissionHelper.hasPermission(this, ACCESS_BACKGROUND_LOCATION)) {
                     LOG.w(TAG, "ACCESS_BACKGROUND_LOCATION is being requested");
                     missingPermissions.add(ACCESS_BACKGROUND_LOCATION);
                 }
@@ -1239,7 +1239,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             }
 
             String accessBackgroundLocation = this.preferences.getString("accessBackgroundLocation", "false");
-            if (accessBackgroundLocation == "true" &&  !PermissionHelper.hasPermission(this, ACCESS_BACKGROUND_LOCATION)) {
+            if (accessBackgroundLocation.equals("true") &&  !PermissionHelper.hasPermission(this, ACCESS_BACKGROUND_LOCATION)) {
                 LOG.w(TAG, "ACCESS_BACKGROUND_LOCATION is being requested");
                 missingPermissions.add(ACCESS_BACKGROUND_LOCATION);
             }
