@@ -588,17 +588,35 @@ public class Peripheral extends BluetoothGattCallback {
             return;
         }
 
+        byte[] value;
         // prefer notify over indicate
         if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) {
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
         } else if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) {
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
+            value = BluetoothGattDescriptor.ENABLE_INDICATION_VALUE;
         } else {
             LOG.w(TAG, "Characteristic %s does not have NOTIFY or INDICATE property set", characteristicUUID);
+            callbackContext.error("Set notification failed for " + characteristicUUID + "(missing NOTIFY or INDICATE property)");
+            notificationCallbacks.remove(key);
+            commandCompleted();
+            return;
         }
 
-        if (!gatt.writeDescriptor(descriptor)) {
-            callbackContext.error("Failed to set client characteristic notification for " + characteristicUUID);
+        if (Build.VERSION.SDK_INT >= 33) {
+            int status = gatt.writeDescriptor(descriptor, value);
+            success = status == BluetoothStatusCodes.SUCCESS;
+            if (!success) {
+                callbackContext.error("Failed to set client characteristic notification for " + characteristicUUID + " (status code " + status + ")");
+            }
+        } else {
+            descriptor.setValue(value);
+            success = gatt.writeDescriptor(descriptor);
+            if (!success) {
+                callbackContext.error("Failed to set client characteristic notification for " + characteristicUUID);
+            }
+        }
+
+        if (!success) {
             notificationCallbacks.remove(key);
             commandCompleted();
         }
@@ -636,8 +654,12 @@ public class Peripheral extends BluetoothGattCallback {
         if (gatt.setCharacteristicNotification(characteristic, false)) {
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIGURATION_UUID);
             if (descriptor != null) {
-                descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
-                gatt.writeDescriptor(descriptor);
+                if (Build.VERSION.SDK_INT >= 33) {
+                    gatt.writeDescriptor(descriptor, BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+                } else {
+                    descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+                    gatt.writeDescriptor(descriptor);
+                }
             }
             callbackContext.success();
         } else {
