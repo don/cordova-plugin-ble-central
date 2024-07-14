@@ -840,7 +840,14 @@ public class BLECentralPlugin extends CordovaPlugin {
                     String action = intent.getAction();
 
                     if (BluetoothDevice.ACTION_PAIRING_REQUEST.equals(action)) {
-                        BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        BluetoothDevice bluetoothDevice;
+                        if (Build.VERSION.SDK_INT >= 33) {
+                            bluetoothDevice = intent.getParcelableExtra(
+                                    BluetoothDevice.EXTRA_DEVICE,
+                                    android.bluetooth.BluetoothDevice.class);
+                        } else {
+                            bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        }
                         int type = intent.getIntExtra(BluetoothDevice.EXTRA_PAIRING_VARIANT, BluetoothDevice.ERROR);
 
                         if (type == BluetoothDevice.PAIRING_VARIANT_PIN) {
@@ -1500,8 +1507,15 @@ public class BLECentralPlugin extends CordovaPlugin {
                 public void onReceive(Context context, Intent intent) {
                     final String action = intent.getAction();
                     if (ACTION_BOND_STATE_CHANGED.equals(action)) {
-                        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                        Peripheral peripheral = peripherals.get(device.getAddress());
+                        BluetoothDevice device;
+                        if (Build.VERSION.SDK_INT >= 33) {
+                            device = intent.getParcelableExtra(
+                                    BluetoothDevice.EXTRA_DEVICE,
+                                    android.bluetooth.BluetoothDevice.class);
+                        } else {
+                            device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        }
+                        Peripheral peripheral = device != null ? peripherals.get(device.getAddress()) : null;
 
                         if (peripheral != null) {
                             int bondState = intent.getIntExtra(EXTRA_BOND_STATE, BluetoothDevice.ERROR);
