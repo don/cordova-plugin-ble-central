@@ -15,6 +15,7 @@
 package com.megster.cordova.ble.central;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 
 import android.bluetooth.*;
@@ -33,6 +34,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 
 /**
@@ -432,9 +436,15 @@ public class Peripheral extends BluetoothGattCallback {
 
     }
 
+    @TargetApi(32 /*S_V2*/)
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
         super.onCharacteristicChanged(gatt, characteristic);
+        if (Build.VERSION.SDK_INT >= 33) {
+            // handled by new callback below
+            return;
+        }
+
         LOG.d(TAG, "onCharacteristicChanged %s", characteristic);
 
         SequentialCallbackContext callback = notificationCallbacks.get(generateHashKey(characteristic));
@@ -444,15 +454,55 @@ public class Peripheral extends BluetoothGattCallback {
         }
     }
 
+    @RequiresApi(api = 33 /*TIRAMISU*/)
+    @Override
+    public void onCharacteristicChanged(@NonNull BluetoothGatt gatt, @NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] data) {
+        super.onCharacteristicChanged(gatt, characteristic, data);
+        LOG.d(TAG, "onCharacteristicChanged (api:33) %s", characteristic);
+
+        SequentialCallbackContext callback = notificationCallbacks.get(generateHashKey(characteristic));
+
+        if (callback != null) {
+            callback.sendSequentialResult(data);
+        }
+    }
+
+    @TargetApi(32 /*S_V2*/)
     @Override
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         super.onCharacteristicRead(gatt, characteristic, status);
+        if (Build.VERSION.SDK_INT >= 33) {
+            // handled by new callback below
+            return;
+        }
+
         LOG.d(TAG, "onCharacteristicRead %s", characteristic);
 
         synchronized(this) {
             if (readCallback != null) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     readCallback.success(characteristic.getValue());
+                } else {
+                    readCallback.error("Error reading " + characteristic.getUuid() + " status=" + status);
+                }
+
+                readCallback = null;
+            }
+        }
+
+        commandCompleted();
+    }
+
+    @RequiresApi(api = 33 /*TIRAMISU*/)
+    @Override
+    public void onCharacteristicRead(@NonNull BluetoothGatt gatt, @NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] value, int status) {
+        super.onCharacteristicRead(gatt, characteristic, value, status);
+        LOG.d(TAG, "onCharacteristicRead (api:33) %s", characteristic);
+
+        synchronized(this) {
+            if (readCallback != null) {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    readCallback.success(value);
                 } else {
                     readCallback.error("Error reading " + characteristic.getUuid() + " status=" + status);
                 }
