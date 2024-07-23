@@ -665,7 +665,7 @@ public class BLECentralPlugin extends CordovaPlugin {
 
         try {
             IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-            registerSystemReceiverCompat(this.stateReceiver, intentFilter);
+            webView.getContext().registerReceiver(this.stateReceiver, intentFilter);
         } catch (Exception e) {
             LOG.e(TAG, "Error registering state receiver: " + e.getMessage(), e);
         }
@@ -712,7 +712,7 @@ public class BLECentralPlugin extends CordovaPlugin {
         try {
             IntentFilter intentFilter = new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION);
             intentFilter.addAction(Intent.ACTION_PROVIDER_CHANGED);
-            registerSystemReceiverCompat(this.locationStateReceiver, intentFilter);
+            registerNonSystemReceiverCompat(this.locationStateReceiver, intentFilter);
         } catch (Exception e) {
             LOG.e(TAG, "Error registering location state receiver: " + e.getMessage(), e);
         }
@@ -853,7 +853,7 @@ public class BLECentralPlugin extends CordovaPlugin {
 
             IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_PAIRING_REQUEST);
             intentFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
-            registerSystemReceiverCompat(broadCastReceiver, intentFilter);
+            webView.getContext().registerReceiver(broadCastReceiver, intentFilter);
 
             callbackContext.success("OK");
         } catch (Exception e) {
@@ -1511,7 +1511,7 @@ public class BLECentralPlugin extends CordovaPlugin {
                     }
                 }
             };
-            registerSystemReceiverCompat(bondStateReceiver, new IntentFilter(ACTION_BOND_STATE_CHANGED));
+            webView.getContext().registerReceiver(bondStateReceiver, new IntentFilter(ACTION_BOND_STATE_CHANGED));
         }
     }
 
@@ -1523,7 +1523,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     }
 
     @SuppressLint({"UnspecifiedRegisterReceiverFlag", "WrongConstant"})
-    private void registerSystemReceiverCompat(BroadcastReceiver receiver, IntentFilter filter) {
+    private void registerNonSystemReceiverCompat(BroadcastReceiver receiver, IntentFilter filter) {
         Context context = webView.getContext();
         if (Build.VERSION.SDK_INT >= 34 /*14*/) {
             context.registerReceiver(receiver, filter, 2); // // Context.RECEIVER_EXPORTED
