@@ -3,7 +3,7 @@ package com.megster.cordova.ble.central;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.Build;
-import androidx.annotation.RequiresApi;
+import androidx.annotation.RequiresPermission;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.LOG;
@@ -34,6 +34,7 @@ class L2CAPContext {
         this.executor = Executors.newSingleThreadExecutor();
     }
 
+    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
     public void connectL2cap(CallbackContext callbackContext, boolean secureChannel) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -107,7 +108,6 @@ class L2CAPContext {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     private void readL2CapData() {
         try {
             final BluetoothSocket lSocket = this.socket;
