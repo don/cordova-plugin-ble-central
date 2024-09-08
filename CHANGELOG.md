@@ -1,3 +1,7 @@
+## 1.7.6
+
+- Update ble.js to use require format to improve loading reliability (#1030, #1029) thanks @sithwarrior
+
 ## 1.7.5
 
 - iOS: Improve input validation of UUIDs on iOS to avoid crashes (#1014, #905)
