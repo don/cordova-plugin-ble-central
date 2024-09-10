@@ -1,3 +1,7 @@
+## 1.7.7
+
+- iOS: Fix support for 16 & 32-bit UUIDs on iOS (#1031, #1032)
+
 ## 1.7.6
 
 - Update ble.js to use require format to improve loading reliability (#1030, #1029) thanks @sithwarrior
