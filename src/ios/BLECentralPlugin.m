@@ -1110,6 +1110,21 @@
     return uuid;
 }
 
+-(CBUUID*) getCBUUID:(CDVInvokedUrlCommand*)command argumentAtIndex:(NSUInteger)index {
+    NSLog(@"getCBUUID");
+    
+    NSString *uuidString = [command argumentAtIndex:index withDefault:@"" andClass:[NSString class]];
+    CBUUID *uuid = [self uuidStringToCBUUID:uuidString];
+    if (uuid == nil) {
+        NSString *errorMessage = [NSString stringWithFormat:@"Malformed UUID: %@", [command argumentAtIndex:index]];
+        NSLog(@"%@", errorMessage);
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return nil;
+    }
+    return uuid;
+}
+
 // expecting deviceUUID, serviceUUID, characteristicUUID in command.arguments
 -(BLECommandContext*) getData:(CDVInvokedUrlCommand*)command prop:(CBCharacteristicProperties)prop {
     NSLog(@"getData");
@@ -1121,18 +1136,15 @@
         return nil;
     }
 
-    NSUUID *serviceNSUUID = [self getUUID:command argumentAtIndex:1];
-    if (serviceNSUUID == nil) {
+    CBUUID *serviceUUID = [self getCBUUID:command argumentAtIndex:1];
+    if (serviceUUID == nil) {
         return nil;
     }
     
-    NSUUID *characteristicNSUUID = [self getUUID:command argumentAtIndex:2];
-    if (characteristicNSUUID == nil) {
+    CBUUID *characteristicUUID = [self getCBUUID:command argumentAtIndex:2];
+    if (characteristicUUID == nil) {
         return nil;
     }
-    
-    CBUUID *serviceUUID = [CBUUID UUIDWithNSUUID:serviceNSUUID];
-    CBUUID *characteristicUUID = [CBUUID UUIDWithNSUUID:characteristicNSUUID];
 
     CBPeripheral *peripheral = [self findPeripheralByUUID:deviceUUID];
 
@@ -1151,7 +1163,7 @@
 
     if (!service) {
         NSString *errorMessage = [NSString stringWithFormat:@"Could not find service with UUID %@ on peripheral with UUID %@",
-                                  serviceNSUUID.UUIDString,
+                                  serviceUUID.UUIDString,
                                   peripheral.identifier.UUIDString];
         NSLog(@"%@", errorMessage);
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
@@ -1175,8 +1187,8 @@
     if (!characteristic) {
         NSString *errorMessage = [NSString stringWithFormat:
                                   @"Could not find characteristic with UUID %@ on service with UUID %@ on peripheral with UUID %@",
-                                  characteristicNSUUID.UUIDString,
-                                  serviceNSUUID.UUIDString,
+                                  characteristicUUID.UUIDString,
+                                  serviceUUID.UUIDString,
                                   peripheral.identifier.UUIDString];
         NSLog(@"%@", errorMessage);
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
@@ -1281,22 +1293,38 @@
     return @"Unknown state";
 }
 
+- (CBUUID *) uuidStringToCBUUID: (id)uuidString {
+    if (![uuidString isKindOfClass:[NSString class]]) {
+        NSLog(@"Malformed UUID found: %@", uuidString);
+        return nil;
+    }
+    
+    if ([uuidString length] == 4 || [uuidString length] == 8) {
+        // For 16 & 32-bit uuids, attempt to convert directly
+        // This throws an unhandled internal inconsistency error if the format is not right
+        // that will crash the app
+        return [CBUUID UUIDWithString:uuidString];
+    }
+    
+    NSUUID *nsuuid = [[NSUUID alloc]initWithUUIDString:uuidString];
+    if (nsuuid == nil) {
+        NSLog(@"Malformed UUID found: %@", uuidString);
+        return nil;
+    }
+    
+    return [CBUUID UUIDWithNSUUID:nsuuid];
+}
+
 - (NSArray<CBUUID *> *) uuidStringsToCBUUIDs: (NSArray<NSString *> *)uuidStrings {
     NSMutableArray *uuids = [NSMutableArray new];
     for (int i = 0; i < [uuidStrings count]; i++) {
         NSString *uuidString = [uuidStrings objectAtIndex: i];
-        if (![uuidString isKindOfClass:[NSString class]]) {
-            NSLog(@"Malformed UUID found: %@", uuidString);
+        
+        CBUUID *uuid = [self uuidStringToCBUUID:uuidString];
+        if (uuid == nil) {
             return nil;
         }
         
-        NSUUID *nsuuid = [[NSUUID alloc]initWithUUIDString:uuidString];
-        if (nsuuid == nil) {
-            NSLog(@"Malformed UUID found: %@", uuidString);
-            return nil;
-        }
-        
-        CBUUID *uuid = [CBUUID UUIDWithNSUUID:nsuuid];
         [uuids addObject:uuid];
     }
     return uuids;
