@@ -1,3 +1,7 @@
+## 1.7.8
+
+- iOS: Properly convert peripheral UUID for isConnected (#1033)
+
 ## 1.7.7
 
 - iOS: Fix support for 16 & 32-bit UUIDs on iOS (#1031, #1032)

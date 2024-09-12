@@ -430,9 +430,13 @@
 
 
 - (void)isConnected:(CDVInvokedUrlCommand*)command {
+    NSUUID *uuid = [self getUUID:command argumentAtIndex:0];
+    if (uuid == nil) {
+        return;
+    }
+    
+    CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
     CDVPluginResult *pluginResult = nil;
-    CBPeripheral *peripheral = [self findPeripheralByUUID:[command argumentAtIndex:0]];
-
     if (peripheral && peripheral.state == CBPeripheralStateConnected) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     } else {
