@@ -14,10 +14,14 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         include:
           - jdk: 17
             capacitor: latest
+            node: 18.x
+          - jdk: 17
+            capacitor: 5
             node: 18.x
           - jdk: 11
             capacitor: 4
