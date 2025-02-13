@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-ble-central",
-  "version": "1.7.9-slim",
+  "version": "2.0.0-slim",
   "description": "Bluetooth Low Energy (BLE) Central Plugin",
   "scripts": {
     "slimify": "node tools/make-slim-variant.mjs",

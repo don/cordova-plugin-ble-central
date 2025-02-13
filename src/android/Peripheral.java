@@ -15,9 +15,11 @@
 package com.megster.cordova.ble.central;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 
 import android.bluetooth.*;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Base64;
 import org.apache.cordova.CallbackContext;
@@ -32,6 +34,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 
 /**
@@ -431,9 +436,15 @@ public class Peripheral extends BluetoothGattCallback {
 
     }
 
+    @TargetApi(32 /*S_V2*/)
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
         super.onCharacteristicChanged(gatt, characteristic);
+        if (Build.VERSION.SDK_INT >= 33) {
+            // handled by new callback below
+            return;
+        }
+
         LOG.d(TAG, "onCharacteristicChanged %s", characteristic);
 
         SequentialCallbackContext callback = notificationCallbacks.get(generateHashKey(characteristic));
@@ -443,15 +454,55 @@ public class Peripheral extends BluetoothGattCallback {
         }
     }
 
+    @RequiresApi(api = 33 /*TIRAMISU*/)
+    @Override
+    public void onCharacteristicChanged(@NonNull BluetoothGatt gatt, @NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] data) {
+        super.onCharacteristicChanged(gatt, characteristic, data);
+        LOG.d(TAG, "onCharacteristicChanged (api:33) %s", characteristic);
+
+        SequentialCallbackContext callback = notificationCallbacks.get(generateHashKey(characteristic));
+
+        if (callback != null) {
+            callback.sendSequentialResult(data);
+        }
+    }
+
+    @TargetApi(32 /*S_V2*/)
     @Override
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         super.onCharacteristicRead(gatt, characteristic, status);
+        if (Build.VERSION.SDK_INT >= 33) {
+            // handled by new callback below
+            return;
+        }
+
         LOG.d(TAG, "onCharacteristicRead %s", characteristic);
 
         synchronized(this) {
             if (readCallback != null) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     readCallback.success(characteristic.getValue());
+                } else {
+                    readCallback.error("Error reading " + characteristic.getUuid() + " status=" + status);
+                }
+
+                readCallback = null;
+            }
+        }
+
+        commandCompleted();
+    }
+
+    @RequiresApi(api = 33 /*TIRAMISU*/)
+    @Override
+    public void onCharacteristicRead(@NonNull BluetoothGatt gatt, @NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] value, int status) {
+        super.onCharacteristicRead(gatt, characteristic, value, status);
+        LOG.d(TAG, "onCharacteristicRead (api:33) %s", characteristic);
+
+        synchronized(this) {
+            if (readCallback != null) {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    readCallback.success(value);
                 } else {
                     readCallback.error("Error reading " + characteristic.getUuid() + " status=" + status);
                 }
@@ -587,17 +638,35 @@ public class Peripheral extends BluetoothGattCallback {
             return;
         }
 
+        byte[] value;
         // prefer notify over indicate
         if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) {
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
         } else if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) {
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
+            value = BluetoothGattDescriptor.ENABLE_INDICATION_VALUE;
         } else {
             LOG.w(TAG, "Characteristic %s does not have NOTIFY or INDICATE property set", characteristicUUID);
+            callbackContext.error("Set notification failed for " + characteristicUUID + "(missing NOTIFY or INDICATE property)");
+            notificationCallbacks.remove(key);
+            commandCompleted();
+            return;
         }
 
-        if (!gatt.writeDescriptor(descriptor)) {
-            callbackContext.error("Failed to set client characteristic notification for " + characteristicUUID);
+        if (Build.VERSION.SDK_INT >= 33) {
+            int status = gatt.writeDescriptor(descriptor, value);
+            success = status == BluetoothStatusCodes.SUCCESS;
+            if (!success) {
+                callbackContext.error("Failed to set client characteristic notification for " + characteristicUUID + " (status code " + status + ")");
+            }
+        } else {
+            descriptor.setValue(value);
+            success = gatt.writeDescriptor(descriptor);
+            if (!success) {
+                callbackContext.error("Failed to set client characteristic notification for " + characteristicUUID);
+            }
+        }
+
+        if (!success) {
             notificationCallbacks.remove(key);
             commandCompleted();
         }
@@ -635,8 +704,12 @@ public class Peripheral extends BluetoothGattCallback {
         if (gatt.setCharacteristicNotification(characteristic, false)) {
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIGURATION_UUID);
             if (descriptor != null) {
-                descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
-                gatt.writeDescriptor(descriptor);
+                if (Build.VERSION.SDK_INT >= 33) {
+                    gatt.writeDescriptor(descriptor, BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+                } else {
+                    descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+                    gatt.writeDescriptor(descriptor);
+                }
             }
             callbackContext.success();
         } else {
@@ -802,16 +875,25 @@ public class Peripheral extends BluetoothGattCallback {
 
         boolean success = false;
 
-        characteristic.setValue(data);
-        characteristic.setWriteType(writeType);
         synchronized(this) {
             writeCallback = callbackContext;
-
-            if (gatt.writeCharacteristic(characteristic)) {
-                success = true;
+            if (Build.VERSION.SDK_INT >= 33) {
+                int status = gatt.writeCharacteristic(characteristic, data, writeType);
+                success = status == BluetoothStatusCodes.SUCCESS;
+                if (!success) {
+                    LOG.d(TAG,"BLE Write failed: %s", status);
+                    writeCallback = null;
+                    callbackContext.error("Write failed with status code " + status);
+                }
             } else {
-                writeCallback = null;
-                callbackContext.error("Write failed");
+                characteristic.setValue(data);
+                characteristic.setWriteType(writeType);
+                success = gatt.writeCharacteristic(characteristic);
+                if (!success) {
+                    LOG.d(TAG,"BLE Write failed");
+                    writeCallback = null;
+                    callbackContext.error("Write failed");
+                }
             }
         }
 
