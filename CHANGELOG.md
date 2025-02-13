@@ -1,3 +1,11 @@
+## 2.0.0
+
+**NO BREAKING API CHANGES from v1**
+
+- Bump minimum cordova-android version to 12 (require compile SDK of 33+)
+- Bump minimum capacitor version to 5
+- Support Android v33 Bluetooth callbacks (#985)
+
 ## 1.7.9
 
 - iOS: Convert peripherals list to dict on iOS to avoid ghost peripherals (#1039, #1035, #1026)
