@@ -74,8 +74,6 @@
             <preference name="accessBackgroundLocation" value="$ACCESS_BACKGROUND_LOCATION"/>
         </config-file>
 
-        <hook type="after_prepare" src="hooks/after_prepare.js"/>
-
         <source-file src="src/android/BLECentralPlugin.java" target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/SequentialCallbackContext.java" target-dir="src/com/megster/cordova/ble/central"/>
         <source-file src="src/android/BLECommand.java" target-dir="src/com/megster/cordova/ble/central"/>
