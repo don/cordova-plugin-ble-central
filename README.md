@@ -71,7 +71,7 @@ It's recommended to always use the latest cordova and cordova platform packages 
 
 | cordova | cordova-ios | cordova-android | cordova-browser |
 | ------- | ----------- | --------------- | --------------- |
-| 10+     | 6.2.0+      | 10.0+           | not tested      |
+| 10+     | 6.2.0+      | 12.0+           | not tested      |
 
 All variables can be modified after installation by updating the values in `package.json`.
 
