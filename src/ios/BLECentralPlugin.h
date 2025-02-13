@@ -41,7 +41,7 @@
     NSTimer *scanTimer;
 }
 
-@property (strong, nonatomic) NSMutableSet *peripherals;
+@property (strong, nonatomic) NSMutableDictionary *peripherals;
 @property (strong, nonatomic) CBCentralManager *manager;
 
 - (void)startScanWithOptions:(CDVInvokedUrlCommand *)command;

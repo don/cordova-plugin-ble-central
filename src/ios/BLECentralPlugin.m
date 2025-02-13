@@ -50,7 +50,7 @@
         options[CBCentralManagerOptionRestoreIdentifierKey] = restoreIdentifier;
     }
 
-    peripherals = [NSMutableSet new];
+    peripherals = [NSMutableDictionary new];
     manager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:options];
 
     restoredState = nil;
@@ -534,7 +534,7 @@
     NSMutableArray<NSDictionary *> *connected = [NSMutableArray new];
 
     for (CBPeripheral *peripheral in connectedPeripherals) {
-        [peripherals addObject:peripheral];
+        [peripherals setObject:peripheral forKey:peripheral.identifier];
         [connected addObject:[peripheral asDictionary]];
     }
 
@@ -562,7 +562,7 @@
     NSMutableArray<NSDictionary *> *found = [NSMutableArray new];
     
     for (CBPeripheral *peripheral in foundPeripherals) {
-        [peripherals addObject:peripheral];   // TODO do we save these?
+        [peripherals setObject:peripheral forKey:peripheral.identifier];
         [found addObject:[peripheral asDictionary]];
     }
     
@@ -677,7 +677,7 @@
 
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
 
-    [peripherals addObject:peripheral];
+    [peripherals setObject:peripheral forKey:peripheral.identifier];
     [peripheral setAdvertisementData:advertisementData RSSI:RSSI];
 
     if (discoverPeripheralCallbackId) {
@@ -710,11 +710,11 @@
     }
 
     // check and handle disconnected peripherals
-    for (CBPeripheral *peripheral in peripherals) {
+    [peripherals enumerateKeysAndObjectsUsingBlock:^(id key, CBPeripheral* peripheral, BOOL* stop) {
         if (peripheral.state == CBPeripheralStateDisconnected) {
             [self centralManager:central didDisconnectPeripheral:peripheral error:nil];
         }
-    }
+    }];
 }
 
 - (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
@@ -820,7 +820,7 @@
             [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
         }
         return;
-    } 
+    }
     
     NSLog(@"Found characteristics for service %@", service);
     for (CBCharacteristic *characteristic in service.characteristics) {
@@ -1014,18 +1014,7 @@
 #pragma mark - internal implemetation
 
 - (CBPeripheral*)findPeripheralByUUID:(NSUUID*)uuid {
-    CBPeripheral *peripheral = nil;
-
-    for (CBPeripheral *p in peripherals) {
-
-        NSUUID* other = p.identifier;
-
-        if ([uuid isEqual:other]) {
-            peripheral = p;
-            break;
-        }
-    }
-    return peripheral;
+    return [peripherals objectForKey:uuid];
 }
 
 - (CBPeripheral*)retrievePeripheralWithUUID:(NSUUID*)typedUUID {
@@ -1033,7 +1022,7 @@
     CBPeripheral *peripheral = nil;
     if ([existingPeripherals count] > 0) {
         peripheral = [existingPeripherals firstObject];
-        [peripherals addObject:peripheral];
+        [peripherals setObject:peripheral forKey:peripheral.identifier];
     }
     return peripheral;
 }
