@@ -1,3 +1,9 @@
+## 1.7.9
+
+- iOS: Convert peripherals list to dict on iOS to avoid ghost peripherals (#1039, #1035, #1026)
+- Restore test app functionality and slightly bulk out tests (#962)
+- Update build badges
+
 ## 1.7.8
 
 - iOS: Properly convert peripheral UUID for isConnected (#1033)
