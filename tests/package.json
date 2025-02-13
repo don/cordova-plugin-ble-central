@@ -1,0 +1,14 @@
+{
+  "name": "cordova-plugin-ble-central-tests",
+  "version": "1.0.0-dev",
+  "description": "",
+  "cordova": {
+    "id": "cordova-plugin-ble-central-tests",
+    "platforms": []
+  },
+  "keywords": [
+    "ecosystem:cordova"
+  ],
+  "author": "",
+  "license": "Apache 2.0"
+}
