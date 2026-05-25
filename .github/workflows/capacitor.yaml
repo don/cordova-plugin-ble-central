@@ -20,6 +20,9 @@ jobs:
           - jdk: 21
             capacitor: latest
             node: 22.x
+          - jdk: 21
+            capacitor: 7
+            node: 20.x
           - jdk: 17
             capacitor: 6
             node: 18.x
@@ -59,10 +62,13 @@ jobs:
     runs-on: macos-latest
 
     strategy:
+      fail-fast: false
       matrix:
         include:
           - capacitor: latest
             node: 22.x
+          - capacitor: 7
+            node: 20.x
 
     steps:
       - uses: actions/checkout@v3
@@ -83,4 +89,8 @@ jobs:
           npx cap add ios
           npx cap sync ios
           cd ios
-          xcodebuild -workspace App/App.xcworkspace -scheme CapacitorCordova -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 14 Pro Max"
+          if [ -d "App/App.xcworkspace" ]; then
+            xcodebuild -workspace App/App.xcworkspace -scheme App -configuration Debug -sdk iphonesimulator -destination "generic/platform=iOS Simulator"
+          else
+            xcodebuild -project App/App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator -destination "generic/platform=iOS Simulator"
+          fi
