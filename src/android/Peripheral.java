@@ -722,36 +722,45 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     // Some devices reuse UUIDs across characteristics, so we can't use service.getCharacteristic(characteristicUUID)
-    // instead check the UUID and properties for each characteristic in the service until we find the best match
-    // This function prefers Notify over Indicate
+    // instead check the UUID and properties for each characteristic in the service until we find the best match.
+    // Candidates with a CCCD descriptor are preferred, since the CCCD is required to enable notifications/indications;
+    // some non-compliant peripherals expose duplicate-UUID characteristics where only one has the CCCD.
+    // This function prefers Notify over Indicate.
     private BluetoothGattCharacteristic findNotifyCharacteristic(BluetoothGattService service, UUID characteristicUUID) {
-        BluetoothGattCharacteristic characteristic = null;
-
-        // Check for Notify first
         List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
+
+        List<BluetoothGattCharacteristic> withCccd = new ArrayList<>();
         for (BluetoothGattCharacteristic c : characteristics) {
-            if ((c.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0 && characteristicUUID.equals(c.getUuid())) {
-                characteristic = c;
-                break;
+            if (c.getDescriptor(CLIENT_CHARACTERISTIC_CONFIGURATION_UUID) != null) {
+                withCccd.add(c);
             }
         }
 
+        BluetoothGattCharacteristic characteristic = findNotifyOrIndicate(withCccd, characteristicUUID);
         if (characteristic != null) return characteristic;
 
+        characteristic = findNotifyOrIndicate(characteristics, characteristicUUID);
+        if (characteristic != null) return characteristic;
+
+        // As a last resort, try and find ANY characteristic with this UUID, even if it doesn't have the correct properties
+        return service.getCharacteristic(characteristicUUID);
+    }
+
+    private static BluetoothGattCharacteristic findNotifyOrIndicate(
+            List<BluetoothGattCharacteristic> characteristics, UUID characteristicUUID) {
+        // Check for Notify first
+        for (BluetoothGattCharacteristic c : characteristics) {
+            if ((c.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0 && characteristicUUID.equals(c.getUuid())) {
+                return c;
+            }
+        }
         // If there wasn't Notify Characteristic, check for Indicate
         for (BluetoothGattCharacteristic c : characteristics) {
             if ((c.getProperties() & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0 && characteristicUUID.equals(c.getUuid())) {
-                characteristic = c;
-                break;
+                return c;
             }
         }
-
-        // As a last resort, try and find ANY characteristic with this UUID, even if it doesn't have the correct properties
-        if (characteristic == null) {
-            characteristic = service.getCharacteristic(characteristicUUID);
-        }
-
-        return characteristic;
+        return null;
     }
 
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
