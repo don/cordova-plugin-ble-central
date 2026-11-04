@@ -133,6 +133,7 @@ For the best understanding about which permissions are needed for which combinat
 -   [ble.stopNotification](#stopnotification)
 -   [ble.isConnected](#isconnected)
 -   [ble.isEnabled](#isenabled)
+-   [ble.bluetoothAuthorization](#bluetoothauthorization)
 -   [ble.isLocationEnabled](#islocationenabled)
 -   [ble.startLocationStateNotifications](#startlocationstatenotifications)
 -   [ble.stopLocationStateNotifications](#stoplocationstatenotifications)
@@ -919,6 +920,49 @@ ble.isEnabled(
         console.log('Bluetooth is *not* enabled');
     }
 );
+```
+
+## bluetoothAuthorization
+
+Reports the Bluetooth permission without asking the user for it.
+
+```javascript
+ble.bluetoothAuthorization(success, failure);
+```
+
+### Description
+
+Function `bluetoothAuthorization` calls the success callback with the current permission as a
+string: `authorized`, `denied`, `restricted` or `notDetermined`.
+
+On iOS it reads `CBManager.authorization`, a class property added in iOS 13.1, so it never
+constructs the central manager, which is the thing that shows the permission dialog. Use it to skip
+an ask the user has already answered, or to tell a refusal apart from a switched-off radio. On
+iOS 13.0 the permission cannot be read at all without prompting, so it reports `notDetermined`
+there.
+
+Reading the permission costs nothing, but it only buys you an unspent prompt if the plugin has not
+already spent it: installing with `IOS_INIT_ON_LOAD=false` holds the central manager back until
+the first `ble` access, and without that the manager, and therefore the dialog, arrives as the
+plugin loads.
+
+On Android only `authorized` and `notDetermined` are reported, because a permission Android has not
+granted reads the same whether the user refused it or was never asked. The permissions it checks
+are the ones a scan requires on that API level, so its answer matches what `startScan` would demand.
+
+### Parameters
+
+-   **success**: Success callback function, invoked with the authorization string.
+-   **failure**: Error callback function, invoked when the device has no Bluetooth LE support.
+
+### Quick Example
+
+```javascript
+ble.bluetoothAuthorization(function (authorization) {
+    if (authorization === 'notDetermined') {
+        // the prompt is unspent, so our own explanation is still worth showing
+    }
+});
 ```
 
 ## isLocationEnabled
