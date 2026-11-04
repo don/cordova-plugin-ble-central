@@ -351,6 +351,36 @@
     }
 }
 
+// Answers without constructing a central manager, which is the only way to ask the OS without
+// also asking the user. CBManager.authorization is a class property as of iOS 13.1, and its
+// documentation calls out checking the status before allocating a CBManager.
+- (void)bluetoothAuthorization:(CDVInvokedUrlCommand *)command {
+    // The class property arrived in 13.1, one point release after Bluetooth started asking at all.
+    // On 13.0 the permission cannot be read without constructing a manager, which is the prompt, so
+    // it answers not-determined and the caller behaves as it did before this action existed.
+    NSString *authorization = @"notDetermined";
+
+    if (@available(iOS 13.1, *)) {
+        switch ([CBManager authorization]) {
+            case CBManagerAuthorizationAllowedAlways:
+                authorization = @"authorized";
+                break;
+            case CBManagerAuthorizationDenied:
+                authorization = @"denied";
+                break;
+            case CBManagerAuthorizationRestricted:
+                authorization = @"restricted";
+                break;
+            default:
+                authorization = @"notDetermined";
+                break;
+        }
+    }
+
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:authorization];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 - (void)isEnabled:(CDVInvokedUrlCommand*)command {
     CDVPluginResult *pluginResult = nil;
     CBManagerState bluetoothState = [manager state];

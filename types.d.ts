@@ -1,6 +1,7 @@
 declare namespace BLECentralPlugin {
     type PeripheralState = 'disconnected' | 'disconnecting' | 'connecting' | 'connected';
     type BondState = 'none' | 'bonding' | 'bonded';
+    type BluetoothAuthorization = 'authorized' | 'denied' | 'restricted' | 'notDetermined';
 
     interface PeripheralCharacteristic {
         service: string;
@@ -171,6 +172,9 @@ declare namespace BLECentralPlugin {
         /* Returns a rejected promise if bluetooth is not connected */
         isEnabled(): Promise<void>;
 
+        /* Reports the Bluetooth permission without prompting for it. */
+        bluetoothAuthorization(): Promise<BluetoothAuthorization>;
+
         enable(): Promise<void>;
         showBluetoothSettings(): Promise<void>;
 
@@ -296,6 +300,14 @@ declare namespace BLECentralPlugin {
 
         /* Reports if bluetooth is enabled. */
         isEnabled(success: () => any, failure?: (error: string) => any): void;
+
+        /* Reports the Bluetooth permission without prompting for it, so it can be called before
+           deciding whether to prompt at all. Does not construct the iOS central manager.
+           [Android] only 'authorized' and 'notDetermined' are reported. */
+        bluetoothAuthorization(
+            success: (authorization: BluetoothAuthorization) => any,
+            failure?: (error: string) => any
+        ): void;
 
         /* Reports if location services are enabled.
            [iOS] isLocationEnabled is not supported on iOS. */

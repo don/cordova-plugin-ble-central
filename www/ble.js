@@ -232,6 +232,15 @@ module.exports = {
         exec(success, failure, 'BLE', 'isEnabled', []);
     },
 
+    // Reports the Bluetooth permission without asking for it, as one of 'authorized', 'denied',
+    // 'restricted' or 'notDetermined'. Safe to call before you intend to prompt: it does not build
+    // the iOS central manager, which is what shows the prompt.
+    // [Android] reports 'authorized' or 'notDetermined' only, because a permission Android has not
+    // granted looks the same whether it was refused or never asked for.
+    bluetoothAuthorization: function (success, failure) {
+        exec(success, failure, 'BLE', 'bluetoothAuthorization', []);
+    },
+
     // Android only
     isLocationEnabled: function (success, failure) {
         exec(success, failure, 'BLE', 'isLocationEnabled', []);
@@ -381,6 +390,12 @@ module.exports.withPromises = {
     isEnabled: function () {
         return new Promise(function (resolve, reject) {
             module.exports.isEnabled(resolve, reject);
+        });
+    },
+
+    bluetoothAuthorization: function () {
+        return new Promise(function (resolve, reject) {
+            module.exports.bluetoothAuthorization(resolve, reject);
         });
     },
 
