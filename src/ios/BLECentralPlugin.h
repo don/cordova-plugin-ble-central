@@ -38,6 +38,7 @@
     NSMutableDictionary *readRSSICallbacks;
     NSDictionary<NSString*,id> *restoredState;
     NSMutableDictionary *l2CapContexts;
+    NSMutableArray *pendingManagerStateCommands;
     NSTimer *scanTimer;
 }
 
