@@ -96,6 +96,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     private static final String START_NOTIFICATION = "startNotification"; // register for characteristic notification
     private static final String STOP_NOTIFICATION = "stopNotification"; // remove characteristic notification
 
+    private static final String BLUETOOTH_AUTHORIZATION = "bluetoothAuthorization";
     private static final String IS_ENABLED = "isEnabled";
     private static final String IS_LOCATION_ENABLED = "isLocationEnabled";
     private static final String IS_CONNECTED  = "isConnected";
@@ -327,6 +328,10 @@ public class BLECentralPlugin extends CordovaPlugin {
             UUID serviceUUID = uuidFromString(args.getString(1));
             UUID characteristicUUID = uuidFromString(args.getString(2));
             removeNotifyCallback(callbackContext, macAddress, serviceUUID, characteristicUUID);
+
+        } else if (action.equals(BLUETOOTH_AUTHORIZATION)) {
+
+            callbackContext.success(listMissingScanPermissions().isEmpty() ? "authorized" : "notDetermined");
 
         } else if (action.equals(IS_ENABLED)) {
 
@@ -1212,13 +1217,12 @@ public class BLECentralPlugin extends CordovaPlugin {
     };
 
 
-    @SuppressLint("MissingPermission")
-    private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds, ScanSettings scanSettings) {
-
-        if (!locationServicesEnabled() && Build.VERSION.SDK_INT < 31) {
-            LOG.w(TAG, "Location Services are disabled");
-        }
-
+    /**
+     * The scan permissions this device still needs, which differ by API level. Reading them costs
+     * nothing and shows the user nothing, so bluetoothAuthorization answers from the same ladder
+     * the scan itself enforces and the two cannot drift apart.
+     */
+    private List<String> listMissingScanPermissions() {
         List<String> missingPermissions = new ArrayList<String>();
         if (COMPILE_SDK_VERSION >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S
             if (!PermissionHelper.hasPermission(this, BLUETOOTH_SCAN)) {
@@ -1255,6 +1259,18 @@ public class BLECentralPlugin extends CordovaPlugin {
                 missingPermissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
             }
         }
+
+        return missingPermissions;
+    }
+
+    @SuppressLint("MissingPermission")
+    private void findLowEnergyDevices(CallbackContext callbackContext, UUID[] serviceUUIDs, int scanSeconds, ScanSettings scanSettings) {
+
+        if (!locationServicesEnabled() && Build.VERSION.SDK_INT < 31) {
+            LOG.w(TAG, "Location Services are disabled");
+        }
+
+        List<String> missingPermissions = listMissingScanPermissions();
 
         if (missingPermissions.size() > 0) {
             // save info so we can call this method again after permissions are granted

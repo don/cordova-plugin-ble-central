@@ -77,7 +77,7 @@ All variables can be modified after installation by updating the values in `pack
 
 -   `BLUETOOTH_USAGE_DESCRIPTION`: [**iOS**] defines the values for [NSBluetoothAlwaysUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/nsbluetoothalwaysusagedescription?language=objc).
 
--   `IOS_INIT_ON_LOAD`: [**iOS**] Prevents the Bluetooth plugin from being initialised until first access to the `ble` window object. This allows an application to warn the user before the Bluetooth access permission is requested.
+-   `IOS_INIT_ON_LOAD`: [**iOS**] Prevents the Bluetooth plugin from being initialised until first access to the `ble` window object. The permission prompt no longer depends on this setting: the central manager is built by the first call that needs Bluetooth, whenever the plugin itself was loaded.
 
 -   `BLUETOOTH_RESTORE_STATE`: [**iOS**] Enable Bluetooth state restoration, allowing an app to be woken up to receive scan results and peripheral notifications. This is needed for background scanning support. See [iOS restore state](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html#//apple_ref/doc/uid/TP40013257-CH7-SW13). For more information about background operation with this plugin, see [Background Scanning and Notifications on iOS](#background-scanning-and-notifications-on-ios).
 
@@ -133,6 +133,7 @@ For the best understanding about which permissions are needed for which combinat
 -   [ble.stopNotification](#stopnotification)
 -   [ble.isConnected](#isconnected)
 -   [ble.isEnabled](#isenabled)
+-   [ble.bluetoothAuthorization](#bluetoothauthorization)
 -   [ble.isLocationEnabled](#islocationenabled)
 -   [ble.startLocationStateNotifications](#startlocationstatenotifications)
 -   [ble.stopLocationStateNotifications](#stoplocationstatenotifications)
@@ -919,6 +920,48 @@ ble.isEnabled(
         console.log('Bluetooth is *not* enabled');
     }
 );
+```
+
+## bluetoothAuthorization
+
+Reports the Bluetooth permission without asking the user for it.
+
+```javascript
+ble.bluetoothAuthorization(success, failure);
+```
+
+### Description
+
+Function `bluetoothAuthorization` calls the success callback with the current permission as a
+string: `authorized`, `denied`, `restricted` or `notDetermined`.
+
+On iOS it reads `CBManager.authorization`, a class property added in iOS 13.1, so it never
+constructs the central manager, which is the thing that shows the permission dialog. Use it to skip
+an ask the user has already answered, or to tell a refusal apart from a switched-off radio. On
+iOS 13.0 the permission cannot be read at all without prompting, so it reports `notDetermined`
+there.
+
+Reading the permission leaves the prompt unspent. The central manager is built by the first call
+that actually needs Bluetooth, which this one does not, so an app can read the permission, show its
+own explanation of why it wants Bluetooth, and only then make a call that asks.
+
+On Android only `authorized` and `notDetermined` are reported, because a permission Android has not
+granted reads the same whether the user refused it or was never asked. The permissions it checks
+are the ones a scan requires on that API level, so its answer matches what `startScan` would demand.
+
+### Parameters
+
+-   **success**: Success callback function, invoked with the authorization string.
+-   **failure**: Error callback function, invoked when the device has no Bluetooth LE support.
+
+### Quick Example
+
+```javascript
+ble.bluetoothAuthorization(function (authorization) {
+    if (authorization === 'notDetermined') {
+        // the prompt is unspent, so our own explanation is still worth showing
+    }
+});
 ```
 
 ## isLocationEnabled

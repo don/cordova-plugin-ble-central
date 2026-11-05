@@ -38,6 +38,7 @@
     NSMutableDictionary *readRSSICallbacks;
     NSDictionary<NSString*,id> *restoredState;
     NSMutableDictionary *l2CapContexts;
+    NSMutableArray *pendingManagerStateCommands;
     NSTimer *scanTimer;
 }
 
@@ -60,6 +61,7 @@
 - (void)startNotification:(CDVInvokedUrlCommand *)command;
 - (void)stopNotification:(CDVInvokedUrlCommand *)command;
 
+- (void)bluetoothAuthorization:(CDVInvokedUrlCommand *)command;
 - (void)isEnabled:(CDVInvokedUrlCommand *)command;
 - (void)isConnected:(CDVInvokedUrlCommand *)command;
 
