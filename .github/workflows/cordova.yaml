@@ -60,6 +60,10 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: ${{ matrix.android-cmdline-tools-version }}
+          # v3's default is "tools platform-tools", but Google removed the
+          # deprecated `tools` package from the SDK repository, so sdkmanager
+          # exits 1 on it and fails the step before anything is built.
+          packages: platform-tools
       - name: Setup Gradle ${{ matrix.gradle }}
         uses: gradle/actions/setup-gradle@v4
         with:
