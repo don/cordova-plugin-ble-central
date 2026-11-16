@@ -545,6 +545,13 @@
     CDVPluginResult *pluginResult = nil;
 
     if (stateCallbackId == nil) {
+        // The first result here is the current state, so reading it early would open the listener
+        // with "unknown". stateCallbackId is still nil on the replay, so the delegate's own emit
+        // stays quiet that pass and this reports the real state exactly once.
+        if ([self deferUntilManagerStateIsKnown:^{ [self startStateNotifications:command]; }]) {
+            return;
+        }
+
         stateCallbackId = [command.callbackId copy];
         CBManagerState bluetoothState = [self.manager state];
         NSString *state = [bluetoothStates objectForKey:@(bluetoothState)];
