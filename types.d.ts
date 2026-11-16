@@ -1,7 +1,13 @@
 declare namespace BLECentralPlugin {
     type PeripheralState = 'disconnected' | 'disconnecting' | 'connecting' | 'connected';
     type BondState = 'none' | 'bonding' | 'bonded';
+    /* [iOS] the permission as CoreBluetooth reports it. */
     type BluetoothAuthorization = 'authorized' | 'denied' | 'restricted' | 'notDetermined';
+
+    /* [Android] the permissions this plugin needs that the app has not been granted, empty when
+       there are none. Android cannot tell a refusal from a permission never asked for, so it names
+       what is missing instead of reporting a status it cannot know. */
+    type MissingAndroidPermissions = string[];
 
     interface PeripheralCharacteristic {
         service: string;
@@ -172,8 +178,9 @@ declare namespace BLECentralPlugin {
         /* Returns a rejected promise if bluetooth is not connected */
         isEnabled(): Promise<void>;
 
-        /* Reports the Bluetooth permission without prompting for it. */
-        bluetoothAuthorization(): Promise<BluetoothAuthorization>;
+        /* Reports the Bluetooth permission without prompting for it. Resolves with a status
+           string on iOS and with the missing permission names on Android. */
+        bluetoothAuthorization(): Promise<BluetoothAuthorization | MissingAndroidPermissions>;
 
         enable(): Promise<void>;
         showBluetoothSettings(): Promise<void>;
@@ -303,9 +310,9 @@ declare namespace BLECentralPlugin {
 
         /* Reports the Bluetooth permission without prompting for it, so it can be called before
            deciding whether to prompt at all. Does not construct the iOS central manager.
-           [Android] only 'authorized' and 'notDetermined' are reported. */
+           [iOS] a status string. [Android] the names of the permissions still missing. */
         bluetoothAuthorization(
-            success: (authorization: BluetoothAuthorization) => any,
+            success: (authorization: BluetoothAuthorization | MissingAndroidPermissions) => any,
             failure?: (error: string) => any
         ): void;
 

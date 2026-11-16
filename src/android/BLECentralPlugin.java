@@ -33,6 +33,7 @@ import android.os.ParcelUuid;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.IntentFilter;
 import android.os.Handler;
@@ -331,7 +332,7 @@ public class BLECentralPlugin extends CordovaPlugin {
 
         } else if (action.equals(BLUETOOTH_AUTHORIZATION)) {
 
-            callbackContext.success(listMissingScanPermissions().isEmpty() ? "authorized" : "notDetermined");
+            callbackContext.success(new JSONArray(listMissingPermissions()));
 
         } else if (action.equals(IS_ENABLED)) {
 
@@ -1217,11 +1218,57 @@ public class BLECentralPlugin extends CordovaPlugin {
     };
 
 
-    /**
-     * The scan permissions this device still needs, which differ by API level. Reading them costs
-     * nothing and shows the user nothing, so bluetoothAuthorization answers from the same ladder
-     * the scan itself enforces and the two cannot drift apart.
-     */
+    // What a scan needs at this API level, and the gate startScan enforces. Narrower on purpose
+    // than listMissingPermissions, which reports everything the plugin can need.
+    // Everything the plugin can need, so a caller can tell which capability the user withheld
+    // rather than only whether scanning would work. BLUETOOTH and BLUETOOTH_ADMIN are absent
+    // because they are install-time: a user can never be the reason one is missing.
+    private List<String> listMissingPermissions() {
+        List<String> missingPermissions = new ArrayList<String>();
+        List<String> declaredPermissions = listDeclaredPermissions();
+
+        addMissingPermission(missingPermissions, declaredPermissions, Manifest.permission.ACCESS_COARSE_LOCATION, 0, 28);
+        addMissingPermission(missingPermissions, declaredPermissions, Manifest.permission.ACCESS_FINE_LOCATION, 0, 30);
+        addMissingPermission(missingPermissions, declaredPermissions, ACCESS_BACKGROUND_LOCATION, 29, Integer.MAX_VALUE);
+        addMissingPermission(missingPermissions, declaredPermissions, BLUETOOTH_SCAN, 31, Integer.MAX_VALUE);
+        addMissingPermission(missingPermissions, declaredPermissions, BLUETOOTH_CONNECT, 31, Integer.MAX_VALUE);
+
+        return missingPermissions;
+    }
+
+    // The declared check carries this: an app scanning with neverForLocation needs no location
+    // permission, and would otherwise be told forever that it is missing one.
+    // https://developer.android.com/develop/connectivity/bluetooth/bt-permissions
+    private void addMissingPermission(List<String> missingPermissions, List<String> declaredPermissions,
+                                      String permission, int minSdkVersion, int maxSdkVersion) {
+        if (Build.VERSION.SDK_INT < minSdkVersion || Build.VERSION.SDK_INT > maxSdkVersion) {
+            return;
+        }
+
+        if (!declaredPermissions.contains(permission)) {
+            return;
+        }
+
+        if (!PermissionHelper.hasPermission(this, permission)) {
+            missingPermissions.add(permission);
+        }
+    }
+
+    private List<String> listDeclaredPermissions() {
+        try {
+            PackageInfo packageInfo = cordova.getActivity()
+                    .getPackageManager()
+                    .getPackageInfo(cordova.getActivity().getPackageName(), PackageManager.GET_PERMISSIONS);
+
+            return packageInfo.requestedPermissions == null
+                    ? new ArrayList<String>()
+                    : Arrays.asList(packageInfo.requestedPermissions);
+        } catch (PackageManager.NameNotFoundException err) {
+            LOG.w(TAG, "Could not read the permissions this app declares", err);
+            return new ArrayList<String>();
+        }
+    }
+
     private List<String> listMissingScanPermissions() {
         List<String> missingPermissions = new ArrayList<String>();
         if (COMPILE_SDK_VERSION >= 31 && Build.VERSION.SDK_INT >= 31) { // (API 31) Build.VERSION_CODE.S

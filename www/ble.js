@@ -232,11 +232,12 @@ module.exports = {
         exec(success, failure, 'BLE', 'isEnabled', []);
     },
 
-    // Reports the Bluetooth permission without asking for it, as one of 'authorized', 'denied',
-    // 'restricted' or 'notDetermined'. Safe to call before you intend to prompt: it does not build
-    // the iOS central manager, which is what shows the prompt.
-    // [Android] reports 'authorized' or 'notDetermined' only, because a permission Android has not
-    // granted looks the same whether it was refused or never asked for.
+    // Reports the Bluetooth permission without asking for it. Safe to call before you intend to
+    // prompt: it does not build the iOS central manager, which is what shows the prompt.
+    // [iOS] one of 'authorized', 'denied', 'restricted' or 'notDetermined'.
+    // [Android] an array of the permissions this plugin needs that the app has not been granted,
+    // empty when there are none. Android cannot tell a refusal from a permission never asked for,
+    // so it names what is missing rather than guessing at a status.
     bluetoothAuthorization: function (success, failure) {
         exec(success, failure, 'BLE', 'bluetoothAuthorization', []);
     },
