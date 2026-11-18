@@ -1,3 +1,7 @@
+## 2.1.0
+
+- Add bluetoothAuthorization to report the permission without prompting (#1061, #866, #944.) thanks @vwilkie
+
 ## 2.0.0
 
 **NO BREAKING API CHANGES from v1**
