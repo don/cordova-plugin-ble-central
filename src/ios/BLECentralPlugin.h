@@ -29,6 +29,7 @@
     NSString* discoverPeripheralCallbackId;
     NSString* stateCallbackId;
     NSMutableDictionary* connectCallbacks;
+    NSMutableDictionary* disconnectCallbacks;
     NSMutableDictionary *readCallbacks;
     NSMutableDictionary *writeCallbacks;
     NSMutableDictionary *notificationCallbacks;
