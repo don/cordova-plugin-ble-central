@@ -42,6 +42,7 @@
 
     restoredState = nil;
     connectCallbacks = [NSMutableDictionary new];
+    disconnectCallbacks = [NSMutableDictionary new];
     connectCallbackLatches = [NSMutableDictionary new];
     readCallbacks = [NSMutableDictionary new];
     writeCallbacks = [NSMutableDictionary new];
@@ -184,9 +185,23 @@
     CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
     if (!peripheral) {
         peripheral = [self retrievePeripheralWithUUID:uuid];
+
+        if (peripheral) {
+            [peripherals setObject:peripheral forKey:peripheral.identifier];
+        }
     }
 
     if (peripheral) {
+        // a disconnect is still settling
+        NSString *disconnectCallbackId = [disconnectCallbacks objectForKey:[peripheral uuidAsString]];
+        if (disconnectCallbackId) {
+            NSString *error = [NSString stringWithFormat:@"Peripheral %@ is currently disconnecting. Please wait for disconnect to complete.", uuid];
+            NSLog(@"%@", error);
+            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            return;
+        }
+
         NSLog(@"Connecting to peripheral with UUID : %@", uuid);
 
         [connectCallbacks setObject:[command.callbackId copy] forKey:[peripheral uuidAsString]];
@@ -226,9 +241,23 @@
     CBPeripheral *peripheral = [self findPeripheralByUUID:uuid];
     if (!peripheral) {
         peripheral = [self retrievePeripheralWithUUID:uuid];
+
+        if (peripheral) {
+            [peripherals setObject:peripheral forKey:peripheral.identifier];
+        }
     }
     
     if (peripheral) {
+        // a disconnect is still settling
+        NSString *disconnectCallbackId = [disconnectCallbacks objectForKey:[peripheral uuidAsString]];
+        if (disconnectCallbackId) {
+            NSString *error = [NSString stringWithFormat:@"Peripheral %@ is currently disconnecting. Please wait for disconnect to complete.", uuid];
+            NSLog(@"%@", error);
+            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            return;
+        }
+
         NSLog(@"Autoconnecting to peripheral with UUID : %@", uuid);
         
         [connectCallbacks setObject:[command.callbackId copy] forKey:[peripheral uuidAsString]];
@@ -261,16 +290,54 @@
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 
     } else {
+        if (peripheral.state == CBPeripheralStateDisconnected) {
+            NSLog(@"Peripheral %@ is already disconnected", uuid);
+            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            return;
+        }
 
-        [connectCallbacks removeObjectForKey:uuid];
+        // Only an established link reports back through didDisconnectPeripheral. Cancelling a
+        // connect that never completed delivers no callback, so that case is answered below.
+        BOOL reportsBackOnDisconnect = peripheral.state == CBPeripheralStateConnected
+            || peripheral.state == CBPeripheralStateDisconnecting;
+
+        if (reportsBackOnDisconnect) {
+            if ([disconnectCallbacks objectForKey:[peripheral uuidAsString]]) {
+                NSString *error = [NSString stringWithFormat:@"Peripheral %@ is already disconnecting.", uuid];
+                NSLog(@"%@", error);
+                CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                return;
+            }
+
+            [disconnectCallbacks setObject:[command.callbackId copy] forKey:[peripheral uuidAsString]];
+        }
+
+        // fail an in-flight connect now, worded so a cancel reads differently from a peer drop
+        NSString *pendingConnectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
+        if (pendingConnectCallbackId) {
+            [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
+            NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[peripheral asDictionary]];
+            [dict setObject:@"Connection cancelled" forKey:@"errorMessage"];
+            [dict setObject:@"Connect aborted by a disconnect request" forKey:@"errorDescription"];
+            [dict removeObjectForKey:@"rssi"];
+            [dict removeObjectForKey:@"advertising"];
+            [dict removeObjectForKey:@"services"];
+            CDVPluginResult *connectResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:dict];
+            [self.commandDelegate sendPluginResult:connectResult callbackId:pendingConnectCallbackId];
+        }
         [self cleanupOperationCallbacks:peripheral withResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral disconnected"]];
 
         if (peripheral && peripheral.state != CBPeripheralStateDisconnected) {
             [self.manager cancelPeripheralConnection:peripheral];
         }
 
-        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        // an established link is answered from didDisconnectPeripheral instead
+        if (!reportsBackOnDisconnect) {
+            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }
     }
 }
 
@@ -836,6 +903,9 @@
 
     peripheral.delegate = self;
 
+    // keep the cached handle current
+    [peripherals setObject:peripheral forKey:peripheral.identifier];
+
     // NOTE: it's inefficient to discover all services
     [peripheral discoverServices:nil];
 
@@ -845,12 +915,23 @@
 - (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
     NSLog(@"didDisconnectPeripheral");
 
-    NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
-    [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
+    NSString *peripheralUUID = [peripheral uuidAsString];
+    NSString *connectCallbackId = [connectCallbacks valueForKey:peripheralUUID];
+    NSString *disconnectCallbackId = [disconnectCallbacks valueForKey:peripheralUUID];
+
+    [connectCallbacks removeObjectForKey:peripheralUUID];
+    [disconnectCallbacks removeObjectForKey:peripheralUUID];
     [self cleanupOperationCallbacks:peripheral withResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral disconnected"]];
 
-    if (connectCallbackId) {
+    // a disconnect the app asked for
+    if (disconnectCallbackId) {
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:disconnectCallbackId];
+        NSLog(@"Disconnect completed for peripheral %@", peripheralUUID);
+    }
 
+    // a connect that was still pending
+    if (connectCallbackId) {
         NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[peripheral asDictionary]];
 
         // add error info
@@ -872,25 +953,39 @@
 - (void)centralManager:(CBCentralManager *)central didFailToConnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
     NSLog(@"didFailToConnectPeripheral");
 
-    NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
-    [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
+    NSString *peripheralUUID = [peripheral uuidAsString];
+    NSString *connectCallbackId = [connectCallbacks valueForKey:peripheralUUID];
+    NSString *disconnectCallbackId = [disconnectCallbacks valueForKey:peripheralUUID];
+
+    [connectCallbacks removeObjectForKey:peripheralUUID];
+    [disconnectCallbacks removeObjectForKey:peripheralUUID];
     [self cleanupOperationCallbacks:peripheral withResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral disconnected"]];
 
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[peripheral asDictionary]];
-
-    // add error info
-    [dict setObject:@"Connection Failed" forKey:@"errorMessage"];
-    if (error) {
-        [dict setObject:[error localizedDescription] forKey:@"errorDescription"];
+    // a disconnect the app asked for
+    if (disconnectCallbackId) {
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:disconnectCallbackId];
+        NSLog(@"Disconnect completed for peripheral %@ (failed to connect)", peripheralUUID);
     }
-    // remove extra junk
-    [dict removeObjectForKey:@"rssi"];
-    [dict removeObjectForKey:@"advertising"];
-    [dict removeObjectForKey:@"services"];
 
-    CDVPluginResult *pluginResult = nil;
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:dict];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
+    // both can be outstanding at once, so the connect is answered too
+    if (connectCallbackId) {
+        NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[peripheral asDictionary]];
+
+        // add error info
+        [dict setObject:@"Connection Failed" forKey:@"errorMessage"];
+        if (error) {
+            [dict setObject:[error localizedDescription] forKey:@"errorDescription"];
+        }
+        // remove extra junk
+        [dict removeObjectForKey:@"rssi"];
+        [dict removeObjectForKey:@"advertising"];
+        [dict removeObjectForKey:@"services"];
+
+        CDVPluginResult *pluginResult = nil;
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:dict];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallbackId];
+    }
 }
 
 #pragma mark CBPeripheralDelegate

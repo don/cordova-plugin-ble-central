@@ -813,8 +813,14 @@ public class BLECentralPlugin extends CordovaPlugin {
 
         Peripheral peripheral = peripherals.get(macAddress);
         if (peripheral != null) {
-            peripheral.disconnect();
-            callbackContext.success();
+            // a connect still in flight also needs taking down
+            if (!peripheral.isConnected() && !peripheral.isConnecting()) {
+                LOG.d(TAG, "Peripheral " + macAddress + " is already disconnected");
+                callbackContext.success();
+                return;
+            }
+
+            peripheral.disconnect(callbackContext);
         } else {
             String message = "Peripheral " + macAddress + " not found.";
             LOG.w(TAG, message);
