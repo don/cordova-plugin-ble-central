@@ -57,12 +57,11 @@ public class Peripheral extends BluetoothGattCallback {
     private static final int FAKE_PERIPHERAL_RSSI = 0x7FFFFFFF;
 
     private final BluetoothDevice device;
-    private byte[] advertisingData;
+    private volatile byte[] advertisingData;
     private Boolean isConnectable = null;
     private int advertisingRSSI;
     private boolean autoconnect = false;
-    private boolean connected = false;
-    private boolean connecting = false;
+    private volatile int connectionState = BluetoothGatt.STATE_DISCONNECTED;
     private final ConcurrentLinkedQueue<BLECommand> commandQueue = new ConcurrentLinkedQueue<BLECommand>();
     private final Map<Integer, L2CAPContext> l2capContexts = new HashMap<Integer, L2CAPContext>();
     private final AtomicBoolean bleProcessing = new AtomicBoolean();
@@ -100,8 +99,7 @@ public class Peripheral extends BluetoothGattCallback {
     private void gattConnect() {
 
         closeGatt();
-        connected = false;
-        connecting = true;
+        connectionState = BluetoothGatt.STATE_CONNECTING;
         queueCleanup("Aborted by new connect call");
         callbackCleanup("Aborted by new connect call");
 
@@ -125,8 +123,7 @@ public class Peripheral extends BluetoothGattCallback {
     // disconnect the gatt, do not call connectCallback.error
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
     public void disconnect() {
-        connected = false;
-        connecting = false;
+        connectionState = BluetoothGatt.STATE_DISCONNECTED;
         autoconnect = false;
 
         closeGatt();
@@ -138,8 +135,7 @@ public class Peripheral extends BluetoothGattCallback {
     // always call connectCallback.error to notify the app
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
     public void peripheralDisconnected(String message) {
-        connected = false;
-        connecting = false;
+        connectionState = BluetoothGatt.STATE_DISCONNECTED;
 
         // don't remove the gatt for autoconnect
         if (!autoconnect) {
@@ -322,7 +318,7 @@ public class Peripheral extends BluetoothGattCallback {
             json.put("services", servicesArray);
             json.put("characteristics", characteristicsArray);
 
-            if (connected && gatt != null) {
+            if (isConnected() && gatt != null) {
                 for (BluetoothGattService service : gatt.getServices()) {
                     servicesArray.put(UUIDHelper.uuidToString(service.getUuid()));
 
@@ -376,11 +372,11 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     public boolean isConnected() {
-        return connected;
+        return connectionState == BluetoothGatt.STATE_CONNECTED;
     }
 
-    public boolean isConnecting() {
-        return connecting;
+    boolean isDisconnected() {
+        return connectionState == BluetoothGatt.STATE_DISCONNECTED;
     }
 
     public BluetoothDevice getDevice() {
@@ -423,13 +419,11 @@ public class Peripheral extends BluetoothGattCallback {
 
         if (newState == BluetoothGatt.STATE_CONNECTED) {
             LOG.d(TAG, "onConnectionStateChange CONNECTED");
-            connected = true;
-            connecting = false;
+            connectionState = BluetoothGatt.STATE_CONNECTED;
             gatt.discoverServices();
 
         } else {  // Disconnected
             LOG.d(TAG, "onConnectionStateChange DISCONNECTED");
-            connected = false;
             peripheralDisconnected("Peripheral Disconnected");
 
         }
@@ -573,15 +567,9 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     // Update rssi and scanRecord.
-    public void update(int rssi, byte[] scanRecord, boolean isConnectable) {
+    public void update(int rssi, byte[] scanRecord, Boolean isConnectable) {
         this.advertisingRSSI = rssi;
-        this.advertisingData = scanRecord;
         this.isConnectable = isConnectable;
-    }
-
-
-    public void update(int rssi, byte[] scanRecord) {
-        this.advertisingRSSI = rssi;
         this.advertisingData = scanRecord;
     }
 
